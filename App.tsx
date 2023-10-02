@@ -1,202 +1,24 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import moment from 'moment-timezone';
-import Timetable from 'react-native-calendar-timetable';
-import {Modal, ScrollView, View} from 'react-native';
-import {
-  AddIcon,
-  Box,
-  ButtonIcon,
-  ButtonText,
-  GluestackUIProvider,
-  Heading,
-  HStack,
-  Image,
-  Text,
-  Button,
-  ButtonSpinner,
-  Theme,
-} from '@gluestack-ui/themed';
-import {Event, TurnSelectItem} from './src/types/turns';
-import Clock from 'react-live-clock';
-import SelectServiceModal from './src/components/selectServiceModal';
-import {Service} from './src/types/services';
-import SelectTurnModal from './src/components/selectTurnModal';
-import TurnCard from './src/components/turnCard';
-import BaseButton from './src/components/shared/baseButton';
-import CreateServiceModal from './src/components/createServiceModal';
+import {GluestackUIProvider} from '@gluestack-ui/themed';
 import {config} from './src/theme';
+import {NavigationContainer} from '@react-navigation/native';
+import MainNavigator from './src/navigators/main';
+import {store} from './src/store';
+import {Provider} from 'react-redux';
 
 moment.tz.setDefault('America/Argentina/Buenos_Aires');
 
-const hours = [
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-  23, 0, 1, 2,
-];
-
 export default function App() {
-  const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
-  const [date] = React.useState(moment().toDate());
-
-  const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
-  const [showCreateServiceModal, setShowCreateServiceModal] =
-    useState<boolean>(false);
-  const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
-
-  const [items, setItems] = React.useState<Event[]>([]);
-  const addTurn = (turn: TurnSelectItem) => {
-    if (selectedService) {
-      setItems([
-        ...items,
-        {
-          title: selectedService.name,
-          startDate: moment(turn.startDate).toDate(),
-          endDate: moment(turn.startDate)
-            .add(selectedService.duration, 'minutes')
-            .toDate(),
-        },
-      ]);
-      setSelectedService(null);
-      setShowTurnModal(false);
-    }
-  };
-
-  useEffect(() => {
-    const checkTurnForServiceTime = () => {
-      let startDate = moment(new Date());
-      const list: TurnSelectItem[] = [];
-      hours.forEach(hour => {
-        if (moment().hour() <= hour) return;
-        const isUnavaibleIndex = items.findIndex((turn: Event) => {
-          const clonedStartDate = startDate.clone();
-          const startDateValidation = clonedStartDate.isBetween(
-            moment(turn.startDate),
-            moment(turn.endDate),
-          );
-          const endDateValidation = clonedStartDate
-            .add(selectedService?.duration, 'minutes')
-            .isBetween(moment(turn.startDate), moment(turn.endDate));
-          if (startDateValidation || endDateValidation) {
-            return true;
-          } else {
-            return false;
-          }
-        });
-        if (isUnavaibleIndex < 0) {
-          const clonedStartDate = startDate.clone();
-          list.push({startDate: clonedStartDate.toDate()});
-        }
-        startDate = startDate.add(selectedService?.duration, 'minutes');
-      });
-      setTurnList(list);
-      setShowTurnModal(true);
-    };
-    if (selectedService) {
-      checkTurnForServiceTime();
-    }
-  }, [selectedService]);
-
-  const handleServiceSelect = (e: Service) => {
-    setSelectedService(e);
-    setShowServiceModal(false);
-  };
-  console.log('items', items);
   return (
     <>
-      <GluestackUIProvider config={config}>
-       
-         
-          <HStack sx={{
-            _text:{
-              color:"$amber100"
-            }
-          }} mt={'$4'} width={'100%'} justifyContent="center">
-            <Clock
-              format={'hh:mm:ss'}
-              ticking={true}
-              element={Text}
-              style={{fontSize: 22, color:"#1f3d56"}}
-            />
-          </HStack>
-          <ScrollView>
-            <Heading textAlign="center" color='$textDark900'>Turnos agendados</Heading>
-            <Box padding={'$4'}>
-              {items
-                .sort(function (left, right) {
-                  return moment(left.startDate).diff(moment(right.startDate));
-                })
-                .map(e => {
-                  return (
-                    <TurnCard key={moment(e.startDate).toString()} event={e} />
-                  );
-                })}
-              {items.length === 0 && (
-                <>
-                  <Text textAlign="center" mt={'$10'} color="$textDark500">
-                    Aún no has agendado ningún turno para hoy.
-                  </Text>
-                  <HStack justifyContent="center">
-                    <Image
-                      mt={'$10'}
-                      maxWidth={'$32'}
-                      maxHeight={'$32'}
-                      resizeMode="contain"
-                      source={require('./src/assets/images/schedule-placeholder.png')}
-                      alt="agenda-vacia"
-                    />
-                  </HStack>
-                </>
-              )}
-            </Box>
-          </ScrollView>
-          <HStack
-            position="absolute"
-            bottom={10}
-            width={'100%'}
-            justifyContent="center">
-            <BaseButton
-              title="Agendar"
-              background={"$primary500"}
-              color={"$white"}
-              onPress={() => setShowServiceModal(true)}
-              isLoading={false}
-              disabled={false}
-              hasIcon={true}
-              icon={AddIcon}
-            />
-          </HStack>
-          <HStack
-            position="absolute"
-            bottom={50}
-            width={'100%'}
-            justifyContent="center">
-            <BaseButton
-              title="Crear servicio"
-              background={"$primary500"}
-              color={"$white"}
-              onPress={() => setShowCreateServiceModal(true)}
-              isLoading={false}
-              disabled={false}
-              hasIcon={true}
-              icon={AddIcon}
-            />
-          </HStack>
-          <SelectServiceModal
-            show={showServiceModal}
-            onSelect={handleServiceSelect}
-            onClose={() => setShowServiceModal(false)}
-          />
-          <SelectTurnModal
-            onSelect={addTurn}
-            turns={turnList}
-            show={showTurnModal}
-            onClose={() => setShowTurnModal(false)}
-          />
-          <CreateServiceModal
-            show={showCreateServiceModal}
-            onClose={() => setShowCreateServiceModal(false)}
-          />
-      </GluestackUIProvider>
+      <Provider store={store}>
+        <GluestackUIProvider config={config}>
+          <NavigationContainer>
+            <MainNavigator />
+          </NavigationContainer>
+        </GluestackUIProvider>
+      </Provider>
     </>
   );
 }
