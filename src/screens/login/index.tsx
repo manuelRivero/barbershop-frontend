@@ -20,10 +20,10 @@ export default function Login() {
     formState: {errors},
     handleSubmit,
     control,
-    watch
+    watch,
   } = useForm<Form>();
   const submit = (values: Form): void => {
-    console.log("submit")
+    console.log('submit');
     dispatch(
       setUser({
         ...barber,
@@ -58,7 +58,14 @@ export default function Login() {
                   />
                 );
               }}
-              rules={{required: 'Campo requerido'}}
+              rules={{
+                required: 'Campo requerido',
+                pattern: {
+                  message: 'Correo invalido',
+                  value:
+                    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                },
+              }}
             />
           </Box>
           <Box mb="$4">
@@ -68,6 +75,7 @@ export default function Login() {
               render={({field, fieldState}) => {
                 return (
                   <BaseInput
+                    type="password"
                     keyboard="default"
                     label="Contraseña"
                     value={field.value}

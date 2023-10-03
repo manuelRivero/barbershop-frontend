@@ -11,13 +11,13 @@ import React from 'react';
 import {Barber} from '../../../types/barber';
 
 interface Props {
-  data: Barber;
+  data: Barber | null
 }
 
 export default function ProfileCard({data}: Props) {
-  console.log('profile image', data.image);
+  if(!data) return null
   return (
-    <Box p="$4">
+    <Box p="$4" softShadow='1' borderRadius={10} bg="$white">
       <HStack space="md" alignItems="center">
         <Image
           borderRadius={9999}

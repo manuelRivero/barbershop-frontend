@@ -1,24 +1,22 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import ProfileCard from '../../components/profile/profileCard';
 import {Box, HStack, Heading, Text} from '@gluestack-ui/themed';
 import Clock from 'react-live-clock';
 import BaseButton from '../../components/shared/baseButton';
 import LinkButton from '../../components/shared/linkButton';
-import { RootState, useAppDispatch, useAppSelector } from '../../store';
-import { logout } from '../../store/features/authSlice';
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
+import {logout} from '../../store/features/authSlice';
 import ProfileForm from '../../components/profile/profileForm';
 
 export default function Profile() {
-  const dispacth = useAppDispatch()
+  const dispacth = useAppDispatch();
   const {user} = useAppSelector((state: RootState) => state.auth);
 
-  const [showModal, setShowModal] = useState<boolean>(false)
+  const [showModal, setShowModal] = useState<boolean>(false);
   const handleLogout = () => {
-    dispacth(logout())
-  }
-  const handleProfileEdition = () => {
-
-  }
+    dispacth(logout());
+  };
+  const handleProfileEdition = () => {};
   return (
     <Box flex={1} bg={'$primary100'}>
       <HStack
@@ -40,17 +38,19 @@ export default function Profile() {
       <Heading color="$textDark500" textAlign="center">
         Perfil
       </Heading>
-      <ProfileCard data={user} />
+      <Box p="$4">
+        <ProfileCard data={user} />
+      </Box>
       <HStack
-      space="2xl"
+        space="2xl"
         position="absolute"
         bottom={10}
         width={'100%'}
         justifyContent="center">
         <LinkButton
-        color='$primary500'
+          color="$primary500"
           title="Cerrar sesión"
-          onPress={() => {}}
+          onPress={handleLogout}
           isLoading={false}
           disabled={false}
         />
@@ -63,7 +63,7 @@ export default function Profile() {
           disabled={false}
         />
       </HStack>
-      <ProfileForm show={showModal} onClose={()=>setShowModal(false)} />
+      <ProfileForm show={showModal} onClose={() => setShowModal(false)} />
     </Box>
   );
 }
