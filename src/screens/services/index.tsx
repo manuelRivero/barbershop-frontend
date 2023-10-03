@@ -51,7 +51,7 @@ export default function Services() {
         </HStack>
 
         <ScrollView flex={1}>
-          <Heading textAlign="center" color="$textDark900">
+          <Heading textAlign="center" color="$textDark500">
             Servicios disponibles
           </Heading>
           <FlatList
