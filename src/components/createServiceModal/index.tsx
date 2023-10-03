@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   Button,
   Heading,
@@ -29,8 +29,11 @@ import BaseButton from '../shared/baseButton';
 import LinkButton from '../shared/linkButton';
 import {useForm, Controller} from 'react-hook-form';
 import {Asset, launchImageLibrary} from 'react-native-image-picker';
-import { useAppDispatch } from '../../store';
-import { addService } from '../../store/features/servicesSlice';
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
+import {
+  addService,
+  setServiceForEdition,
+} from '../../store/features/servicesSlice';
 
 interface Props {
   show: boolean;
@@ -45,27 +48,39 @@ interface Form {
 }
 
 export default function CreateServiceModal({show, onClose}: Props) {
-  const dispatch = useAppDispatch()
+  const imageRef = useRef(null);
+  const dispatch = useAppDispatch();
+  const {serviceForEdition} = useAppSelector(
+    (state: RootState) => state.services,
+  );
+  console.log('serviceForEdition', serviceForEdition);
   const ref = useRef();
   const {
     formState: {errors},
     handleSubmit,
     control,
-    reset
+    reset,
+    watch,
   } = useForm<Form>();
-  const [image, setImage] = useState<Asset | null>(null);
+  const [image, setImage] = useState<null | {uri: string | undefined}>(null);
   const [imageAlert, setImageAlert] = useState<string | null>(null);
   const submit = (values: Form) => {
-    console.log("image on submit", image)
+    console.log('image on submit', image);
     setImageAlert(null);
     if (!image) {
       setImageAlert('La imagen del servicio es requerida');
       return;
     }
-    dispatch(addService({...values, image:image.uri}))
-    reset({})
-    setImage(null)
-    onClose()
+    dispatch(addService({...values, image: image.uri}));
+    dispatch(setServiceForEdition(null));
+    reset({
+      name: '',
+      price: '',
+      duration: '',
+      description: '',
+    });
+    setImage(null);
+    onClose();
   };
   const handleGallery = async () => {
     const result = await launchImageLibrary({
@@ -74,16 +89,50 @@ export default function CreateServiceModal({show, onClose}: Props) {
     console.log('result', result);
     if (result.assets) {
       console.log('result.assets[0].uri', result.assets[0].uri);
-      setImage(result.assets[0]);
+      setImage({uri: result.assets[0].uri});
     }
   };
-  console.log('errors', errors);
+  console.log('values', watch());
+  useEffect(() => {
+    if (serviceForEdition) {
+      reset({
+        name: serviceForEdition.name,
+        price: serviceForEdition.price.toString(),
+        duration: serviceForEdition.duration.toString(),
+        description: serviceForEdition.description,
+      });
+      setImage({uri: serviceForEdition.image});
+    } else {
+      reset({
+        name: '',
+        price: '',
+        duration: '',
+        description: '',
+      });
+      setImage(null);
+    }
+  }, [serviceForEdition]);
+  console.log('image', image);
   return (
-    <Modal isOpen={show} onClose={onClose} finalFocusRef={ref} bg="$primary100">
+    <Modal
+      isOpen={show}
+      onClose={() => {
+        onClose();
+        reset({
+          name: '',
+          price: '',
+          duration: '',
+          description: '',
+        });
+      }}
+      finalFocusRef={ref}
+      bg="$primary100">
       <ModalBackdrop />
       <ModalContent bg="$white">
         <ModalHeader>
-          <Heading size="lg" color="$textDark900">Crear servicio</Heading>
+          <Heading size="lg" color="$textDark900">
+            Crear servicio
+          </Heading>
           <ModalCloseButton>
             <Icon as={CloseIcon} />
           </ModalCloseButton>
@@ -204,10 +253,10 @@ export default function CreateServiceModal({show, onClose}: Props) {
           </Box>
           <HStack mt={'$2'} justifyContent="center">
             <Image
+              ref={imageRef}
               borderRadius={8}
-              maxWidth={'$32'}
-              maxHeight={'$32'}
-              resizeMode="contain"
+              style={{width: 200, height: 200}}
+              resizeMode="cover"
               source={
                 image
                   ? image
@@ -236,8 +285,8 @@ export default function CreateServiceModal({show, onClose}: Props) {
           <HStack mt={'$2'} width={'100%'} justifyContent="center">
             <BaseButton
               title="Crear servicio"
-              background={"$primary500"}
-              color={"$white"}
+              background={'$primary500'}
+              color={'$white'}
               onPress={handleSubmit(submit)}
               isLoading={false}
               disabled={false}

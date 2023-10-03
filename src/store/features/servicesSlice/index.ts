@@ -1,16 +1,20 @@
-import { createSlice } from '@reduxjs/toolkit'
-import { Service } from '../../../types/services'
-import { services } from '../../../dummy-data/services'
+import {createSlice} from '@reduxjs/toolkit';
+import {Service} from '../../../types/services';
+import {services} from '../../../dummy-data/services';
 
 // Define a type for the slice state
 interface State {
-  services: Service[]
+  services: Service[];
+  serviceForEdition: Service | null;
+  showCreateServiceModal: boolean
 }
 
 // Define the initial state using that type
 const initialState: State = {
   services: services,
-}
+  serviceForEdition: null,
+  showCreateServiceModal: false
+};
 
 export const servicesSlice = createSlice({
   name: 'services',
@@ -18,11 +22,18 @@ export const servicesSlice = createSlice({
   initialState,
   reducers: {
     addService: (state, action) => {
-      state.services.push(action.payload)
+      state.services.push(action.payload);
     },
+    setServiceForEdition: (state, action) => {
+      state.serviceForEdition = action.payload;
+      state.showCreateServiceModal = true
+    },
+    toggleCreateServiceModal : (state, action) => {
+      state.showCreateServiceModal = action.payload
+    }
   },
-})
+});
 
-export const { addService } = servicesSlice.actions
+export const {addService, setServiceForEdition, toggleCreateServiceModal} = servicesSlice.actions;
 
-export default servicesSlice.reducer
+export default servicesSlice.reducer;

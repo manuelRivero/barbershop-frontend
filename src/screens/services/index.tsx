@@ -12,16 +12,24 @@ import {
 import Clock from 'react-live-clock';
 import BaseButton from '../../components/shared/baseButton';
 import CreateServiceModal from '../../components/createServiceModal';
-import {RootState, useAppSelector} from '../../store';
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {Service} from '../../types/services';
 import ServiceCard from '../../components/shared/serviceCard';
 import {ListRenderItemInfo} from 'react-native';
+import { toggleCreateServiceModal } from '../../store/features/servicesSlice';
 
 export default function Services() {
-  const {services} = useAppSelector((state: RootState) => state.services);
+  const {services, showCreateServiceModal} = useAppSelector(
+    (state: RootState) => state.services,
+  );
+  const dispatch = useAppDispatch();
   console.log('services', services);
-  const [showCreateServiceModal, setShowCreateServiceModal] =
-    useState<boolean>(false);
+  const handleCloseModal = ():void => {
+    dispatch(toggleCreateServiceModal(false));
+  };
+  const handleOpenModal = ():void => {
+    dispatch(toggleCreateServiceModal(true));
+  };
   return (
     <>
       <Box bg="$primary100" flex={1}>
@@ -76,7 +84,7 @@ export default function Services() {
             title="Crear servicio"
             background={'$primary500'}
             color={'$white'}
-            onPress={() => setShowCreateServiceModal(true)}
+            onPress={handleOpenModal}
             isLoading={false}
             disabled={false}
             hasIcon={true}
@@ -86,7 +94,7 @@ export default function Services() {
       </Box>
       <CreateServiceModal
         show={showCreateServiceModal}
-        onClose={() => setShowCreateServiceModal(false)}
+        onClose={handleCloseModal}
       />
     </>
   );
