@@ -31,7 +31,7 @@ export default function Login() {
       }),
     );
   };
-  console.log("values", watch())
+
   return (
     <Box flex={1} bg="$primary100" p={'$4'}>
       <VStack flex={1} justifyContent="center">

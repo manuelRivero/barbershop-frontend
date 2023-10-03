@@ -21,11 +21,14 @@ export const authSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state.user = action.payload;
+      state.user = {...state.user, ...action.payload};
+    },
+    logout: state => {
+      state.user = null;
     },
   },
 });
 
-export const {setUser} = authSlice.actions;
+export const {setUser, logout} = authSlice.actions;
 
 export default authSlice.reducer;

@@ -24,7 +24,10 @@ export default function ProfileCard({data}: Props) {
           style={{width: 100, height: 100}}
           source={{uri: data.image}}
         />
-        <Text color="$textDark500">{`${data.name} ${data.lastname}`}</Text>
+        <Box>
+          <Text color="$textDark500">{`${data.name} ${data.lastname}`}</Text>
+          <Text color="$textDark500">{`${data.email}`}</Text>
+        </Box>
       </HStack>
     </Box>
   );

@@ -108,7 +108,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
       setImage({uri: result.assets[0].uri});
     }
   };
-  console.log('values', watch());
+
   useEffect(() => {
     if (serviceForEdition) {
       reset({
