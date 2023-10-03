@@ -118,7 +118,7 @@ export default function Schedule() {
         </HStack>
 
         <ScrollView flex={1}>
-          <Heading textAlign="center" color="$textDark900">
+          <Heading textAlign="center" color="$textDark500">
             Turnos agendados
           </Heading>
           <Box padding={'$4'}>

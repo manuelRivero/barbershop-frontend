@@ -6,6 +6,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import MainNavigator from './src/navigators/main';
 import {store} from './src/store';
 import {Provider} from 'react-redux';
+import InfoModal from './src/components/shared/infoModal';
 
 moment.tz.setDefault('America/Argentina/Buenos_Aires');
 
@@ -17,6 +18,7 @@ export default function App() {
           <NavigationContainer>
             <MainNavigator />
           </NavigationContainer>
+          <InfoModal />
         </GluestackUIProvider>
       </Provider>
     </>

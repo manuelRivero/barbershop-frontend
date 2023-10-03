@@ -35,6 +35,7 @@ import {
   setServiceForEdition,
   editService,
 } from '../../store/features/servicesSlice';
+import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
 
 interface Props {
   show: boolean;
@@ -74,9 +75,19 @@ export default function CreateServiceModal({show, onClose}: Props) {
     }
     if (serviceForEdition) {
       dispatch(editService({...values, image: image.uri, _id:serviceForEdition._id}));
+     
     } else {
       dispatch(addService({...values, image: image.uri}));
     }
+    dispatch(showInfoModal({
+      title:"¡Servicio guardado!",
+      type: "success",
+      hasCancel: false,
+      cancelCb:null,
+      hasSubmit:false,
+      submitCb:null,
+      hideOnAnimationEnd: true
+    }))
     dispatch(setServiceForEdition(null));
     reset({
       name: '',

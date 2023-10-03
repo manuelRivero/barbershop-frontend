@@ -1,7 +1,8 @@
-import {Box, Text} from '@gluestack-ui/themed';
+import {Box, HStack, Icon, Text} from '@gluestack-ui/themed';
 import React, {useEffect, useState} from 'react';
 import {Event} from '../../types/turns';
 import moment from 'moment';
+import { Clock2 } from 'lucide-react-native';
 interface Props {
   event: Event;
 }
@@ -32,22 +33,21 @@ export default function TurnCard({event}: Props) {
       softShadow="3"
       bg={status === 'COMPLETE' ? '$green500' : '$white'}
       borderRadius={'$md'}>
-      <Text color={status === 'COMPLETE' ? '$white' : '$black'}>
-        Turno agendado :{' '}
+      <HStack mb="$1" space='sm' alignItems='center'>    
+      <Icon as={Clock2} color={status === 'COMPLETE' ? '$white' : '$textDark500'}/>
         <Text
           fontWeight="bold"
-          color={status === 'COMPLETE' ? '$white' : '$black'}>{`${moment(
+          color={status === 'COMPLETE' ? '$white' : '$textDark500'}>{`${moment(
           event.startDate,
         ).format('hh:mm')} - ${moment(event.endDate).format('hh:mm')}`}</Text>
-      </Text>
-      <Text color={status === 'COMPLETE' ? '$white' : '$black'}>
-        Tipo de servicio :{' '}
+      </HStack>
+      <HStack>
         <Text
           fontWeight="bold"
           color={
-            status === 'COMPLETE' ? '$white' : '$black'
+            status === 'COMPLETE' ? '$white' : '$textDark500'
           }>{`${event.title}`}</Text>
-      </Text>
+      </HStack>
     </Box>
   );
 }

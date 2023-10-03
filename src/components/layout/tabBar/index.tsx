@@ -25,10 +25,9 @@ export default function TabBar({
   // console.log('props state', state);
   return (
     <Box p={'$4'} backgroundColor="$primary100">
-      <Box h={60} borderRadius={'$3xl'} bg={'$white'} overflow={'hidden'}>
+      <Box h={60} borderRadius={'$xl'} bg={'$white'} overflow={'hidden'}>
         <HStack
           justifyContent="center"
-          bg={'$backgroundDark100'}
           alignItems="center"
           flex={1}>
           {state.routes.map((route, index) => {
@@ -65,7 +64,6 @@ export default function TabBar({
                 style={{flex: 1}}>
                 <VStack
                   justifyContent="center"
-                  bg={'$backgroundDark100'}
                   alignItems="center">
                   <Icon
                     as={getIcon(route.name)}
