@@ -29,6 +29,8 @@ import BaseButton from '../shared/baseButton';
 import LinkButton from '../shared/linkButton';
 import {useForm, Controller} from 'react-hook-form';
 import {Asset, launchImageLibrary} from 'react-native-image-picker';
+import { useAppDispatch } from '../../store';
+import { addService } from '../../store/features/servicesSlice';
 
 interface Props {
   show: boolean;
@@ -43,21 +45,27 @@ interface Form {
 }
 
 export default function CreateServiceModal({show, onClose}: Props) {
+  const dispatch = useAppDispatch()
   const ref = useRef();
   const {
     formState: {errors},
     handleSubmit,
     control,
+    reset
   } = useForm<Form>();
   const [image, setImage] = useState<Asset | null>(null);
   const [imageAlert, setImageAlert] = useState<string | null>(null);
   const submit = (values: Form) => {
+    console.log("image on submit", image)
     setImageAlert(null);
-    if (image) {
+    if (!image) {
       setImageAlert('La imagen del servicio es requerida');
       return;
     }
-    console.log('values', values);
+    dispatch(addService({...values, image:image.uri}))
+    reset({})
+    setImage(null)
+    onClose()
   };
   const handleGallery = async () => {
     const result = await launchImageLibrary({
@@ -69,11 +77,11 @@ export default function CreateServiceModal({show, onClose}: Props) {
       setImage(result.assets[0]);
     }
   };
-  console.log('image', image);
+  console.log('errors', errors);
   return (
-    <Modal isOpen={show} onClose={onClose} finalFocusRef={ref}>
+    <Modal isOpen={show} onClose={onClose} finalFocusRef={ref} bg="$primary100">
       <ModalBackdrop />
-      <ModalContent>
+      <ModalContent bg="$white">
         <ModalHeader>
           <Heading size="lg" color="$textDark900">Crear servicio</Heading>
           <ModalCloseButton>
