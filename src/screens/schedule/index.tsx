@@ -20,10 +20,7 @@ import CreateServiceModal from '../../components/createServiceModal';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {addTurn} from '../../store/features/turnsSlice';
 
-const hours = [
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
-  23, 0, 1, 2,
-];
+const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
 export default function Schedule() {
   const dispacth = useAppDispatch();

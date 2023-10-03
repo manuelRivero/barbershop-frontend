@@ -22,6 +22,7 @@ import LottieView from 'lottie-react-native';
 
 const animations = {
   success: require('../../../assets/lottie/success.json'),
+  info: require('../../../assets/lottie/info.json'),
 };
 
 export default function InfoModal() {
@@ -43,10 +44,9 @@ export default function InfoModal() {
     }
   };
   const handleAnimationEnd = () => {
-    console.log("on animation end")
+    console.log('on animation end');
     if (infoModal?.hideOnAnimationEnd) {
-        dispatch(hideInfoModal());
-
+      dispatch(hideInfoModal());
     }
   };
   return (
@@ -57,8 +57,8 @@ export default function InfoModal() {
           <HStack justifyContent="center">
             <LottieView
               style={{width: 150, height: 150}}
-              source={require('../../../assets/lottie/success.json')}
-              onAnimationFinish={()=>handleAnimationEnd()}
+              source={animations[infoModal?.type as keyof typeof animations]}
+              onAnimationFinish={() => handleAnimationEnd()}
               autoPlay
               loop={false}
             />
@@ -68,25 +68,31 @@ export default function InfoModal() {
           </Text>
         </ModalBody>
         <ModalFooter>
-          {infoModal?.hasCancel && (
-            <Button
-              variant="outline"
-              size="sm"
-              action="secondary"
-              mr="$3"
-              onPress={handleCancel}>
-              <ButtonText>Cancelar</ButtonText>
-            </Button>
-          )}
-          {infoModal?.hasSubmit && (
-            <Button
-              size="sm"
-              action="positive"
-              borderWidth="$0"
-              onPress={handleSubmit}>
-              <ButtonText>Aceptar</ButtonText>
-            </Button>
-          )}
+          <HStack justifyContent="center" space="2xl" w="$full">
+            {infoModal?.hasCancel && infoModal?.cancelData && (
+              <Button
+                variant="solid"
+                size="sm"
+                bg={infoModal?.cancelData?.background}
+                onPress={handleSubmit}>
+                <ButtonText color={'$blueGray500'}>
+                  {infoModal?.cancelData?.text}
+                </ButtonText>
+              </Button>
+            )}
+            {infoModal?.hasSubmit && infoModal?.submitData && (
+              <Button
+                variant="solid"
+                size="sm"
+                bg={infoModal?.submitData?.background}
+                borderColor={'$blueGray500'}
+                onPress={handleSubmit}>
+                <ButtonText color={'$white'}>
+                  {infoModal?.submitData?.text}
+                </ButtonText>
+              </Button>
+            )}
+          </HStack>
         </ModalFooter>
       </ModalContent>
     </Modal>

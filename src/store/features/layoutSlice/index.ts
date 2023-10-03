@@ -10,6 +10,14 @@ interface InfoModal {
   hasSubmit: boolean;
   submitCb: ()=>void | null;
   hideOnAnimationEnd: boolean;
+  submitData?:{
+    background: string,
+    text: string
+  } | null ;
+  cancelData?:{
+    background: string,
+    text:string
+  } | null
 }
 
 // Define a type for the slice state

@@ -24,6 +24,10 @@ export const servicesSlice = createSlice({
     addService: (state, action) => {
       state.services.push(action.payload);
     },
+    removeService: (state, action) => {
+      console.log("action payload", action.payload)
+      state.services = state.services.filter(e => e._id !== action.payload._id)
+    },
     setServiceForEdition: (state, action) => {
       state.serviceForEdition = action.payload;
       state.showCreateServiceModal = true
@@ -38,6 +42,6 @@ export const servicesSlice = createSlice({
   },
 });
 
-export const {addService, editService, setServiceForEdition, toggleCreateServiceModal} = servicesSlice.actions;
+export const {addService, removeService, editService, setServiceForEdition, toggleCreateServiceModal} = servicesSlice.actions;
 
 export default servicesSlice.reducer;
