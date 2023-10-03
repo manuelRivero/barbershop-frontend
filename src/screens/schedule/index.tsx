@@ -17,7 +17,8 @@ import SelectTurnModal from '../../components/selectTurnModal';
 import TurnCard from '../../components/turnCard';
 import BaseButton from '../../components/shared/baseButton';
 import CreateServiceModal from '../../components/createServiceModal';
-
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
+import {addTurn} from '../../store/features/turnsSlice';
 
 const hours = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
@@ -25,27 +26,29 @@ const hours = [
 ];
 
 export default function Schedule() {
+  const dispacth = useAppDispatch();
+  const {turns} = useAppSelector((state: RootState) => state.turns);
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
-  const [date] = React.useState(moment().toDate());
 
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
- 
+
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
 
-  const [items, setItems] = React.useState<Event[]>([]);
-  const addTurn = (turn: TurnSelectItem) => {
+  const handleAddTurn = (turn: TurnSelectItem) => {
     if (selectedService) {
-      setItems([
-        ...items,
-        {
+      dispacth(
+        addTurn({
+          _id: (turns.length + 1).toString(),
+          status: 'INCOMPLETE',
+          price: selectedService.price,
           title: selectedService.name,
-          startDate: moment(turn.startDate).toDate(),
+          startDate: moment(turn.startDate).toString(),
           endDate: moment(turn.startDate)
             .add(selectedService.duration, 'minutes')
-            .toDate(),
-        },
-      ]);
+            .toString(),
+        }),
+      );
       setSelectedService(null);
       setShowTurnModal(false);
     }
@@ -57,7 +60,7 @@ export default function Schedule() {
       const list: TurnSelectItem[] = [];
       hours.forEach(hour => {
         if (moment().hour() <= hour) return;
-        const isUnavaibleIndex = items.findIndex((turn: Event) => {
+        const isUnavaibleIndex = turns.findIndex((turn: Event) => {
           const clonedStartDate = startDate.clone();
           const startDateValidation = clonedStartDate.isBetween(
             moment(turn.startDate),
@@ -76,12 +79,13 @@ export default function Schedule() {
           const clonedStartDate = startDate.clone();
           list.push({startDate: clonedStartDate.toDate()});
           startDate = startDate.add(selectedService?.duration, 'minutes');
-
-        }else{
-          const prevTurnDuration = moment(items[isUnavaibleIndex].endDate).diff(moment(items[isUnavaibleIndex].startDate), 'minutes')
-          console.log("prevTurnDuration", prevTurnDuration)
+        } else {
+          const prevTurnDuration = moment(turns[isUnavaibleIndex].endDate).diff(
+            moment(turns[isUnavaibleIndex].startDate),
+            'minutes',
+          );
+          console.log('prevTurnDuration', prevTurnDuration);
           startDate = startDate.add(prevTurnDuration, 'minutes');
-
         }
       });
       setTurnList(list);
@@ -96,7 +100,7 @@ export default function Schedule() {
     setSelectedService(e);
     setShowServiceModal(false);
   };
-  console.log('items', items);
+
   return (
     <>
       <Box bg="$primary100" flex={1}>
@@ -122,7 +126,7 @@ export default function Schedule() {
             Turnos agendados
           </Heading>
           <Box padding={'$4'}>
-            {items
+            {turns
               .sort(function (left, right) {
                 return moment(left.startDate).diff(moment(right.startDate));
               })
@@ -131,7 +135,7 @@ export default function Schedule() {
                   <TurnCard key={moment(e.startDate).toString()} event={e} />
                 );
               })}
-            {items.length === 0 && (
+            {turns.length === 0 && (
               <>
                 <Text textAlign="center" mt={'$10'} color="$textDark500">
                   Aún no has agendado ningún turno para hoy.
@@ -173,7 +177,7 @@ export default function Schedule() {
         onClose={() => setShowServiceModal(false)}
       />
       <SelectTurnModal
-        onSelect={addTurn}
+        onSelect={handleAddTurn}
         turns={turnList}
         show={showTurnModal}
         onClose={() => setShowTurnModal(false)}

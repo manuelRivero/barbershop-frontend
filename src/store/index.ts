@@ -3,11 +3,13 @@ import {useDispatch, useSelector} from 'react-redux';
 import type {TypedUseSelectorHook} from 'react-redux';
 import servicesSlice from './features/servicesSlice';
 import layoutSlice from './features/layoutSlice';
+import turnsSlice from './features/turnsSlice';
 
 export const store = configureStore({
   reducer: {
     services: servicesSlice,
     layout: layoutSlice,
+    turns: turnsSlice
   },
 });
 

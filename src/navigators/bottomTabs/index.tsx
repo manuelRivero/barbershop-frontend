@@ -3,10 +3,12 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import TabBar from '../../components/layout/tabBar';
 import Schedule from '../../screens/schedule';
 import Services from '../../screens/services';
+import Profile from '../../screens/profile';
 
 type RootStackParamList = {
   Schedule: undefined;
   Services: undefined;
+  Profile: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootStackParamList>();
@@ -27,6 +29,11 @@ function BottomTabs(): JSX.Element {
         name="Services"
         component={Services}
         options={{title: 'Servicios'}}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={Profile}
+        options={{title: 'Perfil'}}
       />
     </Tab.Navigator>
   );
