@@ -16,7 +16,6 @@ import {Service} from '../../types/services';
 import SelectTurnModal from '../../components/selectTurnModal';
 import TurnCard from '../../components/turnCard';
 import BaseButton from '../../components/shared/baseButton';
-import CreateServiceModal from '../../components/createServiceModal';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {addTurn} from '../../store/features/turnsSlice';
 
