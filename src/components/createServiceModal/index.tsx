@@ -33,6 +33,7 @@ import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {
   addService,
   setServiceForEdition,
+  editService,
 } from '../../store/features/servicesSlice';
 
 interface Props {
@@ -71,7 +72,11 @@ export default function CreateServiceModal({show, onClose}: Props) {
       setImageAlert('La imagen del servicio es requerida');
       return;
     }
-    dispatch(addService({...values, image: image.uri}));
+    if (serviceForEdition) {
+      dispatch(editService({...values, image: image.uri, _id:serviceForEdition._id}));
+    } else {
+      dispatch(addService({...values, image: image.uri}));
+    }
     dispatch(setServiceForEdition(null));
     reset({
       name: '',
@@ -284,7 +289,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
         <ModalFooter>
           <HStack mt={'$2'} width={'100%'} justifyContent="center">
             <BaseButton
-              title="Crear servicio"
+              title={serviceForEdition ? 'Guardar' : 'Crear servicio'}
               background={'$primary500'}
               color={'$white'}
               onPress={handleSubmit(submit)}

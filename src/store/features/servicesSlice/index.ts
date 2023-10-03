@@ -30,10 +30,14 @@ export const servicesSlice = createSlice({
     },
     toggleCreateServiceModal : (state, action) => {
       state.showCreateServiceModal = action.payload
+    },
+    editService : (state, action) => {
+      const targetService = state.services.findIndex(e => e._id === action.payload._id)
+      state.services[targetService] = action.payload
     }
   },
 });
 
-export const {addService, setServiceForEdition, toggleCreateServiceModal} = servicesSlice.actions;
+export const {addService, editService, setServiceForEdition, toggleCreateServiceModal} = servicesSlice.actions;
 
 export default servicesSlice.reducer;
