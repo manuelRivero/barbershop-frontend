@@ -4,12 +4,14 @@ import type {TypedUseSelectorHook} from 'react-redux';
 import servicesSlice from './features/servicesSlice';
 import layoutSlice from './features/layoutSlice';
 import turnsSlice from './features/turnsSlice';
+import authSlice from './features/authSlice';
 
 export const store = configureStore({
   reducer: {
     services: servicesSlice,
     layout: layoutSlice,
-    turns: turnsSlice
+    turns: turnsSlice,
+    auth: authSlice
   },
 });
 

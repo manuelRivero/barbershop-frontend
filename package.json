@@ -7,8 +7,9 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
-  },
+    "test": "jest",
+    "generate-bundle": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res"
+    },
   "dependencies": {
     "@gluestack-style/react": "^0.2.51",
     "@gluestack-ui/themed": "^0.1.53",
