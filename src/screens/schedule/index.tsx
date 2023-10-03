@@ -75,8 +75,14 @@ export default function Schedule() {
         if (isUnavaibleIndex < 0) {
           const clonedStartDate = startDate.clone();
           list.push({startDate: clonedStartDate.toDate()});
+          startDate = startDate.add(selectedService?.duration, 'minutes');
+
+        }else{
+          const prevTurnDuration = moment(items[isUnavaibleIndex].endDate).diff(moment(items[isUnavaibleIndex].startDate), 'minutes')
+          console.log("prevTurnDuration", prevTurnDuration)
+          startDate = startDate.add(prevTurnDuration, 'minutes');
+
         }
-        startDate = startDate.add(selectedService?.duration, 'minutes');
       });
       setTurnList(list);
       setShowTurnModal(true);
