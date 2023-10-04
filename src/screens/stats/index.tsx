@@ -1,39 +1,45 @@
-import {Box, FlatList, HStack, Heading, Text} from '@gluestack-ui/themed';
+import {
+  Box,
+  FlatList,
+  HStack,
+  Heading,
+  Icon,
+  ScrollView,
+  Text,
+} from '@gluestack-ui/themed';
 import React from 'react';
 import {RootState, useAppSelector} from '../../store';
 import {Event} from '../../types/turns';
 import Clock from 'react-live-clock';
 import {Dimensions, ListRenderItemInfo} from 'react-native';
 import {LineChart} from 'react-native-chart-kit';
+import {CircleDollarSign} from 'lucide-react-native';
 
 const total = [
   {
-    day:"lunes",
+    day: 'lunes',
     turns: 4,
     total: 12000,
   },
   {
-    day:"martes",
+    day: 'martes',
     turns: 8,
     total: 24000,
   },
   {
-    day:"miercoles",
+    day: 'miercoles',
     turns: 2,
     total: 6000,
   },
-  
-  { day:"jueves",
-    turns: 8,
-    total: 24000,
-  },
+
+  {day: 'jueves', turns: 8, total: 24000},
   {
-    day:"viernes",
+    day: 'viernes',
     turns: 8,
     total: 18000,
   },
   {
-    day:"sabado",
+    day: 'sabado',
     turns: 10,
     total: 30000,
   },
@@ -65,54 +71,72 @@ export default function Stats() {
   const {turns} = useAppSelector((state: RootState) => state.turns);
   return (
     <Box flex={1} bg="$primary100">
-      <HStack mt={'$4'} width={'100%'} justifyContent="center">
-        <Clock
-          format={'hh:mm:ss'}
-          ticking={true}
-          element={Text}
-          style={{fontSize: 22, color: '#1f3d56'}}
-        />
-      </HStack>
-      <Heading textAlign="center" color="$textDark500">
-        Estadisticas
-      </Heading>
-
-      <Box p="$4">
-        <Text color="$textDark500">
-          Cortes realizados el día de hoy:{' '}
-          <Text color="$textDark500" fontWeight="bold">
-            {turns.filter((turn: Event) => turn.status === 'COMPLETE').length}
-          </Text>
-        </Text>
-        <Box mt={'$4'}>
-          <LineChart
-            data={data}
-            width={350}
-            height={350}
-            chartConfig={chartConfig}
-            verticalLabelRotation={30}
-            bezier
+      <ScrollView flex={1}>
+        <HStack mt={'$4'} width={'100%'} justifyContent="center">
+          <Clock
+            format={'hh:mm:ss'}
+            ticking={true}
+            element={Text}
+            style={{fontSize: 22, color: '#1f3d56'}}
           />
-        </Box>
-        <Box>
-          <FlatList
-          height={400}
-          mt={"$4"}
-            data={total}
-            ItemSeparatorComponent={() => {
+        </HStack>
+        <Heading textAlign="center" color="$textDark500">
+          Estadisticas
+        </Heading>
+
+        <Box p="$4">
+          <Box softShadow={'1'} p="$4" mb="$4" borderRadius="$lg" bg="$white">
+            <Text color="$textDark500">
+              Cortes realizados el día de hoy:{' '}
+              <Text color="$textDark500" fontWeight="bold">
+                {
+                  turns.filter((turn: Event) => turn.status === 'COMPLETE')
+                    .length
+                }
+              </Text>
+            </Text>
+            <HStack alignItems="center">
+              <Text color="$textDark500">Total el día de hoy: </Text>
+              <Text color="$textDark500" fontWeight="bold">
+                {turns.reduce((accumulator, object) => {
+                  return object.status === 'COMPLETE'
+                    ? accumulator + object.price
+                    : accumulator;
+                }, 0)}{' '}
+                Pesos
+              </Text>
+            </HStack>
+            <Text color="$textDark500">
+              Cortes pendientes el día de hoy:{' '}
+              <Text color="$textDark500" fontWeight="bold">
+                {
+                  turns.filter((turn: Event) => turn.status !== 'COMPLETE')
+                    .length
+                }
+              </Text>
+            </Text>
+          </Box>
+
+          <Box mt={'$4'}>
+            <LineChart
+              data={data}
+              width={350}
+              height={350}
+              chartConfig={chartConfig}
+              verticalLabelRotation={30}
+              bezier
+            />
+          </Box>
+          <Box mt="$4">
+            {total.map(item => {
               return (
                 <Box
-                  style={{
-                    height: 15,
-                    width: '100%',
-                  }}
-                />
-              );
-            }}
-            renderItem={(props: ListRenderItemInfo<any>) => {
-              const {item} = props;
-              return (
-                <Box softShadow={'1'} p="$4" borderRadius="$lg" bg="$white">
+                  key={item.day}
+                  softShadow={'1'}
+                  p="$4"
+                  mb="$4"
+                  borderRadius="$lg"
+                  bg="$white">
                   <Text color="$textDark500">
                     {`Total para el día ${item.day}: `}
                     <Text color="$textDark500" fontWeight="bold">
@@ -127,10 +151,10 @@ export default function Stats() {
                   </Text>
                 </Box>
               );
-            }}
-          />
+            })}
+          </Box>
         </Box>
-      </Box>
+      </ScrollView>
     </Box>
   );
 }
