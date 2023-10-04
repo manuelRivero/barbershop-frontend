@@ -117,7 +117,7 @@ export default function Stats() {
             </Text>
           </Box>
 
-          <Box mt={'$4'}>
+          <Box mt={'$4'} position='relative'>
             <LineChart
               data={data}
               width={350}
@@ -125,6 +125,11 @@ export default function Stats() {
               chartConfig={chartConfig}
               verticalLabelRotation={30}
               bezier
+              renderDotContent = {({x, y, index, indexData})=>{
+                console.log("Index data", indexData)
+                return(<Text position='absolute' color="$textDark500" top={y} left={x}>{indexData}</Text>)
+              }}
+              fromZero
             />
           </Box>
           <Box mt="$4">
