@@ -11,7 +11,7 @@ import ProfileForm from '../../components/profile/profileForm';
 export default function Profile() {
   const dispacth = useAppDispatch();
   const {user} = useAppSelector((state: RootState) => state.auth);
-
+console.log("profile user data", user)
   const [showModal, setShowModal] = useState<boolean>(false);
   const handleLogout = () => {
     dispacth(logout());

@@ -36,7 +36,6 @@ export default function BaseInput({
   type = 'text',
 }: Props) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  console.log('show password', showPassword);
   return (
     <VStack space="xs">
       <Text color="$textDark900">{label}</Text>

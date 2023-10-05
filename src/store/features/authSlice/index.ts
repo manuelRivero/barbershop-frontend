@@ -2,17 +2,18 @@ import {createSlice} from '@reduxjs/toolkit';
 import {Barber} from '../../../types/barber';
 
 interface User extends Barber {
-  token: string | null;
 }
 
 // Define a type for the slice state
 interface State {
   user: User | null;
+  token: string | null
 }
 
 // Define the initial state using that type
 const initialState: State = {
   user: null,
+  token: null
 };
 
 export const authSlice = createSlice({
@@ -20,6 +21,9 @@ export const authSlice = createSlice({
   // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {
+    setToken: (state, action) =>{
+      state.token = action.payload
+    },
     setUser: (state, action) => {
       state.user = {...state.user, ...action.payload};
     },
@@ -29,6 +33,6 @@ export const authSlice = createSlice({
   },
 });
 
-export const {setUser, logout} = authSlice.actions;
+export const {setUser, setToken, logout} = authSlice.actions;
 
 export default authSlice.reducer;

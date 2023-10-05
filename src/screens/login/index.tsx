@@ -5,8 +5,9 @@ import BaseInput from '../../components/shared/baseInput';
 import BaseButton from '../../components/shared/baseButton';
 import {useForm, Controller} from 'react-hook-form';
 import {useAppDispatch} from '../../store';
-import {setUser} from '../../store/features/authSlice';
+import {setToken, setUser} from '../../store/features/authSlice';
 import {barber} from '../../dummy-data/barbers';
+import {authApi, useLoginMutation} from '../../api/authApi';
 
 interface Form {
   email: string;
@@ -15,6 +16,7 @@ interface Form {
 
 export default function Login() {
   const dispatch = useAppDispatch();
+  const [login, {isLoading}] = useLoginMutation();
 
   const {
     formState: {errors},
@@ -22,14 +24,22 @@ export default function Login() {
     control,
     watch,
   } = useForm<Form>();
-  const submit = (values: Form): void => {
-    console.log('submit');
-    dispatch(
-      setUser({
-        ...barber,
-        token: 'token',
-      }),
-    );
+  const submit = async (values: Form): Promise<void> => {
+    try {
+      const response = await login(values).unwrap();
+      dispatch(setToken(response.token));
+      const {data, isError} = await dispatch(authApi.endpoints.getMe.initiate())
+      if(isError){
+        throw new Error()
+      }
+      dispatch(
+        setUser({
+          ...data?.data,
+        }),
+      );
+    } catch (error) {
+      console.log("error en el login")
+    }
   };
 
   return (
@@ -99,9 +109,9 @@ export default function Login() {
               background="$primary500"
               color="$white"
               onPress={handleSubmit(submit)}
-              disabled={false}
+              disabled={isLoading}
               hasIcon={false}
-              isLoading={false}
+              isLoading={isLoading}
             />
           </HStack>
         </Box>
