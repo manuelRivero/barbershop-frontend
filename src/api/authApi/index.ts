@@ -47,6 +47,7 @@ interface MeRequest{
 
 export const authApi = createApi({
   baseQuery: fetchBase,
+  reducerPath: 'authApi',
   endpoints: (builder) => ({
     login: builder.mutation<UserResponse, LoginRequest>({
       query: (credentials) => ({

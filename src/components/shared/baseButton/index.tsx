@@ -32,9 +32,11 @@ export default function BaseButton({
       onPress={onPress}
       disabled={disabled}>
       {isLoading && <ButtonSpinner mr="$1" />}
-      <ButtonText color={color} fontWeight="$medium" fontSize="$sm">
-        {title}
-      </ButtonText>
+      {!isLoading && (
+        <ButtonText color={color} fontWeight="$medium" fontSize="$sm">
+          {title}
+        </ButtonText>
+      )}
       {hasIcon && (
         <ButtonIcon
           as={icon ? icon : null}

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   ScrollView,
   AddIcon,
@@ -16,20 +16,45 @@ import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {Service} from '../../types/services';
 import ServiceCard from '../../components/shared/serviceCard';
 import {ListRenderItemInfo} from 'react-native';
-import { toggleCreateServiceModal } from '../../store/features/servicesSlice';
+import {
+  addAllServices,
+  toggleCreateServiceModal,
+} from '../../store/features/servicesSlice';
+import {useGetServicesQuery} from '../../api/servicesApi';
+import {useNavigation} from '@react-navigation/native';
+import Loader from '../../components/shared/loader';
 
 export default function Services() {
+  const navigation = useNavigation();
+
+  const dispatch = useAppDispatch();
   const {services, showCreateServiceModal} = useAppSelector(
     (state: RootState) => state.services,
   );
-  const dispatch = useAppDispatch();
-  console.log('services', services);
-  const handleCloseModal = ():void => {
+  const {data, isLoading, refetch} = useGetServicesQuery();
+  console.log('data', data);
+
+  const handleCloseModal = (): void => {
     dispatch(toggleCreateServiceModal(false));
   };
-  const handleOpenModal = ():void => {
+  const handleOpenModal = (): void => {
     dispatch(toggleCreateServiceModal(true));
   };
+  useEffect(() => {
+    if (data) {
+      dispatch(addAllServices(data.services));
+    }
+  }, [data]);
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      refetch();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+  if(isLoading){
+    return(<Loader />)
+  }
   return (
     <>
       <Box bg="$primary100" flex={1}>

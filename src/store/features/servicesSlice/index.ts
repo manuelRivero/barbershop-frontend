@@ -11,7 +11,7 @@ interface State {
 
 // Define the initial state using that type
 const initialState: State = {
-  services: services,
+  services: [],
   serviceForEdition: null,
   showCreateServiceModal: false
 };
@@ -25,7 +25,6 @@ export const servicesSlice = createSlice({
       state.services.push(action.payload);
     },
     removeService: (state, action) => {
-      console.log("action payload", action.payload)
       state.services = state.services.filter(e => e._id !== action.payload._id)
     },
     setServiceForEdition: (state, action) => {
@@ -38,10 +37,13 @@ export const servicesSlice = createSlice({
     editService : (state, action) => {
       const targetService = state.services.findIndex(e => e._id === action.payload._id)
       state.services[targetService] = action.payload
+    },
+    addAllServices : (state, action) => {
+      state.services = action.payload
     }
   },
 });
 
-export const {addService, removeService, editService, setServiceForEdition, toggleCreateServiceModal} = servicesSlice.actions;
+export const {addService, addAllServices, removeService, editService, setServiceForEdition, toggleCreateServiceModal} = servicesSlice.actions;
 
 export default servicesSlice.reducer;

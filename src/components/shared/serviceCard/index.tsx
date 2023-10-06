@@ -59,8 +59,7 @@ export default function ServiceCard({data}: Props) {
     <Box softShadow={'1'} p="$4" borderRadius="$lg" bg="$white">
       <HStack space="lg" mb={'$4'}>
         <Image
-          w="$20"
-          h="$20"
+          style={{width:90, height:90}}
           borderRadius={10}
           source={
             data.image

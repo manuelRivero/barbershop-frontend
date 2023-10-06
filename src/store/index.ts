@@ -6,6 +6,7 @@ import layoutSlice from './features/layoutSlice';
 import turnsSlice from './features/turnsSlice';
 import authSlice from './features/authSlice';
 import {authApi} from '../api/authApi';
+import { servicesApi } from '../api/servicesApi';
 
 export const store = configureStore({
   reducer: {
@@ -14,9 +15,10 @@ export const store = configureStore({
     turns: turnsSlice,
     auth: authSlice,
     [authApi.reducerPath]: authApi.reducer,
+    [servicesApi.reducerPath]: servicesApi.reducer,
   },
   middleware: getDefaultMiddleware =>
-    getDefaultMiddleware().concat([authApi.middleware]),
+    getDefaultMiddleware().concat([authApi.middleware, servicesApi.middleware]),
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
