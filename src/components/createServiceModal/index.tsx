@@ -35,7 +35,9 @@ import {
   setServiceForEdition,
   editService,
 } from '../../store/features/servicesSlice';
-import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
+import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
+import {useAddServiceMutation} from '../../api/servicesApi';
+import {Platform} from 'react-native';
 
 interface Props {
   show: boolean;
@@ -51,12 +53,12 @@ interface Form {
 
 export default function CreateServiceModal({show, onClose}: Props) {
   const imageRef = useRef(null);
+  const ref = useRef();
   const dispatch = useAppDispatch();
   const {serviceForEdition} = useAppSelector(
     (state: RootState) => state.services,
   );
-  console.log('serviceForEdition', serviceForEdition);
-  const ref = useRef();
+  const [addServiceRequest, {isLoading}] = useAddServiceMutation();
   const {
     formState: {errors},
     handleSubmit,
@@ -65,38 +67,83 @@ export default function CreateServiceModal({show, onClose}: Props) {
     watch,
   } = useForm<Form>();
   const [image, setImage] = useState<null | {uri: string | undefined}>(null);
+  const [imageBlob, setImageBlob] = useState<Asset | null>(null);
   const [imageAlert, setImageAlert] = useState<string | null>(null);
-  const submit = (values: Form) => {
+  const submit = async (values: Form) => {
     console.log('image on submit', image);
+    const form = new FormData();
+    form.append('name', values.name);
+    form.append('price', values.price);
+    form.append('description', values.description);
+    form.append('duration', values.duration);
+    form.append('image', {
+      uri: Platform.select({
+        ios: imageBlob?.uri?.replace('file://', ''),
+        android: imageBlob?.uri,
+      }),
+      type: imageBlob?.type,
+      name: imageBlob?.fileName,
+    });
     setImageAlert(null);
     if (!image) {
       setImageAlert('La imagen del servicio es requerida');
       return;
     }
     if (serviceForEdition) {
-      dispatch(editService({...values, image: image.uri, _id:serviceForEdition._id}));
-     
+      console.log('if case');
+      dispatch(
+        editService({...values, image: image.uri, _id: serviceForEdition._id}),
+      );
+      dispatch(
+        showInfoModal({
+          title: '¡Servicio guardado!',
+          type: 'success',
+          hasCancel: false,
+          cancelCb: null,
+          hasSubmit: false,
+          submitCb: null,
+          hideOnAnimationEnd: true,
+        }),
+      );
+      dispatch(setServiceForEdition(null));
+      reset({
+        name: '',
+        price: '',
+        duration: '',
+        description: '',
+      });
+      setImage(null);
+      onClose();
     } else {
-      dispatch(addService({...values, image: image.uri}));
+      console.log('else case');
+      try {
+        const response = await addServiceRequest(form).unwrap();
+        console.log('response', response);
+        dispatch(addService({...response.service}));
+        dispatch(
+          showInfoModal({
+            title: '¡Servicio guardado!',
+            type: 'success',
+            hasCancel: false,
+            cancelCb: null,
+            hasSubmit: false,
+            submitCb: null,
+            hideOnAnimationEnd: true,
+          }),
+        );
+        dispatch(setServiceForEdition(null));
+        reset({
+          name: '',
+          price: '',
+          duration: '',
+          description: '',
+        });
+        setImage(null);
+        onClose();
+      } catch (error) {
+        console.log('error al crear el servicio', error);
+      }
     }
-    dispatch(showInfoModal({
-      title:"¡Servicio guardado!",
-      type: "success",
-      hasCancel: false,
-      cancelCb:null,
-      hasSubmit:false,
-      submitCb:null,
-      hideOnAnimationEnd: true
-    }))
-    dispatch(setServiceForEdition(null));
-    reset({
-      name: '',
-      price: '',
-      duration: '',
-      description: '',
-    });
-    setImage(null);
-    onClose();
   };
   const handleGallery = async () => {
     const result = await launchImageLibrary({
@@ -106,6 +153,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
     if (result.assets) {
       console.log('result.assets[0].uri', result.assets[0].uri);
       setImage({uri: result.assets[0].uri});
+      setImageBlob(result.assets[0]);
     }
   };
 
@@ -268,18 +316,20 @@ export default function CreateServiceModal({show, onClose}: Props) {
             />
           </Box>
           <HStack mt={'$2'} justifyContent="center">
-            <Image
-              ref={imageRef}
-              borderRadius={8}
-              style={{width: 200, height: 200}}
-              resizeMode="cover"
-              source={
-                image
-                  ? image
-                  : require('../../assets/images/image-placeholder.png')
-              }
-              alt="imagen-de-servicio"
-            />
+            <Pressable onPress={handleGallery}>
+              <Image
+                ref={imageRef}
+                borderRadius={8}
+                style={{width: 200, height: 200}}
+                resizeMode="cover"
+                source={
+                  image
+                    ? image
+                    : require('../../assets/images/image-placeholder.png')
+                }
+                alt="imagen-de-servicio"
+              />
+            </Pressable>
           </HStack>
           {imageAlert && (
             <Text fontSize={14} color={'$red700'}>

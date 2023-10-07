@@ -1,29 +1,35 @@
-import { createApi } from '@reduxjs/toolkit/query/react'
-import fetchBase from '../fetchBase'
+import {createApi} from '@reduxjs/toolkit/query/react';
+import fetchBase from '../fetchBase';
+import {Service} from '../../types/services';
 
 interface GetServicesRequest {
-    services:any
+  services: any;
+}
+interface AddServiceRequest {
+  ok: boolean;
+  service: Service;
 }
 export const servicesApi = createApi({
   baseQuery: fetchBase,
   reducerPath: 'servicesApi',
-  endpoints: (builder) => ({
-    // login: builder.mutation<UserResponse, LoginRequest>({
-    //   query: (credentials) => ({
-    //     url: 'auth/login',
-    //     method: 'POST',
-    //     body: credentials
-    //   })
-    // }),
+  endpoints: builder => ({
+    addService: builder.mutation<AddServiceRequest, FormData>({
+      query: credentials => ({
+        url: '/services/add',
+        method: 'POST',
+        body: credentials,
+        formData:true
+      }),
+    }),
     getServices: builder.query<GetServicesRequest, void>({
       query() {
-        console.log("fetching")
+        console.log('fetching');
         return {
-          url: `/services/`
-        }
-      }
-    })
-  })
-})
+          url: `/services/`,
+        };
+      },
+    }),
+  }),
+});
 
-export const { useGetServicesQuery} = servicesApi
+export const {useGetServicesQuery, useAddServiceMutation} = servicesApi;
