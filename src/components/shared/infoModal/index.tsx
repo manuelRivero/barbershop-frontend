@@ -36,6 +36,7 @@ export default function InfoModal() {
   const handleCancel = () => {
     if (infoModal?.cancelCb) {
       infoModal.cancelCb();
+      handleClose()
     }
   };
   const handleSubmit = () => {
@@ -74,7 +75,7 @@ export default function InfoModal() {
                 variant="solid"
                 size="sm"
                 bg={infoModal?.cancelData?.background}
-                onPress={handleSubmit}>
+                onPress={handleCancel}>
                 <ButtonText color={'$blueGray500'}>
                   {infoModal?.cancelData?.text}
                 </ButtonText>

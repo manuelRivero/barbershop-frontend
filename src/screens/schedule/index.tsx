@@ -18,12 +18,16 @@ import TurnCard from '../../components/turnCard';
 import BaseButton from '../../components/shared/baseButton';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {addTurn} from '../../store/features/turnsSlice';
+import {useAddTurnMutation} from '../../api/turnsApi';
+import {showInfoModal} from '../../store/features/layoutSlice';
 
 const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
 export default function Schedule() {
-  const dispacth = useAppDispatch();
+  const dispatch = useAppDispatch();
   const {turns} = useAppSelector((state: RootState) => state.turns);
+  const {user} = useAppSelector((state: RootState) => state.auth);
+  const [addTurnRequest, {isLoading}] = useAddTurnMutation();
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
 
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
@@ -31,23 +35,76 @@ export default function Schedule() {
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
 
-  const handleAddTurn = (turn: TurnSelectItem) => {
+  const handleAddTurn = async (turn: TurnSelectItem) => {
     if (selectedService) {
-      dispacth(
-        addTurn({
-          _id: (turns.length + 1).toString(),
-          status: 'INCOMPLETE',
-          price: selectedService.price,
-          title: selectedService.name,
-          startDate: moment(turn.startDate).toString(),
-          endDate: moment(turn.startDate)
-            .add(selectedService.duration, 'minutes')
-            .toString(),
+      const handleRequest = async () => {
+        return addTurnRequest({
+          data: {
+            name: selectedService.name,
+            barber: user?._id,
+            status: 'INCOMPLETE',
+            price: selectedService.price,
+            title: selectedService.name,
+            startDate: moment(turn.startDate).toDate(),
+            endDate: moment(turn.startDate)
+              .add(selectedService.duration, 'minutes')
+              .toDate(),
+          },
+        }).unwrap();
+      };
+
+      dispatch(
+        showInfoModal({
+          title: `¡Deseas agendar este turno ${moment(turn.startDate).format(
+            'hh:mm',
+          )}?`,
+          type: 'info',
+          hasCancel: true,
+          cancelCb: () => {},
+          hasSubmit: true,
+          submitCb: () => {
+            handleRequest().then(res => {
+              dispatch(
+                showInfoModal({
+                  title: '¡Turno agendado!',
+                  type: 'success',
+                  hasCancel: false,
+                  cancelCb: null,
+                  hasSubmit: false,
+                  submitCb: null,
+                  hideOnAnimationEnd: true,
+                  submitData: null,
+                  cancelData: null,
+                }),
+              ),
+              dispatch(addTurn(res.turn));
+              setSelectedService(null);
+              setShowTurnModal(false);
+            });
+          },
+          hideOnAnimationEnd: false,
+          submitData: {
+            text: 'Agendar',
+            background: '$green500',
+          },
+          cancelData: {
+            text: 'Cancelar',
+            background: '$blueGray200',
+          },
         }),
       );
-      setSelectedService(null);
-      setShowTurnModal(false);
     }
+
+    // try {
+    //   return
+    //   if (response.data.ok === false) {
+    //     throw new Error();
+    //   } else {
+    //
+    //   }
+    // } catch (error) {
+    //   console.log('error al guardar el turno', error);
+    // }
   };
 
   useEffect(() => {
@@ -122,8 +179,9 @@ export default function Schedule() {
             Turnos agendados
           </Heading>
           <Box padding={'$4'}>
-            {turns
+            {[...turns]
               .sort(function (left, right) {
+                console.log("left", left, "right", right)
                 return moment(left.startDate).diff(moment(right.startDate));
               })
               .map(e => {

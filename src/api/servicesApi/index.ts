@@ -21,6 +21,7 @@ export const servicesApi = createApi({
         formData:true
       }),
     }),
+    
     getServices: builder.query<GetServicesRequest, void>({
       query() {
         console.log('fetching');

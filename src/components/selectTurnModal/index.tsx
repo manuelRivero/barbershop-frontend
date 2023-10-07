@@ -27,7 +27,7 @@ interface Props {
   show: boolean;
   onClose: () => void;
   turns: TurnSelectItem[];
-  onSelect: (e: TurnSelectItem) => void;
+  onSelect: (e: TurnSelectItem) => Promise<any>;
 }
 
 export default function SelectTurnModal({
@@ -40,42 +40,8 @@ export default function SelectTurnModal({
   const ref = useRef();
 
   const handleSelect = (item: TurnSelectItem): void => {
-    dispatch(
-      showInfoModal({
-        title: `¡Deseas agendar este turno ${moment(item.startDate).format(
-          'hh:mm',
-        )}?`,
-        type: 'info',
-        hasCancel: true,
-        cancelCb: () => onClose(),
-        hasSubmit: true,
-        submitCb: () => {
-          onSelect(item);
-          dispatch(
-            showInfoModal({
-              title: '¡Turno agendado!',
-              type: 'success',
-              hasCancel: false,
-              cancelCb: null,
-              hasSubmit: false,
-              submitCb: null,
-              hideOnAnimationEnd: true,
-              submitData: null,
-              cancelData: null,
-            }),
-          );
-        },
-        hideOnAnimationEnd: false,
-        submitData: {
-          text: 'Agendar',
-          background: '$green500',
-        },
-        cancelData: {
-          text: 'Cancelar',
-          background: '$blueGray200',
-        },
-      }),
-    );
+    onSelect(item)
+  
   };
   return (
     <Modal isOpen={show} onClose={onClose} finalFocusRef={ref}>

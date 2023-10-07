@@ -3,4 +3,5 @@ export interface Barber {
   lastname: string;
   image: string;
   email: string;
+  _id: string;
 }
