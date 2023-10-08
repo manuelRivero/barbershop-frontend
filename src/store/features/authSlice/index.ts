@@ -1,8 +1,5 @@
 import {createSlice} from '@reduxjs/toolkit';
-import {Barber} from '../../../types/barber';
-
-interface User extends Barber {
-}
+import {User} from '../../../types/user';
 
 // Define a type for the slice state
 interface State {

@@ -7,6 +7,7 @@ export interface Event {
   endDate: Date;
   price: number;
   status: 'COMPLETE' | 'INCOMPLETE';
+  scheduleUser: string
 }
 
 export interface TurnSelectItem {

@@ -8,10 +8,10 @@ import {
   Image,
 } from '@gluestack-ui/themed';
 import React from 'react';
-import {Barber} from '../../../types/barber';
+import {User} from '../../../types/user';
 
 interface Props {
-  data: Barber | null
+  data: User | null
 }
 
 export default function ProfileCard({data}: Props) {

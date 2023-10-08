@@ -6,7 +6,6 @@ import BaseButton from '../../components/shared/baseButton';
 import {useForm, Controller} from 'react-hook-form';
 import {useAppDispatch} from '../../store';
 import {setToken, setUser} from '../../store/features/authSlice';
-import {barber} from '../../dummy-data/barbers';
 import {authApi, useLoginMutation} from '../../api/authApi';
 
 interface Form {

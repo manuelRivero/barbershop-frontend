@@ -3,6 +3,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import BottomTabs from '../bottomTabs';
 import Login from '../../screens/login';
 import {RootState, useAppSelector} from '../../store';
+import Loading from '../../screens/loading';
 const Stack = createNativeStackNavigator();
 
 export default function MainNavigator(): JSX.Element {
@@ -13,7 +14,17 @@ export default function MainNavigator(): JSX.Element {
       screenOptions={{headerShown: false}}>
       <>
         {user ? (
-          <Stack.Screen name="BottomsTabs" component={BottomTabs} />
+          user.role === 'barber' ? (
+            <>
+              <Stack.Screen name="Loading" component={Loading} />
+              <Stack.Screen name="BottomsTabs" component={BottomTabs} />
+            </>
+          ) : (
+            <>
+              <Stack.Screen name="Loading" component={Loading} />
+              <Stack.Screen name="BottomsTabs" component={BottomTabs} />
+            </>
+          )
         ) : (
           <Stack.Screen name="Login" component={Login} />
         )}

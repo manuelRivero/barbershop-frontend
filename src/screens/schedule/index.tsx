@@ -36,10 +36,11 @@ export default function Schedule() {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
 
   const handleAddTurn = async (turn: TurnSelectItem) => {
-    if (selectedService) {
+    if (selectedService && user) {
       const handleRequest = async () => {
         return addTurnRequest({
           data: {
+            scheduleUser: user?._id,
             name: selectedService.name,
             barber: user?._id,
             status: 'INCOMPLETE',
