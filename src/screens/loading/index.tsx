@@ -6,6 +6,7 @@ import {addAllServices} from '../../store/features/servicesSlice';
 import {Box} from 'lucide-react-native';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import { VStack } from '@gluestack-ui/themed';
 
 
 export default function Loading() {
@@ -22,8 +23,8 @@ export default function Loading() {
     }
   }, [data]);
   return (
-    <Box flex={1}>
+    <VStack justifyContent='center' alignItems='center' flex={1}>
       <Loader />
-    </Box>
+    </VStack>
   );
 }
