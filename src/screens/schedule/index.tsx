@@ -17,7 +17,7 @@ import SelectTurnModal from '../../components/selectTurnModal';
 import TurnCard from '../../components/turnCard';
 import BaseButton from '../../components/shared/baseButton';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
-import {addTurn} from '../../store/features/turnsSlice';
+import {addTurn, resetAllturns} from '../../store/features/turnsSlice';
 import {useAddTurnMutation} from '../../api/turnsApi';
 import {showInfoModal} from '../../store/features/layoutSlice';
 
@@ -28,6 +28,7 @@ export default function Schedule() {
   const {turns} = useAppSelector((state: RootState) => state.turns);
   const {user} = useAppSelector((state: RootState) => state.auth);
   const [addTurnRequest, {isLoading}] = useAddTurnMutation();
+
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
 
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
@@ -154,6 +155,19 @@ export default function Schedule() {
     setSelectedService(e);
     setShowServiceModal(false);
   };
+
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (moment().isAfter(moment().set({hour:23, minutes:0}))) {
+        dispatch(resetAllturns())
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+
 
   return (
     <>

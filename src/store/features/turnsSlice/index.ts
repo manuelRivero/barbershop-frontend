@@ -25,10 +25,13 @@ export const turnsSlice = createSlice({
     },
     addTurn : (state, action) =>{ 
       state.turns.push(action.payload)
+    },
+    resetAllturns : (state) => {
+      state.turns = []
     }
   },
 });
 
-export const {setCompleteTurn, addTurn} = turnsSlice.actions;
+export const {setCompleteTurn, addTurn, resetAllturns} = turnsSlice.actions;
 
 export default turnsSlice.reducer;
