@@ -8,8 +8,13 @@ import { fetchBaseQuery } from '@reduxjs/toolkit/query'
 import { type RootState } from '../store'
 import { logout } from '../store/features/authSlice'
 
-
-const baseUrl = `http://192.168.100.3:4000/api`
+let baseUrl :string;
+if (__DEV__) {
+  console.log('I am in debug');
+  baseUrl = `http://192.168.100.3:4000/api`
+}else {
+  baseUrl = `https://barbershop-backend-ozy5.onrender.com/api`
+}
 console.log("base url", baseUrl)
 const baseQuery = fetchBaseQuery({
   baseUrl,
