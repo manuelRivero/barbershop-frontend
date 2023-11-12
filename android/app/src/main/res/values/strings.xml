@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">barberShop</string>
+    <string name="facebook_app_id">691650752945894</string>
+    <string name="facebook_client_token">aa719a79deb2087af4cbb1f15f0418c9</string>
+
 </resources>

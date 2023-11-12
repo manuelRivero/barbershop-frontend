@@ -79,7 +79,7 @@ export default function Schedule() {
                   cancelData: null,
                 }),
               ),
-              dispatch(addTurn(res.turn));
+                dispatch(addTurn(res.turn));
               setSelectedService(null);
               setShowTurnModal(false);
             });
@@ -156,18 +156,15 @@ export default function Schedule() {
     setShowServiceModal(false);
   };
 
-
   useEffect(() => {
     const interval = setInterval(() => {
-      if (moment().isAfter(moment().set({hour:23, minutes:0}))) {
-        dispatch(resetAllturns())
+      if (moment().isAfter(moment().set({hour: 23, minutes: 0}))) {
+        dispatch(resetAllturns());
       }
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
-
-
 
   return (
     <>
@@ -194,9 +191,15 @@ export default function Schedule() {
             Turnos agendados
           </Heading>
           <Box padding={'$4'}>
+            {turns.length > 0 && (
+              <Text color="$textDark500" textAlign='center' mb={'$4'}>
+                Los turnos agendados para el día de hoy serán visibles en tu
+                agenda hasta las 11pm.
+              </Text>
+            )}
             {[...turns]
               .sort(function (left, right) {
-                console.log("left", left, "right", right)
+                console.log('left', left, 'right', right);
                 return moment(left.startDate).diff(moment(right.startDate));
               })
               .map(e => {

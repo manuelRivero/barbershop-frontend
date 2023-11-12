@@ -1,12 +1,17 @@
+import React, {useState} from 'react';
 import {Heading, Box, HStack, VStack} from '@gluestack-ui/themed';
 
-import React from 'react';
 import BaseInput from '../../components/shared/baseInput';
 import BaseButton from '../../components/shared/baseButton';
 import {useForm, Controller} from 'react-hook-form';
 import {useAppDispatch} from '../../store';
 import {setToken, setUser} from '../../store/features/authSlice';
 import {authApi, useLoginMutation} from '../../api/authApi';
+import {LoginManager, Settings, AccessToken} from 'react-native-fbsdk-next';
+import {Divider} from '@gluestack-ui/themed';
+import {useFacebookLoginMutation} from '../../api/facebookApi';
+
+Settings.setAppID('315996248039279');
 
 interface Form {
   email: string;
@@ -16,6 +21,9 @@ interface Form {
 export default function Login() {
   const dispatch = useAppDispatch();
   const [login, {isLoading}] = useLoginMutation();
+
+  const [facebookLogin, {isLoading: isLoadingFacebook}] =
+    useFacebookLoginMutation();
 
   const {
     formState: {errors},
@@ -27,9 +35,11 @@ export default function Login() {
     try {
       const response = await login(values).unwrap();
       dispatch(setToken(response.token));
-      const {data, isError} = await dispatch(authApi.endpoints.getMe.initiate())
-      if(isError){
-        throw new Error()
+      const {data, isError} = await dispatch(
+        authApi.endpoints.getMe.initiate(),
+      );
+      if (isError) {
+        throw new Error();
       }
       dispatch(
         setUser({
@@ -37,14 +47,51 @@ export default function Login() {
         }),
       );
     } catch (error) {
-      console.log("error en el login")
+      console.log('error en el login');
     }
+  };
+  const handleFacebookLogin = () => {
+    LoginManager.logInWithPermissions(['public_profile', 'email']).then(
+      async function (result) {
+        if (result.isCancelled) {
+          console.log('Login cancelled');
+        } else {
+          console.log(
+            'Login success with permissions: ' + result.grantedPermissions,
+          );
+          const token = await AccessToken.getCurrentAccessToken();
+          console.log('token', token);
+          try {
+            const response = await facebookLogin({
+              token: token.accessToken,
+            }).unwrap();
+            dispatch(setToken(response.token));
+            const {data, isError} = await dispatch(
+              authApi.endpoints.getMe.initiate(),
+            );
+            if (isError) {
+              throw new Error();
+            }
+            dispatch(
+              setUser({
+                ...data?.data,
+              }),
+            );
+          } catch (error) {
+            console.log('error al iniciar sesión con fb');
+          }
+        }
+      },
+      function (error) {
+        console.log('Login fail with error: ' + error);
+      },
+    );
   };
 
   return (
     <Box flex={1} bg="$primary100" p={'$4'}>
-      <VStack flex={1} justifyContent="center">
-        <Box bg="$white" borderRadius={16} p="$4">
+      <VStack flex={1} justifyContent="center" alignItems="center">
+        <Box bg="$white" borderRadius={16} p="$4" maxWidth={400} w={'$full'}>
           <Heading color="$textDark500" textAlign="center">
             Inicia sesión
           </Heading>
@@ -108,9 +155,21 @@ export default function Login() {
               background="$primary500"
               color="$white"
               onPress={handleSubmit(submit)}
-              disabled={isLoading}
+              disabled={isLoading || isLoadingFacebook}
               hasIcon={false}
               isLoading={isLoading}
+            />
+          </HStack>
+          <Divider my={'$2'} />
+          <HStack justifyContent="center">
+            <BaseButton
+              title="Ingresar con facebook"
+              background="$primary500"
+              color="$white"
+              onPress={handleFacebookLogin}
+              disabled={isLoadingFacebook}
+              hasIcon={false}
+              isLoading={isLoadingFacebook}
             />
           </HStack>
         </Box>
