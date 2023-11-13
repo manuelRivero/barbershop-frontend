@@ -20,8 +20,8 @@ interface Form {
 
 export default function Login() {
   const dispatch = useAppDispatch();
-  const [login, {isLoading}] = useLoginMutation();
-
+  const [login, {isLoading, isError}] = useLoginMutation();
+console.log("is error", isError)
   const [facebookLogin, {isLoading: isLoadingFacebook}] =
     useFacebookLoginMutation();
 
@@ -38,6 +38,8 @@ export default function Login() {
       const {data, isError} = await dispatch(
         authApi.endpoints.getMe.initiate(),
       );
+      console.log("data", data)
+      console.log("isError", isError)
       if (isError) {
         throw new Error();
       }
@@ -47,7 +49,7 @@ export default function Login() {
         }),
       );
     } catch (error) {
-      console.log('error en el login');
+      console.log('error en el login', error);
     }
   };
   const handleFacebookLogin = () => {

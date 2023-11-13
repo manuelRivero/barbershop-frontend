@@ -4,10 +4,12 @@ import BottomTabs from '../bottomTabs';
 import Login from '../../screens/login';
 import {RootState, useAppSelector} from '../../store';
 import Loading from '../../screens/loading';
+import UserNavigator from '../userNavigator';
 const Stack = createNativeStackNavigator();
 
 export default function MainNavigator(): JSX.Element {
   const {user} = useAppSelector((state: RootState) => state.auth);
+  console.log('user', user);
   return (
     <Stack.Navigator
       initialRouteName="Login"
@@ -20,10 +22,7 @@ export default function MainNavigator(): JSX.Element {
               <Stack.Screen name="BottomsTabs" component={BottomTabs} />
             </>
           ) : (
-            <>
-              <Stack.Screen name="Loading" component={Loading} />
-              <Stack.Screen name="BottomsTabs" component={BottomTabs} />
-            </>
+            <Stack.Screen name="UserRoutes" component={UserNavigator} />
           )
         ) : (
           <Stack.Screen name="Login" component={Login} />
