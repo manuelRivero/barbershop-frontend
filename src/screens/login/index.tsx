@@ -63,7 +63,7 @@ export default function Login() {
           console.log('token', token);
           try {
             const response = await facebookLogin({
-              token: token.accessToken,
+              token: token?.accessToken,
             }).unwrap();
             dispatch(setToken(response.token));
             const {data, isError} = await dispatch(
@@ -160,7 +160,7 @@ export default function Login() {
               isLoading={isLoading}
             />
           </HStack>
-          <Divider my={'$2'} />
+          <Divider my={'$4'} />
           <HStack justifyContent="center">
             <BaseButton
               title="Ingresar con facebook"
