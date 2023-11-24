@@ -15,6 +15,9 @@ interface AddTurnRequest {
 interface GetTurnsRequest {
   id: number;
 }
+interface GetTurnsDetailRequest {
+  id: number;
+}
 export const turnsApi = createApi({
   baseQuery: fetchBase,
   reducerPath: 'turnsApi',
@@ -28,14 +31,21 @@ export const turnsApi = createApi({
         body: args.data,
       })},
     }),
+    
     getTurns: builder.query<any, GetTurnsRequest>({
       query: args => {
-        console.log("args", args)
         return({
         url: '/turns/get/'+ args.id,
+      })},
+    }),
+    getTurnDetails: builder.query<any, GetTurnsDetailRequest>({
+      query: args => {
+        console.log("request")
+        return({
+        url: '/turns/detail/'+ args.id,
       })},
     })
   }),
 });
 
-export const {useAddTurnMutation , useGetTurnsQuery} = turnsApi;
+export const {useAddTurnMutation , useGetTurnsQuery, useGetTurnDetailsQuery } = turnsApi;

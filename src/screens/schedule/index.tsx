@@ -41,16 +41,16 @@ export default function Schedule() {
       const handleRequest = async () => {
         return addTurnRequest({
           data: {
-            scheduleUser: user?._id,
             name: selectedService.name,
-            barber: user?._id,
+            barber: user?.role === 'barber' ? user?._id : id,
+            user: user?.role === 'user' ? user?._id : null,
             status: 'INCOMPLETE',
             price: selectedService.price,
             title: selectedService.name,
-            startDate: moment(turn.startDate).toDate(),
+            startDate: moment(turn.startDate).toISOString(),
             endDate: moment(turn.startDate)
               .add(selectedService.duration, 'minutes')
-              .toDate(),
+              .toISOString(),
           },
         }).unwrap();
       };
@@ -110,42 +110,39 @@ export default function Schedule() {
   };
 
   useEffect(() => {
-    const checkTurnForServiceTime = () => {
-      let startDate = moment(new Date());
-      const list: TurnSelectItem[] = [];
-      hours.forEach(hour => {
-        if (moment().hour() <= hour) return;
-        const isUnavaibleIndex = turns.findIndex((turn: Event) => {
-          const clonedStartDate = startDate.clone();
-          const startDateValidation = clonedStartDate.isBetween(
-            moment(turn.startDate),
-            moment(turn.endDate),
-          );
-          const endDateValidation = clonedStartDate
-            .add(selectedService?.duration, 'minutes')
-            .isBetween(moment(turn.startDate), moment(turn.endDate));
-          if (startDateValidation || endDateValidation) {
-            return true;
-          } else {
-            return false;
-          }
-        });
-        if (isUnavaibleIndex < 0) {
-          const clonedStartDate = startDate.clone();
-          list.push({startDate: clonedStartDate.toDate()});
-          startDate = startDate.add(selectedService?.duration, 'minutes');
-        } else {
-          const prevTurnDuration = moment(turns[isUnavaibleIndex].endDate).diff(
-            moment(turns[isUnavaibleIndex].startDate),
-            'minutes',
-          );
-          console.log('prevTurnDuration', prevTurnDuration);
-          startDate = startDate.add(prevTurnDuration, 'minutes');
+    const checkTurnForServiceTime = async () => {
+      if (selectedService) {
+        let startDate = moment.utc().utcOffset(3, true).add(1, 'hour');
+        const list: TurnSelectItem[] = [];
+        const availableHours = hours.filter(
+          e => e > moment().add(1, 'hour').hour(),
+        );
+        const availableTurnsForSelectedService = Math.ceil(
+          availableHours.length / (selectedService?.duration / 60),
+        );
+
+        for (let i = 0; i < availableTurnsForSelectedService; i++) {
+          list.push({startDate: startDate.clone().toDate()});
+          startDate = startDate
+            .clone()
+            .add(selectedService?.duration, 'minutes');
         }
-      });
-      setTurnList(list);
-      setShowTurnModal(true);
+        const filterList = list.filter(
+          freeTurn => !turns.find( e => moment(freeTurn.startDate).isBetween(moment(e.startDate), moment(e.endDate))),
+        );
+
+        // list.concat(freeTurn =>
+        //   turns.filter(e =>
+        //     moment(freeTurn.startDate).isAfter(e.startDate) && moment(freeTurn.startDate).isBefore(e.endDate)
+        //   ).length > 0 ? true : false,
+        // );
+        console.log('filtered', filterList);
+
+        setTurnList(filterList);
+        setShowTurnModal(true);
+      }
     };
+
     if (selectedService) {
       checkTurnForServiceTime();
     }

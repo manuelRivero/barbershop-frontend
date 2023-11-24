@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "start": " react-native start",
     "test": "jest",
-    "generate-bundle": " npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res"
+    "generate-bundle": " npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
+    "generate-keyhash": "keytool -exportcert -alias barbershop -keystore ./ | openssl sha1 -binary | openssl base64"
   },
   "dependencies": {
     "@cloudinary/url-gen": "^1.11.2",
@@ -19,6 +20,7 @@
     "@react-navigation/native-stack": "^6.9.14",
     "@reduxjs/toolkit": "^1.9.6",
     "cloudinary-react-native": "^0.1.2",
+    "date-fns": "^2.30.0",
     "lottie-react-native": "^6.3.1",
     "lucide-react-native": "^0.282.0",
     "moment": "^2.29.4",

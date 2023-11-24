@@ -2,12 +2,18 @@ import {createApi} from '@reduxjs/toolkit/query/react';
 import fetchBase from '../fetchBase';
 import {Service} from '../../types/services';
 
-interface GetServicesRequest {
+interface GetServicesResponse {
   services: any;
 }
 interface AddServiceRequest {
   ok: boolean;
   service: Service;
+}
+interface GetBarberServicesResponse {
+  services: any;
+}
+interface GetBarberServicesRequest {
+  id:number
 }
 export const servicesApi = createApi({
   baseQuery: fetchBase,
@@ -22,7 +28,7 @@ export const servicesApi = createApi({
       }),
     }),
     
-    getServices: builder.query<GetServicesRequest, void>({
+    getServices: builder.query<GetServicesResponse, void>({
       query() {
         console.log('fetching');
         return {
@@ -30,7 +36,15 @@ export const servicesApi = createApi({
         };
       },
     }),
+    getBarberServices: builder.query<GetBarberServicesResponse, GetBarberServicesRequest>({
+      query(args) {
+        console.log('fetching');
+        return {
+          url: `/services/${args.id}`,
+        };
+      },
+    }),
   }),
 });
 
-export const {useGetServicesQuery, useAddServiceMutation} = servicesApi;
+export const {useGetServicesQuery, useAddServiceMutation, useGetBarberServicesQuery} = servicesApi;

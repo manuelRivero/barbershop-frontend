@@ -3,13 +3,13 @@ export interface Event {
   barber?: string;
   _id?: string;
   title: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   price: number;
   status: 'COMPLETE' | 'INCOMPLETE';
-  scheduleUser: string
+  user: string | null
 }
 
 export interface TurnSelectItem {
-  startDate: Date;
+  startDate: any;
 }

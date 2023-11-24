@@ -37,7 +37,7 @@ export default function BarberSelection() {
             renderItem={(props: ListRenderItemInfo<any>) => {
               const {item} = props;
               return (
-                <Pressable onPress={() => navigation.navigate("UserSchedule", {
+                <Pressable onPress={() => navigation.navigate("UserServiceSelection", {
                     id: item._id,
                   })}>
                   <SelectBarberCard data={item} />

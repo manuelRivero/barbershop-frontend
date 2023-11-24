@@ -25,6 +25,7 @@ import {
 import {useAddTurnMutation, useGetTurnsQuery} from '../../api/turnsApi';
 import {showInfoModal} from '../../store/features/layoutSlice';
 import {useNavigation} from '@react-navigation/native';
+import UserTurnCard from '../../components/userTurnCard';
 
 const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
 
@@ -216,8 +217,7 @@ export default function UserSchedule({route}: any) {
           <Box padding={'$4'}>
             {turns.length > 0 && (
               <Text color="$textDark500" textAlign="center" mb={'$4'}>
-                Los turnos agendados para el día de hoy serán visibles en tu
-                agenda hasta las 11pm.
+                Presiona agendar y selecciona un servicio
               </Text>
             )}
             {[...turns]
@@ -227,7 +227,7 @@ export default function UserSchedule({route}: any) {
               })
               .map(e => {
                 return (
-                  <TurnCard key={moment(e.startDate).toString()} event={e} />
+                  <UserTurnCard key={moment(e.startDate).toString()} event={e} />
                 );
               })}
             {turns.length === 0 && (

@@ -71,7 +71,8 @@ export default function SelectTurnModal({
               return (
                 <Pressable onPress={() => handleSelect(item)}>
                   <Box softShadow={'1'} p="$4" borderRadius="$lg" bg="$white">
-                    <Text>{moment(item.startDate).format('hh:mm')}</Text>
+                    
+                    <Text>{moment.utc(item.startDate).format('hh:mm')}</Text>
                   </Box>
                 </Pressable>
               );

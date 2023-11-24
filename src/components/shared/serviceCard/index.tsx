@@ -75,7 +75,6 @@ export default function ServiceCard({data}: Props) {
     );
   };
   
-  console.log('my image', myImage);
   return (
     <Box softShadow={'1'} p="$4" borderRadius="$lg" bg="$white">
       <HStack space="lg" mb={'$4'}>
