@@ -13,10 +13,10 @@ interface AddTurnRequest {
   data: Event;
 }
 interface GetTurnsRequest {
-  id: number;
+  id: number | string;
 }
 interface GetTurnsDetailRequest {
-  id: number;
+  id: number | string;
 }
 export const turnsApi = createApi({
   baseQuery: fetchBase,

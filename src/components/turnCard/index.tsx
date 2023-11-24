@@ -15,7 +15,7 @@ export default function TurnCard({event}: Props) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime(moment().diff(moment(event.endDate), 'minutes'));
+      setTime(moment().utc().utcOffset(3, true).diff(moment(event.endDate), 'minutes'));
     }, 1000);
 
     return () => clearInterval(interval);
@@ -26,6 +26,8 @@ export default function TurnCard({event}: Props) {
       if (time >= 0) {
         setStatus('COMPLETE');
         dispatch(setCompleteTurn(event))
+      } else {
+
       }
     }
   }, [time]);
@@ -47,9 +49,9 @@ export default function TurnCard({event}: Props) {
             fontWeight="bold"
             color={
               status === 'COMPLETE' ? '$white' : '$textDark500'
-            }>{`${moment(event.startDate).format('hh:mm')} - ${moment(
+            }>{`${moment(event.startDate).utc().format('hh:mm')} - ${moment(
             event.endDate,
-          ).format('hh:mm')}`}</Text>
+          ).utc().format('hh:mm')}`}</Text>
         </HStack>
         <HStack space="xs" alignItems="center">
           <Icon
@@ -68,7 +70,7 @@ export default function TurnCard({event}: Props) {
           fontWeight="bold"
           color={
             status === 'COMPLETE' ? '$white' : '$textDark500'
-          }>{`${event.title}`}</Text>
+          }>{`${event.name}`}</Text>
       </HStack>
     </Box>
   );

@@ -17,16 +17,38 @@ import SelectTurnModal from '../../components/selectTurnModal';
 import TurnCard from '../../components/turnCard';
 import BaseButton from '../../components/shared/baseButton';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
-import {addTurn, resetAllturns} from '../../store/features/turnsSlice';
-import {useAddTurnMutation} from '../../api/turnsApi';
+import {
+  addTurn,
+  initTurns,
+  resetAllturns,
+} from '../../store/features/turnsSlice';
+import {useAddTurnMutation, useGetTurnsQuery} from '../../api/turnsApi';
 import {showInfoModal} from '../../store/features/layoutSlice';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useNavigation} from '@react-navigation/native';
 
-const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const hours = [
+  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,
+];
+
+const businessHoursStart = moment().set({ hour: 9, minute: 0, second: 0 });
+    const businessHoursEnd = moment().set({ hour: 20, minute: 0, second: 0 });
 
 export default function Schedule() {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
   const dispatch = useAppDispatch();
   const {turns} = useAppSelector((state: RootState) => state.turns);
   const {user} = useAppSelector((state: RootState) => state.auth);
+  console.log('user', user);
+
+  const {
+    data: turnsData,
+    refetch: refetchTurns,
+    isLoading: isLoadingTurns,
+    fulfilledTimeStamp,
+  } = useGetTurnsQuery({id: user?._id ?? ''});
+
   const [addTurnRequest, {isLoading}] = useAddTurnMutation();
 
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
@@ -42,8 +64,8 @@ export default function Schedule() {
         return addTurnRequest({
           data: {
             name: selectedService.name,
-            barber: user?.role === 'barber' ? user?._id : id,
-            user: user?.role === 'user' ? user?._id : null,
+            barber: user?._id,
+            user: null,
             status: 'INCOMPLETE',
             price: selectedService.price,
             title: selectedService.name,
@@ -112,34 +134,31 @@ export default function Schedule() {
   useEffect(() => {
     const checkTurnForServiceTime = async () => {
       if (selectedService) {
-        let startDate = moment.utc().utcOffset(3, true).add(1, 'hour');
-        const list: TurnSelectItem[] = [];
-        const availableHours = hours.filter(
-          e => e > moment().add(1, 'hour').hour(),
-        );
-        const availableTurnsForSelectedService = Math.ceil(
-          availableHours.length / (selectedService?.duration / 60),
-        );
 
-        for (let i = 0; i < availableTurnsForSelectedService; i++) {
-          list.push({startDate: startDate.clone().toDate()});
-          startDate = startDate
-            .clone()
-            .add(selectedService?.duration, 'minutes');
-        }
-        const filterList = list.filter(
-          freeTurn => !turns.find( e => moment(freeTurn.startDate).isBetween(moment(e.startDate), moment(e.endDate))),
-        );
+          const slots = [];
+          let currentTime = moment().utc().utcOffset(3, true);
+    
+          while (currentTime.isBefore(businessHoursEnd)) {
+            const endTime = moment(currentTime).add(selectedService.duration, 'minutes');
+            const isSlotAvailable = ![...turns].some(
+              (slot) =>
+                moment(slot.startDate, 'hh:mm A').isBetween(currentTime, endTime) ||
+                moment(slot.endDate, 'hh:mm A').isBetween(currentTime, endTime) ||
+                moment(currentTime).isBetween(slot.startDate, slot.endDate)
+            );
+    
+            if (isSlotAvailable) {
+              slots.push({
+                startDate: currentTime.toDate(),
+                endDate: endTime.toDate(),
+              });
+            }
+    
+            currentTime = endTime;
+          }
+              setTurnList(slots);
+          setShowTurnModal(true);
 
-        // list.concat(freeTurn =>
-        //   turns.filter(e =>
-        //     moment(freeTurn.startDate).isAfter(e.startDate) && moment(freeTurn.startDate).isBefore(e.endDate)
-        //   ).length > 0 ? true : false,
-        // );
-        console.log('filtered', filterList);
-
-        setTurnList(filterList);
-        setShowTurnModal(true);
       }
     };
 
@@ -162,6 +181,21 @@ export default function Schedule() {
 
     return () => clearInterval(interval);
   }, []);
+
+  React.useEffect(() => {
+    if (turnsData) {
+      console.log('turns data', turnsData.turns);
+      dispatch(initTurns(turnsData.turns));
+    }
+  }, [fulfilledTimeStamp]);
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      console.log('focus');
+      refetchTurns();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   return (
     <>
@@ -189,7 +223,7 @@ export default function Schedule() {
           </Heading>
           <Box padding={'$4'}>
             {turns.length > 0 && (
-              <Text color="$textDark500" textAlign='center' mb={'$4'}>
+              <Text color="$textDark500" textAlign="center" mb={'$4'}>
                 Los turnos agendados para el día de hoy serán visibles en tu
                 agenda hasta las 11pm.
               </Text>
