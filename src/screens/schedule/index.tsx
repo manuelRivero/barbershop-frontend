@@ -68,7 +68,6 @@ export default function Schedule() {
             user: null,
             status: 'INCOMPLETE',
             price: selectedService.price,
-            title: selectedService.name,
             startDate: moment(turn.startDate).toISOString(),
             endDate: moment(turn.startDate)
               .add(selectedService.duration, 'minutes')

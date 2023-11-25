@@ -31,11 +31,14 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 
 import moment from 'moment-timezone';
+import PushNotification from 'react-native-push-notification';
 moment.tz.setDefault(moment.tz.guess());
 
 const hours = [
   9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,
 ];
+const businessHoursStart = moment().set({hour: 9, minute: 0, second: 0});
+const businessHoursEnd = moment().set({hour: 20, minute: 0, second: 0});
 
 export default function UserServiceSelection({route}: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -71,33 +74,34 @@ export default function UserServiceSelection({route}: any) {
   useEffect(() => {
     const checkTurnForServiceTime = async () => {
       if (selectedService) {
-        let startDate = moment.utc().utcOffset(3, true).add(1, 'hour');
-        const list: TurnSelectItem[] = [];
-        const availableHours = hours.filter(
-          e => e > moment().add(1, 'hour').hour(),
-        );
-        const availableTurnsForSelectedService = Math.ceil(
-          availableHours.length / (selectedService?.duration / 60),
-        );
+        const slots = [];
+        let currentTime = moment().utc().utcOffset(3, true);
 
-        for (let i = 0; i < availableTurnsForSelectedService; i++) {
-          list.push({startDate: startDate.clone().toDate()});
-          startDate = startDate
-            .clone()
-            .add(selectedService?.duration, 'minutes');
+        while (currentTime.isBefore(businessHoursEnd)) {
+          const endTime = moment(currentTime).add(
+            selectedService.duration,
+            'minutes',
+          );
+          const isSlotAvailable = ![...turns].some(
+            slot =>
+              moment(slot.startDate, 'hh:mm A').isBetween(
+                currentTime,
+                endTime,
+              ) ||
+              moment(slot.endDate, 'hh:mm A').isBetween(currentTime, endTime) ||
+              moment(currentTime).isBetween(slot.startDate, slot.endDate),
+          );
+
+          if (isSlotAvailable) {
+            slots.push({
+              startDate: currentTime.toDate(),
+              endDate: endTime.toDate(),
+            });
+          }
+
+          currentTime = endTime;
         }
-        const filterList = list.filter(
-          freeTurn => !turns.find( e => moment(freeTurn.startDate).isBetween(moment(e.startDate), moment(e.endDate))),
-        );
-
-        // list.concat(freeTurn =>
-        //   turns.filter(e =>
-        //     moment(freeTurn.startDate).isAfter(e.startDate) && moment(freeTurn.startDate).isBefore(e.endDate)
-        //   ).length > 0 ? true : false,
-        // );
-        console.log('filtered', filterList);
-
-        setTurnList(filterList);
+        setTurnList(slots);
         setShowTurnModal(true);
       }
     };
@@ -126,7 +130,6 @@ export default function UserServiceSelection({route}: any) {
             user: user?.role === 'user' ? user?._id : null,
             status: 'INCOMPLETE',
             price: selectedService.price,
-            title: selectedService.name,
             startDate: moment(turn.startDate).toISOString(),
             endDate: moment(turn.startDate)
               .add(selectedService.duration, 'minutes')
@@ -145,7 +148,8 @@ export default function UserServiceSelection({route}: any) {
           cancelCb: () => {},
           hasSubmit: true,
           submitCb: () => {
-            handleRequest().then(res => {
+            handleRequest().then(async (res) => {
+             
               dispatch(
                 showInfoModal({
                   title: '¡Turno agendado!',
@@ -162,6 +166,10 @@ export default function UserServiceSelection({route}: any) {
                 dispatch(addTurn(res.turn));
               setSelectedService(null);
               setShowTurnModal(false);
+              PushNotification.localNotification({
+                title: 'Turno agendado',
+                message: 'Turno agendado para' + " " + moment(res.turn.startDate).format("hh:mm"),
+              });
               navigation.navigate('UserWaitingRoom', {turnId: res.turn._id});
             });
           },
