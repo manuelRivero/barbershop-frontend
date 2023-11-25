@@ -38,7 +38,7 @@ const hours = [
   9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,
 ];
 const businessHoursStart = moment().set({hour: 9, minute: 0, second: 0});
-const businessHoursEnd = moment().set({hour: 20, minute: 0, second: 0});
+const businessHoursEnd = moment().set({hour: 23, minute: 0, second: 0});
 
 export default function UserServiceSelection({route}: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
