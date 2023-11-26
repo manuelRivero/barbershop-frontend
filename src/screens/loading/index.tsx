@@ -7,7 +7,13 @@ import {Box} from 'lucide-react-native';
 import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {VStack} from '@gluestack-ui/themed';
-import {PERMISSIONS, check, request, openSettings} from 'react-native-permissions';
+import {
+  PERMISSIONS,
+  check,
+  request,
+  openSettings,
+  RESULTS,
+} from 'react-native-permissions';
 import {showInfoModal} from '../../store/features/layoutSlice';
 
 
@@ -34,39 +40,56 @@ export default function Loading() {
   }, [data]);
 
   useEffect(() => {
-    dispatch(
-      showInfoModal({
-        title: '¡Necesitamos permisos para enviarte notificaciones!',
-        type: 'success',
-        hasCancel: false,
-        cancelCb: null,
-        hasSubmit: true,
-        submitCb: async () => {
-          const hasPermissions = await checkNotificationPermission();
-          if (!hasPermissions) {
-            const permissionRequest = await requestNotificationPermission();
-            if (!permissionRequest) {
-              dispatch(
-                showInfoModal({
-                  title: 'Ve a configuración y activa las notificaciones para poder continuar',
-                  type: 'success',
-                  hasCancel: false,
-                  cancelCb: null,
-                  hasSubmit: true,
-                  submitCb: async () => {
-                        openSettings();
-                  },
-                  hideOnAnimationEnd: false,
-                }),
-              );
-            }
-          } else {
-            navigation.navigate('BottomsTabs');
-          }
-        },
-        hideOnAnimationEnd: false,
-      }),
-    );
+    const chechForPermissions = async () =>{
+
+      const hasPermissions = await checkNotificationPermission();
+      if (hasPermissions !== RESULTS.GRANTED) {
+        dispatch(
+          showInfoModal({
+            title: '¡Necesitamos permisos para enviarte notificaciones!',
+            type: 'info',
+            hasCancel: false,
+            cancelCb: null,
+            hasSubmit: true,
+            submitCb: async () => {
+              const permissionRequest = await requestNotificationPermission();
+              if (permissionRequest !== RESULTS.GRANTED) {
+                dispatch(
+                  showInfoModal({
+                    title:
+                      'Ve a configuración y activa las notificaciones para poder continuar',
+                    type: 'error',
+                    hasCancel: false,
+                    cancelCb: null,
+                    hasSubmit: true,
+                    submitCb: async () => {
+                      openSettings();
+                    },
+                    hideOnAnimationEnd: false,
+                    submitData: {
+                      text: 'Ir a configuración',
+                      background: '$primary500',
+                    },
+                  }),
+                );
+              } else {
+                dispatch(showInfoModal(null));
+                navigation.navigate('UserRoutes');
+              }
+            },
+            hideOnAnimationEnd: false,
+            submitData: {
+              text: 'Dar permisos',
+              background: '$primary500',
+            },
+          }),
+        );
+      } else {
+        dispatch(showInfoModal(null));
+        navigation.navigate('UserRoutes');
+      }
+    }
+    chechForPermissions()
   }, []);
 
   return (
