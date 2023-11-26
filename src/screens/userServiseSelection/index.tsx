@@ -166,11 +166,6 @@ export default function UserServiceSelection({route}: any) {
                 dispatch(addTurn(res.turn));
               setSelectedService(null);
               setShowTurnModal(false);
-              PushNotification.localNotification({
-                channelId: 'channel-id',
-                title: 'Turno agendado',
-                message: 'Turno agendado para' + " " + moment(res.turn.startDate).format("hh:mm"),
-              });
               navigation.navigate('UserWaitingRoom', {turnId: res.turn._id});
             });
           },

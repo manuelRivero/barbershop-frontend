@@ -29,7 +29,7 @@ import UserTurnCard from '../../components/userTurnCard';
 
 import io from 'socket.io-client';
 
-const socket = io('ws://barbershop-backend-ozy5.onrender.com/api');
+const socket = io('ws://192.168.100.3:4000/api');
 
 const businessHoursEnd = moment().set({hour: 20, minute: 0, second: 0});
 

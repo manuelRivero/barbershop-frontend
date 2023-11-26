@@ -16,6 +16,10 @@ import {
 } from 'react-native-permissions';
 import {showInfoModal} from '../../store/features/layoutSlice';
 
+import io from 'socket.io-client';
+const socket = io('ws://192.168.100.3:4000/api');
+
+
 
 export default function Loading() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -91,6 +95,14 @@ export default function Loading() {
     }
     chechForPermissions()
   }, []);
+
+  useEffect(()=>{
+    socket.emit('log-in', {
+      user: {
+        _id: user?._id,
+      },
+    });
+  },[])
 
   return (
     <VStack justifyContent="center" alignItems="center" flex={1}>
