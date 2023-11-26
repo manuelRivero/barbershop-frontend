@@ -5,6 +5,7 @@ import Login from '../../screens/login';
 import {RootState, useAppSelector} from '../../store';
 import Loading from '../../screens/loading';
 import UserNavigator from '../userNavigator';
+import UserLoading from '../../screens/userloading';
 
 
 const Stack = createNativeStackNavigator();
@@ -27,10 +28,15 @@ export default function MainNavigator(): JSX.Element {
               <Stack.Screen name="BottomsTabs" component={BottomTabs} />
             </>
           ) : (
+            <>
+            <Stack.Screen name="UserLoading" component={UserLoading} />
             <Stack.Screen name="UserRoutes" component={UserNavigator} />
+            </>
           )
         ) : (
+          <>
           <Stack.Screen name="Login" component={Login} />
+          </>
         )}
       </>
     </Stack.Navigator>
