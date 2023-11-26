@@ -73,11 +73,6 @@ export default function UserServiceSelection({route}: any) {
 
   useEffect(() => {
     const checkTurnForServiceTime = async () => {
-      PushNotification.localNotification({
-        channelId: '2',
-        title: 'Turno agendado',
-        message: 'Turno agendado para',
-      });
       if (selectedService) {
         const slots = [];
         let currentTime = moment().utc().utcOffset(3, true);
