@@ -27,7 +27,11 @@ import {showInfoModal} from '../../store/features/layoutSlice';
 import {useNavigation} from '@react-navigation/native';
 import UserTurnCard from '../../components/userTurnCard';
 
-const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+import io from 'socket.io-client';
+
+const socket = io('ws://barbershop-backend-ozy5.onrender.com/api');
+
+const businessHoursEnd = moment().set({hour: 20, minute: 0, second: 0});
 
 export default function UserSchedule({route}: any) {
   const navigation = useNavigation();
@@ -50,16 +54,15 @@ export default function UserSchedule({route}: any) {
       const handleRequest = async () => {
         return addTurnRequest({
           data: {
-            scheduleUser: user?._id,
             name: selectedService.name,
-            barber: user?._id,
+            barber: id,
             status: 'INCOMPLETE',
             price: selectedService.price,
-            title: selectedService.name,
-            startDate: moment(turn.startDate).toDate(),
+            user: user?._id,
+            startDate: moment(turn.startDate).toISOString(),
             endDate: moment(turn.startDate)
               .add(selectedService.duration, 'minutes')
-              .toDate(),
+              .toISOString(),
           },
         }).unwrap();
       };
@@ -91,6 +94,12 @@ export default function UserSchedule({route}: any) {
                 dispatch(addTurn(res.turn));
               setSelectedService(null);
               setShowTurnModal(false);
+              socket.emit('set-turn', {
+                barber: {
+                  _id: id,
+                },
+                turnData: res.turn,
+              });
             });
           },
           hideOnAnimationEnd: false,
@@ -105,56 +114,43 @@ export default function UserSchedule({route}: any) {
         }),
       );
     }
-
-    // try {
-    //   return
-    //   if (response.data.ok === false) {
-    //     throw new Error();
-    //   } else {
-    //
-    //   }
-    // } catch (error) {
-    //   console.log('error al guardar el turno', error);
-    // }
   };
 
   useEffect(() => {
-    const checkTurnForServiceTime = () => {
-      let startDate = moment(new Date());
-      const list: TurnSelectItem[] = [];
-      hours.forEach(hour => {
-        if (moment().hour() <= hour) return;
-        const isUnavaibleIndex = turns.findIndex((turn: Event) => {
-          const clonedStartDate = startDate.clone();
-          const startDateValidation = clonedStartDate.isBetween(
-            moment(turn.startDate),
-            moment(turn.endDate),
-          );
-          const endDateValidation = clonedStartDate
-            .add(selectedService?.duration, 'minutes')
-            .isBetween(moment(turn.startDate), moment(turn.endDate));
-          if (startDateValidation || endDateValidation) {
-            return true;
-          } else {
-            return false;
-          }
-        });
-        if (isUnavaibleIndex < 0) {
-          const clonedStartDate = startDate.clone();
-          list.push({startDate: clonedStartDate.toDate()});
-          startDate = startDate.add(selectedService?.duration, 'minutes');
-        } else {
-          const prevTurnDuration = moment(turns[isUnavaibleIndex].endDate).diff(
-            moment(turns[isUnavaibleIndex].startDate),
+    const checkTurnForServiceTime = async () => {
+      if (selectedService) {
+        const slots = [];
+        let currentTime = moment().utc().utcOffset(3, true);
+
+        while (currentTime.isBefore(businessHoursEnd)) {
+          const endTime = moment(currentTime).add(
+            selectedService.duration,
             'minutes',
           );
-          console.log('prevTurnDuration', prevTurnDuration);
-          startDate = startDate.add(prevTurnDuration, 'minutes');
+          const isSlotAvailable = ![...turns].some(
+            slot =>
+              moment(slot.startDate, 'hh:mm A').isBetween(
+                currentTime,
+                endTime,
+              ) ||
+              moment(slot.endDate, 'hh:mm A').isBetween(currentTime, endTime) ||
+              moment(currentTime).isBetween(slot.startDate, slot.endDate),
+          );
+
+          if (isSlotAvailable) {
+            slots.push({
+              startDate: currentTime.toDate(),
+              endDate: endTime.toDate(),
+            });
+          }
+
+          currentTime = endTime;
         }
-      });
-      setTurnList(list);
-      setShowTurnModal(true);
+        setTurnList(slots);
+        setShowTurnModal(true);
+      }
     };
+
     if (selectedService) {
       checkTurnForServiceTime();
     }
@@ -227,7 +223,10 @@ export default function UserSchedule({route}: any) {
               })
               .map(e => {
                 return (
-                  <UserTurnCard key={moment(e.startDate).toString()} event={e} />
+                  <UserTurnCard
+                    key={moment(e.startDate).toString()}
+                    event={e}
+                  />
                 );
               })}
             {turns.length === 0 && (

@@ -27,6 +27,11 @@ import {showInfoModal} from '../../store/features/layoutSlice';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 
+import io from 'socket.io-client'
+import PushNotification from 'react-native-push-notification';
+
+const socket = io('ws://barbershop-backend-ozy5.onrender.com/api')
+
 const hours = [
   9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,
 ];
@@ -187,6 +192,7 @@ export default function Schedule() {
       dispatch(initTurns(turnsData.turns));
     }
   }, [fulfilledTimeStamp]);
+
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       console.log('focus');
@@ -195,6 +201,37 @@ export default function Schedule() {
 
     return unsubscribe;
   }, [navigation]);
+
+     useEffect(() => {
+        
+        socket.on('set-turn', (user) => {
+          PushNotification.localNotification({
+            /* Android Only Properties */
+            channelId: "2", // (required) channelId, if the channel doesn't exist, notification will not trigger.
+            bigText: "My big text that will be shown when notification is expanded. Styling can be done using HTML tags(see android docs for details)", // (optional) default: "message" prop
+            subText: "This is a subText", // (optional) default: none
+            vibrate: true, // (optional) default: true
+            vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
+            groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
+            ongoing: false, // (optional) set whether this is an "ongoing" notification
+            priority: "high", // (optional) set notification priority, default: high
+            visibility: "private", // (optional) set notification visibility, default: private
+            ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
+            
+     
+            /* iOS only properties */
+          
+            title: "My Notification Title", // (optional)
+            message: "My Notification Message", // (required)
+            soundName: "default", // (optional) Sound to play when the notification is shown. Value of 'default' plays the default sound. It can be set to a custom sound such as 'android.resource://com.xyz/raw/my_sound'. It will look for the 'my_sound' audio file in 'res/raw' directory and play it. default: 'default' (default sound is played)
+            repeatType: "day", // (optional) Repeating interval. Check 'Repeating Notifications' section for more info.
+          });
+        })
+
+        return () => {
+            socket.off('set-turn')
+        }
+    }, [])
 
   return (
     <>

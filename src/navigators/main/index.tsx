@@ -6,15 +6,18 @@ import {RootState, useAppSelector} from '../../store';
 import Loading from '../../screens/loading';
 import UserNavigator from '../userNavigator';
 import UserLoading from '../../screens/userloading';
+import { io } from 'socket.io-client';
+
+const socket = io('ws://barbershop-backend-ozy5.onrender.com/api')
+
 
 
 const Stack = createNativeStackNavigator();
 
 export default function MainNavigator(): JSX.Element {
   const {user} = useAppSelector((state: RootState) => state.auth);
-  useEffect(() => {
 
-  }, []);
+
 
   return (
     <Stack.Navigator
