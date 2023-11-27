@@ -207,7 +207,7 @@ export default function Schedule() {
         socket.on('set-turn', (user) => {
           PushNotification.localNotification({
             /* Android Only Properties */
-            channelId: "2", // (required) channelId, if the channel doesn't exist, notification will not trigger.
+            channelId: "channel-id", // (required) channelId, if the channel doesn't exist, notification will not trigger.
             bigText: "My big text that will be shown when notification is expanded. Styling can be done using HTML tags(see android docs for details)", // (optional) default: "message" prop
             subText: "This is a subText", // (optional) default: none
             vibrate: true, // (optional) default: true

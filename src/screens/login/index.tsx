@@ -10,6 +10,7 @@ import {authApi, useLoginMutation} from '../../api/authApi';
 import {LoginManager, Settings, AccessToken} from 'react-native-fbsdk-next';
 import {Divider} from '@gluestack-ui/themed';
 import {useFacebookLoginMutation} from '../../api/facebookApi';
+import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 
 Settings.setAppID('315996248039279');
 
@@ -21,7 +22,7 @@ interface Form {
 export default function Login() {
   const dispatch = useAppDispatch();
   const [login, {isLoading, isError}] = useLoginMutation();
-console.log("is error", isError)
+  console.log('is error', isError);
   const [facebookLogin, {isLoading: isLoadingFacebook}] =
     useFacebookLoginMutation();
 
@@ -38,8 +39,8 @@ console.log("is error", isError)
       const {data, isError} = await dispatch(
         authApi.endpoints.getMe.initiate(),
       );
-      console.log("data", data)
-      console.log("isError", isError)
+      console.log('data', data);
+      console.log('isError', isError);
       if (isError) {
         throw new Error();
       }
@@ -49,6 +50,23 @@ console.log("is error", isError)
         }),
       );
     } catch (error) {
+      dispatch(
+        showInfoModal({
+          title: '¡Ups! No se ha podido iniciar sesión',
+          type: 'error',
+          hasCancel: false,
+          cancelCb: null,
+          hasSubmit: true,
+          submitCb: async () => {
+            dispatch(hideInfoModal());
+          },
+          hideOnAnimationEnd: false,
+          submitData: {
+            text: 'Intentar nuevamente',
+            background: '$primary500',
+          },
+        }),
+      );
       console.log('error en el login', error);
     }
   };

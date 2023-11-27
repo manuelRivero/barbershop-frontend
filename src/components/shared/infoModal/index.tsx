@@ -23,6 +23,7 @@ import LottieView from 'lottie-react-native';
 const animations = {
   success: require('../../../assets/lottie/success.json'),
   info: require('../../../assets/lottie/info.json'),
+  error: require('../../../assets/lottie/error.json'),
 };
 
 export default function InfoModal() {
@@ -51,7 +52,7 @@ export default function InfoModal() {
     }
   };
   return (
-    <Modal isOpen={Boolean(infoModal)} onClose={handleClose} bg="$primary100">
+    <Modal isOpen={Boolean(infoModal)} bg="$primary100">
       <ModalBackdrop />
       <ModalContent bg="$white" p="$4">
         <ModalBody>

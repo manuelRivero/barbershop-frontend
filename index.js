@@ -31,7 +31,7 @@ pushNotifications.configure({
   });
   pushNotifications.createChannel(
     {
-      channelId: '2',
+      channelId: 'channel-id',
       channelName: 'barbershop',
     },
     created => console.log('created', created),
