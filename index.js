@@ -29,11 +29,18 @@ pushNotifications.configure({
     },
     requestPermissions: Platform.OS === 'ios',
   });
-  pushNotifications.createChannel(
-    {
-      channelId: 'channel-id',
-      channelName: 'barbershop',
-    },
-    created => console.log('created', created),
-  );
+
+
+  pushNotifications.channelExists('channel-id', function (exists) {
+    console.log(exists); // true/false
+    if(!exists){
+      pushNotifications.createChannel(
+        {
+          channelId: 'channel-id',
+          channelName: 'barbershop',
+        },
+        created => console.log('created', created),
+      );
+    }
+  })
 
