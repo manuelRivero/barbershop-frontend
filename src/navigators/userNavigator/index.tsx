@@ -1,13 +1,11 @@
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import BarberSelection from '../../screens/barberSelection';
-import UserSchedule from '../../screens/userSchedule';
 import UserServiceSelection from '../../screens/userServiseSelection';
 import UserWaitingRoom from '../../screens/userWaitingRoom';
 
 export type RootStackParamList = {
   BarberSelection: undefined;
-  UserSchedule: {id: number};
   UserServiceSelection: {id: number};
   UserWaitingRoom: {turnId:number};
 };
@@ -22,8 +20,6 @@ export default function UserNavigator(): JSX.Element {
           name="UserServiceSelection"
           component={UserServiceSelection}
         />
-
-        <Stack.Screen name="UserSchedule" component={UserSchedule} />
         <Stack.Screen name="UserWaitingRoom" component={UserWaitingRoom} />
       </>
     </Stack.Navigator>
