@@ -31,7 +31,11 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 
 import moment from 'moment-timezone';
-import PushNotification from 'react-native-push-notification';
+
+import io from 'socket.io-client';
+
+const socket = io('http://192.168.100.3:4000');
+
 moment.tz.setDefault(moment.tz.guess());
 
 const hours = [
@@ -167,6 +171,12 @@ export default function UserServiceSelection({route}: any) {
               setSelectedService(null);
               setShowTurnModal(false);
               navigation.navigate('UserWaitingRoom', {turnId: res.turn._id});
+              socket.emit('set-turn', {
+                barber: {
+                  _id: id,
+                },
+                turnData: res.turn,
+              });
             });
           },
           hideOnAnimationEnd: false,
