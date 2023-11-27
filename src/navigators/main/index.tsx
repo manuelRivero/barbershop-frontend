@@ -8,7 +8,7 @@ import UserNavigator from '../userNavigator';
 import UserLoading from '../../screens/userloading';
 import { io } from 'socket.io-client';
 
-const socket = io('http://192.168.100.3:4000')
+const socket = io('https://barbershop-backend-ozy5.onrender.com')
 
 
 

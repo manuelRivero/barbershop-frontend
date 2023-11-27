@@ -30,7 +30,7 @@ import {useNavigation} from '@react-navigation/native';
 import io from 'socket.io-client'
 import PushNotification from 'react-native-push-notification';
 
-const socket = io('http://192.168.100.3:4000')
+const socket = io('https://barbershop-backend-ozy5.onrender.com')
 
 const hours = [
   9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,

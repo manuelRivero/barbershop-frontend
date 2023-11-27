@@ -8,8 +8,8 @@ import { fetchBaseQuery } from '@reduxjs/toolkit/query'
 import { type RootState } from '../store'
 import { logout } from '../store/features/authSlice'
 
- //let baseUrl :string = `https://barbershop-backend-ozy5.onrender.com/api`
-let baseUrl : string = "http://192.168.100.3:4000/api"
+let baseUrl :string = `https://barbershop-backend-ozy5.onrender.com/api`
+//let baseUrl : string = "http://192.168.100.3:4000/api"
 const baseQuery = fetchBaseQuery({
   baseUrl,
   credentials: 'same-origin',
