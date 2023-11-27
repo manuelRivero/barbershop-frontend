@@ -47,7 +47,7 @@ export default function Loading() {
   useEffect(() => {
     const chechForPermissions = async () =>{
       const platform = Platform.Version
-      if (parseInt(`platform`) >= 33){
+      if (parseInt(`${platform}`) >= 33){
         const hasPermissions = await checkNotificationPermission();
         if (hasPermissions !== RESULTS.GRANTED) {
           dispatch(
