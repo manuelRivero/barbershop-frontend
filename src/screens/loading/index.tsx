@@ -17,7 +17,7 @@ import {
 import {showInfoModal} from '../../store/features/layoutSlice';
 
 import io from 'socket.io-client';
-const socket = io('ws://192.168.100.3:4000/api');
+const socket = io('http://192.168.100.3:4000');
 
 
 
@@ -78,7 +78,7 @@ export default function Loading() {
                 );
               } else {
                 dispatch(showInfoModal(null));
-                navigation.navigate('UserRoutes');
+                navigation.navigate('BottomsTabs');
               }
             },
             hideOnAnimationEnd: false,
@@ -90,7 +90,7 @@ export default function Loading() {
         );
       } else {
         dispatch(showInfoModal(null));
-        navigation.navigate('UserRoutes');
+        navigation.navigate('BottomsTabs');
       }
     }
     chechForPermissions()

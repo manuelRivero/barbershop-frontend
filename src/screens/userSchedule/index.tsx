@@ -29,7 +29,7 @@ import UserTurnCard from '../../components/userTurnCard';
 
 import io from 'socket.io-client';
 
-const socket = io('ws://192.168.100.3:4000/api');
+const socket = io('http://192.168.100.3:4000');
 
 const businessHoursEnd = moment().set({hour: 20, minute: 0, second: 0});
 
@@ -90,8 +90,8 @@ export default function UserSchedule({route}: any) {
                   submitData: null,
                   cancelData: null,
                 }),
-              ),
-                dispatch(addTurn(res.turn));
+              );
+              dispatch(addTurn(res.turn));
               setSelectedService(null);
               setShowTurnModal(false);
               socket.emit('set-turn', {
@@ -100,6 +100,7 @@ export default function UserSchedule({route}: any) {
                 },
                 turnData: res.turn,
               });
+             
             });
           },
           hideOnAnimationEnd: false,
@@ -166,7 +167,12 @@ export default function UserSchedule({route}: any) {
       if (moment().isAfter(moment().set({hour: 23, minutes: 0}))) {
         dispatch(resetAllturns());
       }
+
     }, 1000);
+
+   
+
+   
 
     return () => clearInterval(interval);
   }, []);
