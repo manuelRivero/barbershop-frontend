@@ -27,10 +27,8 @@ import {showInfoModal} from '../../store/features/layoutSlice';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 
-import io from 'socket.io-client'
 import PushNotification from 'react-native-push-notification';
 
-const socket = io('https://barbershop-backend-ozy5.onrender.com')
 
 const hours = [
   9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,
@@ -45,6 +43,8 @@ export default function Schedule() {
   const dispatch = useAppDispatch();
   const {turns} = useAppSelector((state: RootState) => state.turns);
   const {user} = useAppSelector((state: RootState) => state.auth);
+  const {socket} = useAppSelector((state: RootState) => state.layout);
+
   console.log('user', user);
 
   const {
@@ -204,7 +204,7 @@ export default function Schedule() {
 
      useEffect(() => {
         
-        socket.on('set-turn', (user) => {
+        socket?.on('set-turn', (user) => {
           PushNotification.localNotification({
             /* Android Only Properties */
             channelId: "channel-id", // (required) channelId, if the channel doesn't exist, notification will not trigger.
@@ -229,7 +229,7 @@ export default function Schedule() {
         })
 
         return () => {
-            socket.off('set-turn')
+            socket?.off('set-turn')
         }
     }, [])
 

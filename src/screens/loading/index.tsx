@@ -16,15 +16,15 @@ import {
 } from 'react-native-permissions';
 import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 
-import io from 'socket.io-client';
 import { Platform } from 'react-native';
-const socket = io('https://barbershop-backend-ozy5.onrender.com');
 
 
 
 export default function Loading() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {user} = useAppSelector((state: RootState) => state.auth);
+  const {socket} = useAppSelector((state: RootState) => state.layout);
+
   const dispatch = useAppDispatch();
   const {data, isLoading} = useGetServicesQuery();
 
@@ -102,7 +102,7 @@ export default function Loading() {
   }, []);
 
   useEffect(()=>{
-    socket.emit('log-in', {
+    socket?.emit('log-in', {
       user: {
         _id: user?._id,
       },

@@ -32,9 +32,6 @@ import {useNavigation} from '@react-navigation/native';
 
 import moment from 'moment-timezone';
 
-import io from 'socket.io-client';
-
-const socket = io('https://barbershop-backend-ozy5.onrender.com');
 
 moment.tz.setDefault(moment.tz.guess());
 
@@ -55,6 +52,7 @@ export default function UserServiceSelection({route}: any) {
   );
   const {turns} = useAppSelector((state: RootState) => state.turns);
   const {user} = useAppSelector((state: RootState) => state.auth);
+  const {socket} = useAppSelector((state: RootState) => state.layout);
 
   const {data, isLoading, refetch, fulfilledTimeStamp} =
     useGetBarberServicesQuery({id});
@@ -171,7 +169,7 @@ export default function UserServiceSelection({route}: any) {
               setSelectedService(null);
               setShowTurnModal(false);
               navigation.navigate('UserWaitingRoom', {turnId: res.turn._id});
-              socket.emit('set-turn', {
+              socket?.emit('set-turn', {
                 barber: {
                   _id: id,
                 },
@@ -231,6 +229,7 @@ export default function UserServiceSelection({route}: any) {
       dispatch(initTurns(turnsData.turns));
     }
   }, [fulfilledTimeStamp]);
+  
   if (isLoading || isLoadingTurns) {
     return <Loader />;
   }

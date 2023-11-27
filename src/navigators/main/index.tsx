@@ -2,22 +2,27 @@ import React, {useEffect} from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import BottomTabs from '../bottomTabs';
 import Login from '../../screens/login';
-import {RootState, useAppSelector} from '../../store';
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import Loading from '../../screens/loading';
 import UserNavigator from '../userNavigator';
 import UserLoading from '../../screens/userloading';
-import { io } from 'socket.io-client';
-
-const socket = io('https://barbershop-backend-ozy5.onrender.com')
-
-
+import {io} from 'socket.io-client';
+import {removeSocket, setSocket} from '../../store/features/layoutSlice';
 
 const Stack = createNativeStackNavigator();
 
 export default function MainNavigator(): JSX.Element {
   const {user} = useAppSelector((state: RootState) => state.auth);
+  const dispatch = useAppDispatch();
 
-
+  useEffect(() => {
+    const socket = io('https://barbershop-backend-ozy5.onrender.com');
+    dispatch(setSocket(socket));
+    return () => {
+      socket.close();
+      dispatch(removeSocket());
+    };
+  }, []);
 
   return (
     <Stack.Navigator
@@ -32,13 +37,13 @@ export default function MainNavigator(): JSX.Element {
             </>
           ) : (
             <>
-            <Stack.Screen name="UserLoading" component={UserLoading} />
-            <Stack.Screen name="UserRoutes" component={UserNavigator} />
+              <Stack.Screen name="UserLoading" component={UserLoading} />
+              <Stack.Screen name="UserRoutes" component={UserNavigator} />
             </>
           )
         ) : (
           <>
-          <Stack.Screen name="Login" component={Login} />
+            <Stack.Screen name="Login" component={Login} />
           </>
         )}
       </>
