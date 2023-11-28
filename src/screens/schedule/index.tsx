@@ -29,13 +29,12 @@ import {useNavigation} from '@react-navigation/native';
 
 import PushNotification from 'react-native-push-notification';
 
-
 const hours = [
   9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,
 ];
 
-const businessHoursStart = moment().set({ hour: 9, minute: 0, second: 0 });
-    const businessHoursEnd = moment().set({ hour: 20, minute: 0, second: 0 });
+const businessHoursStart = moment().set({hour: 9, minute: 0, second: 0});
+const businessHoursEnd = moment().set({hour: 20, minute: 0, second: 0});
 
 export default function Schedule() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -44,8 +43,6 @@ export default function Schedule() {
   const {turns} = useAppSelector((state: RootState) => state.turns);
   const {user} = useAppSelector((state: RootState) => state.auth);
   const {socket} = useAppSelector((state: RootState) => state.layout);
-
-  console.log('user', user);
 
   const {
     data: turnsData,
@@ -138,31 +135,35 @@ export default function Schedule() {
   useEffect(() => {
     const checkTurnForServiceTime = async () => {
       if (selectedService) {
+        const slots = [];
+        let currentTime = moment().utc().utcOffset(3, true);
 
-          const slots = [];
-          let currentTime = moment().utc().utcOffset(3, true);
-    
-          while (currentTime.isBefore(businessHoursEnd)) {
-            const endTime = moment(currentTime).add(selectedService.duration, 'minutes');
-            const isSlotAvailable = ![...turns].some(
-              (slot) =>
-                moment(slot.startDate, 'hh:mm A').isBetween(currentTime, endTime) ||
-                moment(slot.endDate, 'hh:mm A').isBetween(currentTime, endTime) ||
-                moment(currentTime).isBetween(slot.startDate, slot.endDate)
-            );
-    
-            if (isSlotAvailable) {
-              slots.push({
-                startDate: currentTime.toDate(),
-                endDate: endTime.toDate(),
-              });
-            }
-    
-            currentTime = endTime;
+        while (currentTime.isBefore(businessHoursEnd)) {
+          const endTime = moment(currentTime).add(
+            selectedService.duration,
+            'minutes',
+          );
+          const isSlotAvailable = ![...turns].some(
+            slot =>
+              moment(slot.startDate, 'hh:mm A').isBetween(
+                currentTime,
+                endTime,
+              ) ||
+              moment(slot.endDate, 'hh:mm A').isBetween(currentTime, endTime) ||
+              moment(currentTime).isBetween(slot.startDate, slot.endDate),
+          );
+
+          if (isSlotAvailable) {
+            slots.push({
+              startDate: currentTime.toDate(),
+              endDate: endTime.toDate(),
+            });
           }
-              setTurnList(slots);
-          setShowTurnModal(true);
 
+          currentTime = endTime;
+        }
+        setTurnList(slots);
+        setShowTurnModal(true);
       }
     };
 
@@ -178,8 +179,15 @@ export default function Schedule() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (moment().isAfter(moment().set({hour: 23, minutes: 0}))) {
-        dispatch(resetAllturns());
+      if (
+        moment()
+          .utc()
+          .utcOffset(3, true)
+          .isAfter(moment().set({hour: 23, minutes: 0}))
+      ) {
+        if (turns.length > 0) {
+          dispatch(resetAllturns());
+        }
       }
     }, 1000);
 
@@ -202,35 +210,35 @@ export default function Schedule() {
     return unsubscribe;
   }, [navigation]);
 
-     useEffect(() => {
-        
-        socket?.on('add-turn', ({data}) => {
-          dispatch(addTurn(data))
-          PushNotification.localNotification({
-            /* Android Only Properties */
-            channelId: "channel-id", // (required) channelId, if the channel doesn't exist, notification will not trigger.
-            bigText: `Turno agendado para ${moment(data.startDate).format("hh:mm")}`, // (optional) default: "message" prop
-            vibrate: true, // (optional) default: true
-            vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
-            groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
-            ongoing: false, // (optional) set whether this is an "ongoing" notification
-            priority: "high", // (optional) set notification priority, default: high
-            visibility: "private", // (optional) set notification visibility, default: private
-            ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
-            title: "¡Nueva notificación!", // (optional)
-            
-     
-            /* iOS only properties */
-          
-            message: "Tienes un nuevo turno", // (required)
-            repeatType: "minute", // (optional) Repeating interval. Check 'Repeating Notifications' section for more info.
-          });
-        })
+  useEffect(() => {
+    socket?.on('add-turn', ({data}) => {
+      dispatch(addTurn(data));
+      PushNotification.localNotification({
+        /* Android Only Properties */
+        channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
+        bigText: `Turno agendado para ${moment(data.startDate).format(
+          'hh:mm',
+        )}`, // (optional) default: "message" prop
+        vibrate: true, // (optional) default: true
+        vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
+        groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
+        ongoing: false, // (optional) set whether this is an "ongoing" notification
+        priority: 'high', // (optional) set notification priority, default: high
+        visibility: 'private', // (optional) set notification visibility, default: private
+        ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
+        title: '¡Nueva notificación!', // (optional)
 
-        return () => {
-            socket?.off('add-turn')
-        }
-    }, [])
+        /* iOS only properties */
+
+        message: 'Tienes un nuevo turno', // (required)
+        repeatType: 'minute', // (optional) Repeating interval. Check 'Repeating Notifications' section for more info.
+      });
+    });
+
+    return () => {
+      socket?.off('add-turn');
+    };
+  }, []);
 
   return (
     <>

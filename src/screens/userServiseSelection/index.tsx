@@ -25,13 +25,12 @@ import {
   resetAllturns,
 } from '../../store/features/turnsSlice';
 import SelectTurnModal from '../../components/selectTurnModal';
-import {showInfoModal} from '../../store/features/layoutSlice';
+import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 import UserServiceCard from '../../components/userServiceCard';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 
 import moment from 'moment-timezone';
-
 
 moment.tz.setDefault(moment.tz.guess());
 
@@ -149,9 +148,9 @@ export default function UserServiceSelection({route}: any) {
           hasCancel: true,
           cancelCb: () => {},
           hasSubmit: true,
-          submitCb: () => {
-            handleRequest().then(async (res) => {
-             
+          submitCb: async () => {
+            try {
+              const res = await handleRequest();
               dispatch(
                 showInfoModal({
                   title: '¡Turno agendado!',
@@ -175,7 +174,24 @@ export default function UserServiceSelection({route}: any) {
                 },
                 turnData: res.turn,
               });
-            });
+            } catch (error) {
+              dispatch(
+                showInfoModal({
+                  title: '¡No se ha podido agendar tu turno!',
+                  type: 'error',
+                  hasCancel: false,
+                  cancelCb: null,
+                  hasSubmit: true,
+                  submitData: {
+                    text: 'Intentar nuevamente',
+                    background: '$primary500',
+                  },
+                  submitCb: dispatch(hideInfoModal()),
+                  hideOnAnimationEnd: false,
+                  cancelData: null,
+                }),
+              );
+            }
           },
           hideOnAnimationEnd: false,
           submitData: {
@@ -207,8 +223,15 @@ export default function UserServiceSelection({route}: any) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (moment().isAfter(moment().set({hour: 23, minutes: 0}))) {
-        dispatch(resetAllturns());
+      if (
+        moment()
+          .utc()
+          .utcOffset(3, true)
+          .isAfter(moment().set({hour: 23, minutes: 0}))
+      ) {
+        if (turns.length > 0) {
+          dispatch(resetAllturns());
+        }
       }
     }, 1000);
 
@@ -229,7 +252,7 @@ export default function UserServiceSelection({route}: any) {
       dispatch(initTurns(turnsData.turns));
     }
   }, [fulfilledTimeStamp]);
-  
+
   if (isLoading || isLoadingTurns) {
     return <Loader />;
   }
