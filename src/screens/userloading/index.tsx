@@ -80,6 +80,9 @@ export default function UserLoading() {
           dispatch(showInfoModal(null));
           navigation.navigate('UserRoutes');
         }
+      } else {
+        dispatch(showInfoModal(null));
+        navigation.navigate('UserRoutes');
       }
     };
     chechForPermissions();

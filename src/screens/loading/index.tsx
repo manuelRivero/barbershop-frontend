@@ -95,6 +95,7 @@ export default function Loading() {
           navigation.navigate('BottomsTabs');
         }
       } else {
+        dispatch(hideInfoModal());
         navigation.navigate('BottomsTabs');
       }
     }
