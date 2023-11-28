@@ -204,12 +204,12 @@ export default function Schedule() {
 
      useEffect(() => {
         
-        socket?.on('set-turn', (user) => {
+        socket?.on('add-turn', ({data}) => {
+          dispatch(addTurn(data))
           PushNotification.localNotification({
             /* Android Only Properties */
             channelId: "channel-id", // (required) channelId, if the channel doesn't exist, notification will not trigger.
-            bigText: "My big text that will be shown when notification is expanded. Styling can be done using HTML tags(see android docs for details)", // (optional) default: "message" prop
-            subText: "This is a subText", // (optional) default: none
+            bigText: `Turno agendado para ${moment(data.startDate).format("hh:mm")}`, // (optional) default: "message" prop
             vibrate: true, // (optional) default: true
             vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
             groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
@@ -217,19 +217,18 @@ export default function Schedule() {
             priority: "high", // (optional) set notification priority, default: high
             visibility: "private", // (optional) set notification visibility, default: private
             ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
+            title: "¡Nueva notificación!", // (optional)
             
      
             /* iOS only properties */
           
-            title: "My Notification Title", // (optional)
-            message: "My Notification Message", // (required)
-            soundName: "default", // (optional) Sound to play when the notification is shown. Value of 'default' plays the default sound. It can be set to a custom sound such as 'android.resource://com.xyz/raw/my_sound'. It will look for the 'my_sound' audio file in 'res/raw' directory and play it. default: 'default' (default sound is played)
-            repeatType: "day", // (optional) Repeating interval. Check 'Repeating Notifications' section for more info.
+            message: "Tienes un nuevo turno", // (required)
+            repeatType: "minute", // (optional) Repeating interval. Check 'Repeating Notifications' section for more info.
           });
         })
 
         return () => {
-            socket?.off('set-turn')
+            socket?.off('add-turn')
         }
     }, [])
 
