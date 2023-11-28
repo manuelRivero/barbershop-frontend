@@ -9,6 +9,7 @@ import {authApi} from '../api/authApi';
 import { servicesApi } from '../api/servicesApi';
 import { turnsApi } from '../api/turnsApi';
 import { facebookApi } from '../api/facebookApi';
+import { barbersApi } from '../api/barbersApi';
 
 export const store = configureStore({
   reducer: {
@@ -19,10 +20,13 @@ export const store = configureStore({
     [authApi.reducerPath]: authApi.reducer,
     [servicesApi.reducerPath]: servicesApi.reducer,
     [turnsApi.reducerPath]: turnsApi.reducer,
+    [barbersApi.reducerPath]: barbersApi.reducer,
     [facebookApi.reducerPath]: facebookApi.reducer
   },
   middleware: getDefaultMiddleware =>
-    getDefaultMiddleware().concat([authApi.middleware, servicesApi.middleware, turnsApi.middleware, facebookApi.middleware]),
+  getDefaultMiddleware({
+    serializableCheck: false
+  }).concat([authApi.middleware, servicesApi.middleware, turnsApi.middleware, barbersApi.middleware, facebookApi.middleware]),
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
