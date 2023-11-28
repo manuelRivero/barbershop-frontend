@@ -19,6 +19,9 @@ export default function MainNavigator(): JSX.Element {
     const socket = io('https://barbershop-backend-ozy5.onrender.com');
     dispatch(setSocket(socket));
     return () => {
+      if(user?.role === "barber"){
+        socket.emit('remove-online-barber', {user: {_id: user?._id}});
+      }
       socket.close();
       dispatch(removeSocket());
     };
