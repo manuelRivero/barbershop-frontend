@@ -23,7 +23,7 @@ import {
   resetAllturns,
 } from '../../store/features/turnsSlice';
 import {useAddTurnMutation, useGetTurnsQuery} from '../../api/turnsApi';
-import {showInfoModal} from '../../store/features/layoutSlice';
+import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 
@@ -34,7 +34,7 @@ const hours = [
 ];
 
 const businessHoursStart = moment().set({hour: 9, minute: 0, second: 0});
-const businessHoursEnd = moment().set({hour: 20, minute: 0, second: 0});
+const businessHoursEnd = moment().set({hour: 23, minute: 0, second: 0});
 
 export default function Schedule() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -88,24 +88,41 @@ export default function Schedule() {
           cancelCb: () => {},
           hasSubmit: true,
           submitCb: () => {
-            handleRequest().then(res => {
-              dispatch(
+            handleRequest()
+              .then(res => {
+                dispatch(
+                  showInfoModal({
+                    title: '¡Turno agendado!',
+                    type: 'success',
+                    hasCancel: false,
+                    cancelCb: null,
+                    hasSubmit: false,
+                    submitCb: null,
+                    hideOnAnimationEnd: true,
+                    submitData: null,
+                    cancelData: null,
+                  }),
+                ),
+                  dispatch(addTurn(res.turn));
+                setSelectedService(null);
+                setShowTurnModal(false);
+              })
+              .catch(err => {
                 showInfoModal({
-                  title: '¡Turno agendado!',
-                  type: 'success',
+                  title: '¡No se ha podido agendar tu turno!',
+                  type: 'error',
                   hasCancel: false,
                   cancelCb: null,
-                  hasSubmit: false,
-                  submitCb: null,
-                  hideOnAnimationEnd: true,
-                  submitData: null,
+                  hasSubmit: true,
+                  submitData: {
+                    text: 'Intentar nuevamente',
+                    background: '$primary500',
+                  },
+                  submitCb: () => dispatch(hideInfoModal()),
+                  hideOnAnimationEnd: false,
                   cancelData: null,
-                }),
-              ),
-                dispatch(addTurn(res.turn));
-              setSelectedService(null);
-              setShowTurnModal(false);
-            });
+                });
+              });
           },
           hideOnAnimationEnd: false,
           submitData: {
@@ -326,7 +343,10 @@ export default function Schedule() {
         onSelect={handleAddTurn}
         turns={turnList}
         show={showTurnModal}
-        onClose={() => setShowTurnModal(false)}
+        onClose={() => {
+          setShowTurnModal(false);
+          setSelectedService(null);
+        }}
       />
     </>
   );
