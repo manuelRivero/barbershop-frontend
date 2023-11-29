@@ -166,7 +166,7 @@ export default function Schedule() {
             let nextSlotValidation = false;
             if(hasNextSlot){
               console.log("hasNextSlot", hasNextSlot, slotArray[slotIndex + 1] )
-              nextSlotValidation = moment(endTime, 'hh:mm A').isBetween(slotArray[slotIndex + 1].startDate, slotArray[slotIndex + 1].endDate)
+              nextSlotValidation = moment(endTime).isBetween(slotArray[slotIndex + 1].startDate, slotArray[slotIndex + 1].endDate)
             }
             return (
               moment(slot.startDate, 'hh:mm A').isBetween(
