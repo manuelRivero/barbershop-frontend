@@ -83,14 +83,14 @@ export default function UserServiceSelection({route}: any) {
             selectedService.duration,
             'minutes',
           );
-          const isSlotAvailable = ![...turns].some((slot, slotIndex) => {
-            const hasNextSlog = slotIndex + 1 < turns.length;
-            console.log("slotIndex", slotIndex)
+          const isSlotAvailable = ![...turns].some((slot, slotIndex, slotArray) => {
+            const hasNextSlot = slotIndex + 1 < slotArray.length;
+            
             let nextSlotValidation = false;
-            if(hasNextSlog){
-              nextSlotValidation = moment(endTime, 'hh:mm A').isSameOrAfter(turns[slotIndex + 1].startDate)
+            if(hasNextSlot){
+              console.log("hasNextSlot", hasNextSlot, slotArray[slotIndex + 1] )
+              nextSlotValidation = moment(endTime, 'hh:mm A').isBetween(slotArray[slotIndex + 1].startDate, slotArray[slotIndex + 1].endDate)
             }
-            console.log("nextSlotValidation", slot.startDate, turns[slotIndex + 1].startDate, nextSlotValidation)
             return (
               moment(slot.startDate, 'hh:mm A').isBetween(
                 currentTime,

@@ -160,15 +160,24 @@ export default function Schedule() {
             selectedService.duration,
             'minutes',
           );
-          const isSlotAvailable = ![...turns].some(
-            slot =>
+          const isSlotAvailable = ![...turns].some((slot, slotIndex, slotArray) => {
+            const hasNextSlot = slotIndex + 1 < slotArray.length;
+            
+            let nextSlotValidation = false;
+            if(hasNextSlot){
+              console.log("hasNextSlot", hasNextSlot, slotArray[slotIndex + 1] )
+              nextSlotValidation = moment(endTime, 'hh:mm A').isBetween(slotArray[slotIndex + 1].startDate, slotArray[slotIndex + 1].endDate)
+            }
+            return (
               moment(slot.startDate, 'hh:mm A').isBetween(
                 currentTime,
                 endTime,
               ) ||
               moment(slot.endDate, 'hh:mm A').isBetween(currentTime, endTime) ||
-              moment(currentTime).isBetween(slot.startDate, slot.endDate),
-          );
+              moment(currentTime).isBetween(slot.startDate, slot.endDate) ||
+              nextSlotValidation
+            );
+          });
 
           if (isSlotAvailable) {
             slots.push({
