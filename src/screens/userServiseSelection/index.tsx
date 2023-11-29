@@ -83,15 +83,24 @@ export default function UserServiceSelection({route}: any) {
             selectedService.duration,
             'minutes',
           );
-          const isSlotAvailable = ![...turns].some(
-            slot =>
+          const isSlotAvailable = ![...turns].some((slot, slotIndex) => {
+            const hasNextSlog = slotIndex + 1 < turns.length;
+            console.log("slotIndex", slotIndex)
+            let nextSlotValidation = false;
+            if(hasNextSlog){
+              nextSlotValidation = moment(endTime, 'hh:mm A').isSameOrAfter(turns[slotIndex + 1].startDate)
+            }
+            console.log("nextSlotValidation", slot.startDate, turns[slotIndex + 1].startDate, nextSlotValidation)
+            return (
               moment(slot.startDate, 'hh:mm A').isBetween(
                 currentTime,
                 endTime,
               ) ||
               moment(slot.endDate, 'hh:mm A').isBetween(currentTime, endTime) ||
-              moment(currentTime).isBetween(slot.startDate, slot.endDate),
-          );
+              moment(currentTime).isBetween(slot.startDate, slot.endDate) ||
+              nextSlotValidation
+            );
+          });
 
           if (isSlotAvailable) {
             slots.push({
@@ -189,6 +198,7 @@ export default function UserServiceSelection({route}: any) {
                   submitCb: () => {
                     dispatch(hideInfoModal());
                     setShowTurnModal(false);
+                    refetchTurns();
                   },
                   hideOnAnimationEnd: false,
                   cancelData: null,

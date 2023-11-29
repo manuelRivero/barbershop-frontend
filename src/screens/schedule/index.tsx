@@ -118,7 +118,7 @@ export default function Schedule() {
                     text: 'Intentar nuevamente',
                     background: '$primary500',
                   },
-                  submitCb: () => {dispatch(hideInfoModal()); setShowTurnModal(false)},
+                  submitCb: () => {dispatch(hideInfoModal()); setShowTurnModal(false); refetchTurns()},
                   hideOnAnimationEnd: false,
                   cancelData: null,
                 });

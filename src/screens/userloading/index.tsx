@@ -38,7 +38,7 @@ export default function UserLoading() {
         if (hasPermissions !== RESULTS.GRANTED) {
           dispatch(
             showInfoModal({
-              title: '¡Necesitamos permisos para enviarte notificaciones!',
+              title: '¡Necesitamos permisos para enviarte notificaciones! versión de android :' + platform,
               type: 'info',
               hasCancel: false,
               cancelCb: null,
