@@ -186,7 +186,7 @@ export default function UserServiceSelection({route}: any) {
                     text: 'Intentar nuevamente',
                     background: '$primary500',
                   },
-                  submitCb: ()=>dispatch(hideInfoModal()),
+                  submitCb: () => dispatch(hideInfoModal()),
                   hideOnAnimationEnd: false,
                   cancelData: null,
                 }),
@@ -227,7 +227,9 @@ export default function UserServiceSelection({route}: any) {
         moment()
           .utc()
           .utcOffset(3, true)
-          .isAfter(moment().set({hour: 23, minutes: 0}))
+          .isAfter(
+            moment().utc().utcOffset(3, true).set({hour: 23, minutes: 0}),
+          )
       ) {
         if (turns.length > 0) {
           dispatch(resetAllturns());

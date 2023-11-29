@@ -200,7 +200,9 @@ export default function Schedule() {
         moment()
           .utc()
           .utcOffset(3, true)
-          .isAfter(moment().set({hour: 23, minutes: 0}))
+          .isAfter(
+            moment().utc().utcOffset(3, true).set({hour: 23, minutes: 0}),
+          )
       ) {
         if (turns.length > 0) {
           dispatch(resetAllturns());
