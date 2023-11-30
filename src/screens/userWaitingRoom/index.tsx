@@ -1,4 +1,4 @@
-import {HStack, Box, Text, Heading} from '@gluestack-ui/themed';
+import {HStack, Box, Text, Heading, Center} from '@gluestack-ui/themed';
 import Clock from 'react-live-clock';
 
 import React from 'react';
@@ -36,7 +36,9 @@ export default function UserWaitingRoom({route}: any) {
       <Heading textAlign="center" color="$textDark500">
         Sala de espera
       </Heading>
-      <Box p="$4">
+      <Center>
+
+      <Box p="$4" w={"$full"} maxWidth={400}>
         <Box softShadow={'1'} p="$4" bg="$white" borderRadius="$lg">
           <Text color="$textDark500">
             Tienes un turno agendado para :{' '}
@@ -57,13 +59,17 @@ export default function UserWaitingRoom({route}: any) {
             </Text>
           </Text>
         </Box>
+        <HStack justifyContent='center' mt="$4">
         <LottieView
               style={{width: 150, height: 150}}
               source={require("./../../assets/lottie/waiting.json")}
               autoPlay
               loop={true}
             />
+
+        </HStack>
       </Box>
+      </Center>
     </Box>
   );
 }

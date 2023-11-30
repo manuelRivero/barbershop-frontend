@@ -1,27 +1,51 @@
 import React from 'react';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import BarberSelection from '../../screens/barberSelection';
 import UserServiceSelection from '../../screens/userServiseSelection';
 import UserWaitingRoom from '../../screens/userWaitingRoom';
+import UserTabBar from '../../components/layout/userTabBar';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 
 export type RootStackParamList = {
   BarberSelection: undefined;
   UserServiceSelection: {id: number};
-  UserWaitingRoom: {turnId:number};
+  UserWaitingRoom: {turnId: number};
 };
-const Stack = createNativeStackNavigator<RootStackParamList>();
+
+export type TabsStackParamList = {
+  Schedule: undefined
+}
+
+const Tab = createBottomTabNavigator<TabsStackParamList>();
 
 export default function UserNavigator(): JSX.Element {
   return (
-    <Stack.Navigator screenOptions={{headerShown: false}}>
+    <Tab.Navigator
+      tabBar={props => <UserTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}>
       <>
-        <Stack.Screen name="BarberSelection" component={BarberSelection} />
-        <Stack.Screen
-          name="UserServiceSelection"
-          component={UserServiceSelection}
-        />
-        <Stack.Screen name="UserWaitingRoom" component={UserWaitingRoom} />
+        <Tab.Screen name="Schedule" component={Schedule}/>
       </>
-    </Stack.Navigator>
+    </Tab.Navigator>
   );
 }
+
+const Stack = createNativeStackNavigator();
+
+const Schedule = () => {
+  return (
+    <Stack.Navigator
+      initialRouteName="BarberSelection"
+      screenOptions={{headerShown: false}}>
+      <Stack.Screen name="BarberSelection" component={BarberSelection} />
+      <Stack.Screen
+        name="UserServiceSelection"
+        component={UserServiceSelection}
+      />
+
+      <Stack.Screen name="UserWaitingRoom" component={UserWaitingRoom} />
+    </Stack.Navigator>
+  );
+};
