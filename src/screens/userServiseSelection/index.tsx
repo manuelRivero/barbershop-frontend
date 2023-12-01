@@ -153,7 +153,7 @@ export default function UserServiceSelection({route}: any) {
 
       dispatch(
         showInfoModal({
-          title: `¡Deseas agendar este turno ${moment(turn.startDate).format(
+          title: `¡Deseas agendar este turno ${moment(turn.startDate).utc().utcOffset(3, true).format(
             'hh:mm',
           )}?`,
           type: 'info',
@@ -213,6 +213,7 @@ export default function UserServiceSelection({route}: any) {
           submitData: {
             text: 'Agendar',
             background: '$green500',
+            hasLoader: true
           },
           cancelData: {
             text: 'Cancelar',

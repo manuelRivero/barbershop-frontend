@@ -46,6 +46,7 @@ export default function Schedule() {
   const {turns} = useAppSelector((state: RootState) => state.turns);
   const {user} = useAppSelector((state: RootState) => state.auth);
   const {socket} = useAppSelector((state: RootState) => state.layout);
+  const [restartTime, setRestartTime] = useState<moment.Moment>(moment().utc().utcOffset(3, true).set({hour: 0, minutes: 0}))
 
   const {
     data: turnsData,
@@ -83,7 +84,7 @@ export default function Schedule() {
 
       dispatch(
         showInfoModal({
-          title: `¡Deseas agendar este turno ${moment(turn.startDate).format(
+          title: `¡Deseas agendar este turno ${moment(turn.startDate).utc().utcOffset(3, true).format(
             'hh:mm',
           )}?`,
           type: 'info',
@@ -131,6 +132,7 @@ export default function Schedule() {
           submitData: {
             text: 'Agendar',
             background: '$green500',
+            hasLoader: true
           },
           cancelData: {
             text: 'Cancelar',
@@ -214,10 +216,10 @@ export default function Schedule() {
         moment()
           .utc()
           .utcOffset(3, true)
-          .isAfter(
-            moment().utc().utcOffset(3, true).set({hour: 23, minutes: 0}),
-          )
+          .isAfter(restartTime)
+          
       ) {
+        setRestartTime(moment().utc().utcOffset(3, true).set({hour: 0, minutes: 0}))
         if (turns.length > 0) {
           dispatch(resetAllturns());
         }
@@ -226,6 +228,8 @@ export default function Schedule() {
 
     return () => clearInterval(interval);
   }, []);
+
+
 
   React.useEffect(() => {
     if (turnsData) {

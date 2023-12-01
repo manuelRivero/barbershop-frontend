@@ -1,24 +1,20 @@
-import React, {useRef} from 'react';
+import React, {useRef, useState} from 'react';
 import {
   Button,
   Heading,
   Modal,
   ModalBackdrop,
   ModalBody,
-  ModalCloseButton,
   ModalContent,
   ModalFooter,
-  ModalHeader,
-  Icon,
   Text,
-  CloseIcon,
   ButtonText,
-  Box,
   HStack,
 } from '@gluestack-ui/themed';
 import {RootState, useAppDispatch, useAppSelector} from '../../../store';
 import {hideInfoModal} from '../../../store/features/layoutSlice';
 import LottieView from 'lottie-react-native';
+import BaseButton from '../baseButton';
 
 const animations = {
   success: require('../../../assets/lottie/success.json'),
@@ -29,6 +25,7 @@ const animations = {
 export default function InfoModal() {
   const dispatch = useAppDispatch();
   const {infoModal} = useAppSelector((state: RootState) => state.layout);
+  const [loadingSubmit, setLoadingSubmit] = useState<boolean>(false);
 
   const handleClose = () => {
     dispatch(hideInfoModal());
@@ -37,12 +34,15 @@ export default function InfoModal() {
   const handleCancel = () => {
     if (infoModal?.cancelCb) {
       infoModal.cancelCb();
-      handleClose()
+      handleClose();
     }
   };
   const handleSubmit = () => {
     if (infoModal?.submitCb) {
       infoModal.submitCb();
+      if (infoModal.submitData.hasLoader) {
+        setLoadingSubmit(true);
+      }
     }
   };
   const handleAnimationEnd = () => {
@@ -83,16 +83,15 @@ export default function InfoModal() {
               </Button>
             )}
             {infoModal?.hasSubmit && infoModal?.submitData && (
-              <Button
-                variant="solid"
-                size="sm"
+              <BaseButton
+                title={infoModal?.submitData?.text}
                 bg={infoModal?.submitData?.background}
-                borderColor={'$blueGray500'}
-                onPress={handleSubmit}>
-                <ButtonText color={'$white'}>
-                  {infoModal?.submitData?.text}
-                </ButtonText>
-              </Button>
+                color="$white"
+                onPress={handleSubmit}
+                disabled={loadingSubmit}
+                hasIcon={false}
+                isLoading={loadingSubmit}
+              />
             )}
           </HStack>
         </ModalFooter>

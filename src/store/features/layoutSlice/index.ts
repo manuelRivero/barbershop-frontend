@@ -13,7 +13,8 @@ interface InfoModal {
   hideOnAnimationEnd: boolean;
   submitData?:{
     background: string,
-    text: string
+    text: string,
+    hasLoader?:boolean
   } | null ;
   cancelData?:{
     background: string,
