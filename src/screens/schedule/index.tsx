@@ -28,15 +28,18 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 
 import PushNotification from 'react-native-push-notification';
+import { getDateByTimeZone, setHours } from '../../helpers';
 
 const hours = [
   9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,
 ];
 
 const businessHoursStart = moment().set({hour: 9, minute: 0, second: 0});
-const businessHoursEnd = moment().set({hour: 23, minute: 0, second: 0});
 
 export default function Schedule() {
+  const businessHoursEnd = moment().set({hour: 23, minute: 0, second: 0}).utc().utcOffset(3, true);
+
+  
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const dispatch = useAppDispatch();
@@ -267,6 +270,7 @@ export default function Schedule() {
       socket?.off('add-turn');
     };
   }, []);
+
 
   return (
     <>
