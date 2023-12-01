@@ -28,7 +28,7 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 
 import PushNotification from 'react-native-push-notification';
-import { getDateByTimeZone, setHours } from '../../helpers';
+
 
 const hours = [
   9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,
