@@ -78,20 +78,22 @@ export default function UserServiceSelection({route}: any) {
       if (selectedService) {
         const slots = [];
         let currentTime = moment().utc().utcOffset(3, true);
+        console.log("currentTime", currentTime)
 
         while (currentTime.isBefore(businessHoursEnd)) {
           const endTime = moment(currentTime).add(
             selectedService.duration,
             'minutes',
           );
-          const isSlotAvailable = ![...turns].some((slot, slotIndex, slotArray) => {
+          const isSlotAvailable = ![...turns].sort(function (left, right) {
+            return moment(left.startDate).diff(moment(right.startDate));
+          }).some((slot, slotIndex, slotArray) => {
             const hasNextSlot = slotIndex + 1 < slotArray.length;
-            
             let nextSlotValidation = false;
             if(hasNextSlot){
-              console.log("hasNextSlot", hasNextSlot, slotArray[slotIndex + 1] )
-              nextSlotValidation = moment(endTime).isBetween(slotArray[slotIndex + 1].startDate, slotArray[slotIndex + 1].endDate)
+              nextSlotValidation = endTime.clone().isBetween( moment(slotArray[slotIndex + 1].startDate),moment(slotArray[slotIndex + 1].endDate))
             }
+            console.log("curren time", currentTime.clone().isSameOrAfter(slot.startDate))
             return (
               moment(slot.startDate, 'hh:mm A').isBetween(
                 currentTime,
@@ -99,7 +101,7 @@ export default function UserServiceSelection({route}: any) {
               ) ||
               moment(slot.endDate, 'hh:mm A').isBetween(currentTime, endTime) ||
               moment(currentTime).isBetween(slot.startDate, slot.endDate) ||
-              nextSlotValidation
+              nextSlotValidation 
             );
           });
 
