@@ -66,6 +66,7 @@ export default function UserServiceSelection({route}: any) {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
+  const [restartTime, setRestartTime] = useState<moment.Moment>(moment().utc().utcOffset(3, true).set({hour: 0, minutes: 0}))
 
   useEffect(() => {
     if (data) {
@@ -258,10 +259,11 @@ export default function UserServiceSelection({route}: any) {
         moment()
           .utc()
           .utcOffset(3, true)
-          .isAfter(
-            moment().utc().utcOffset(3, true).set({hour: 23, minutes: 0}),
-          )
+          .isAfter(restartTime)
+          
       ) {
+        const day = moment().utc().utcOffset(3, true).get("date").toLocaleString()
+        setRestartTime(moment().set({date: parseInt(day) + 1, hour: 0, minute: 0, second: 0}).utc().utcOffset(3, true))
         if (turns.length > 0) {
           dispatch(resetAllturns());
         }
@@ -269,7 +271,7 @@ export default function UserServiceSelection({route}: any) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [restartTime]);
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
