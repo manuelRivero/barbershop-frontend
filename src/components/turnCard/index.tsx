@@ -49,9 +49,9 @@ export default function TurnCard({event}: Props) {
             fontWeight="bold"
             color={
               status === 'COMPLETE' ? '$white' : '$textDark500'
-            }>{`${moment(event.startDate).utc().format('hh:mm')} - ${moment(
+            }>{`${moment(event.startDate).utc().format('hh:mm A')} - ${moment(
             event.endDate,
-          ).utc().format('hh:mm')}`}</Text>
+          ).utc().format('hh:mm A')}`}</Text>
         </HStack>
         <HStack space="xs" alignItems="center">
           <Icon

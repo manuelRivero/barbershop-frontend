@@ -37,7 +37,7 @@ const hours = [
 const businessHoursStart = moment().set({hour: 9, minute: 0, second: 0});
 
 export default function Schedule() {
-  const businessHoursEnd = moment().set({hour: 23, minute: 50, second: 0}).utc().utcOffset(3, true);
+  const businessHoursEnd = moment().set({ hour: 23, minute: 50, second: 0}).utc().utcOffset(3, true);
   
   console.log("businessHoursEnd", businessHoursEnd)
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -63,6 +63,8 @@ export default function Schedule() {
 
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+
+  const [firtsAvailableTurnTime, setFirtsAvailableTurnTime] = useState<moment.Moment | null >(null)
 
   const handleAddTurn = async (turn: TurnSelectItem) => {
     if (selectedService && user) {
@@ -154,47 +156,113 @@ export default function Schedule() {
     // }
   };
 
+  // useEffect(() => {
+  //   const checkTurnForServiceTime = async () => {
+  //     if (selectedService) {
+  //       const slots = [];
+  //       let currentTime = moment().utc().utcOffset(3, true);
+  //       console.log("currentTime", currentTime)
+
+  //       while (currentTime.isBefore(businessHoursEnd)) {
+  //         const endTime = moment(currentTime).add(
+  //           selectedService.duration,
+  //           'minutes',
+  //         );
+  //         const isSlotAvailable = ![...turns].sort(function (left, right) {
+  //           return moment(left.startDate).diff(moment(right.startDate));
+  //         }).some((slot, slotIndex, slotArray) => {
+  //           const hasNextSlot = slotIndex + 1 < slotArray.length;
+  //           let nextSlotValidation = false;
+  //           if(hasNextSlot){
+  //             nextSlotValidation = endTime.clone().isBetween( moment(slotArray[slotIndex + 1].startDate),moment(slotArray[slotIndex + 1].endDate))
+  //           }
+  //           console.log("curren time", currentTime.clone().isSameOrAfter(slot.startDate))
+  //           return (
+  //             moment(slot.startDate, 'hh:mm A').isBetween(
+  //               currentTime,
+  //               endTime,
+  //             ) ||
+  //             moment(slot.endDate, 'hh:mm A').isBetween(currentTime, endTime) ||
+  //             moment(currentTime).isBetween(slot.startDate, slot.endDate) ||
+  //             nextSlotValidation 
+  //           );
+  //         });
+
+  //         if (isSlotAvailable) {
+  //           slots.push({
+  //             startDate: currentTime.toDate(),
+  //             endDate: endTime.toDate(),
+  //           });
+  //         }
+
+  //         currentTime = endTime;
+  //       }
+  //       setTurnList(slots);
+  //       setFirtsAvailableTurnTime(moment(slots[0].startDate))
+  //       setShowTurnModal(true);
+  //     }
+  //   };
+
+  //   if (selectedService) {
+  //     checkTurnForServiceTime();
+  //   }
+  // }, [selectedService]);
+
   useEffect(() => {
+    function removeElementAt(arr:any, index:number) {
+      let frontPart = arr.slice(0, index);
+      let lastPart  = arr.slice( index+1 ); // index to end of array
+      return [...frontPart, ...lastPart];
+   }
     const checkTurnForServiceTime = async () => {
       if (selectedService) {
         const slots = [];
+        let turnsList = [...turns]
         let currentTime = moment().utc().utcOffset(3, true);
-        console.log("currentTime", currentTime)
-
+        
         while (currentTime.isBefore(businessHoursEnd)) {
-          const endTime = moment(currentTime).add(
+          console.log("currentTime", currentTime)
+          const endTime = currentTime.clone().add(
             selectedService.duration,
             'minutes',
           );
-          const isSlotAvailable = ![...turns].sort(function (left, right) {
+          const isSlotInavailable = [...turnsList].sort(function (left, right) {
             return moment(left.startDate).diff(moment(right.startDate));
-          }).some((slot, slotIndex, slotArray) => {
+          }).findIndex((slot, slotIndex, slotArray) => {
             const hasNextSlot = slotIndex + 1 < slotArray.length;
             let nextSlotValidation = false;
             if(hasNextSlot){
-              nextSlotValidation = endTime.clone().isBetween( moment(slotArray[slotIndex + 1].startDate),moment(slotArray[slotIndex + 1].endDate))
+              nextSlotValidation = endTime.clone().isBetween( moment(slotArray[slotIndex + 1].startDate),moment(slotArray[slotIndex + 1].endDate)) || currentTime.clone().isBetween( moment(slotArray[slotIndex + 1].startDate),moment(slotArray[slotIndex + 1].endDate))
             }
-            console.log("curren time", currentTime.clone().isSameOrAfter(slot.startDate))
             return (
-              moment(slot.startDate, 'hh:mm A').isBetween(
+              moment(slot.startDate).isBetween(
                 currentTime,
                 endTime,
               ) ||
-              moment(slot.endDate, 'hh:mm A').isBetween(currentTime, endTime) ||
+              moment(slot.endDate).isBetween(currentTime, endTime) ||
               moment(currentTime).isBetween(slot.startDate, slot.endDate) ||
-              nextSlotValidation 
+              nextSlotValidation || endTime.isBetween(slot.startDate, slot.endDate) 
             );
           });
-
-          if (isSlotAvailable) {
+          if (isSlotInavailable < 0) {
+            console.log("available slot", currentTime, endTime)
             slots.push({
               startDate: currentTime.toDate(),
               endDate: endTime.toDate(),
             });
+            currentTime = endTime;
+          } else {
+            if(moment(turnsList[isSlotInavailable].endDate).isAfter(currentTime)){
+              console.log("diff", currentTime, turnsList[isSlotInavailable].endDate, moment(turnsList[isSlotInavailable].endDate).diff(currentTime, 'minutes') )
+              currentTime = currentTime.clone().add(moment(turnsList[isSlotInavailable].endDate).diff(currentTime, 'minutes') + 1, "minutes")
+
+            }
+
+            turnsList = removeElementAt(turnsList,isSlotInavailable)
           }
 
-          currentTime = endTime;
         }
+        
         setTurnList(slots);
         setShowTurnModal(true);
       }
@@ -204,7 +272,6 @@ export default function Schedule() {
       checkTurnForServiceTime();
     }
   }, [selectedService]);
-
   const handleServiceSelect = (e: Service) => {
     setSelectedService(e);
     setShowServiceModal(false);
@@ -219,7 +286,8 @@ export default function Schedule() {
           .isAfter(restartTime)
           
       ) {
-        setRestartTime(moment().utc().utcOffset(3, true).set({hour: 0, minutes: 0}))
+        const day = moment().utc().utcOffset(3, true).get("date").toLocaleString()
+        setRestartTime(moment().set({date: parseInt(day) + 1, hour: 0, minute: 0, second: 0}).utc().utcOffset(3, true))
         if (turns.length > 0) {
           dispatch(resetAllturns());
         }
@@ -227,9 +295,7 @@ export default function Schedule() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
-
-
+  }, [restartTime]);
 
   React.useEffect(() => {
     if (turnsData) {
@@ -363,6 +429,7 @@ export default function Schedule() {
         onSelect={handleAddTurn}
         turns={turnList}
         show={showTurnModal}
+        time={firtsAvailableTurnTime}
         onClose={() => {
           setShowTurnModal(false);
           setSelectedService(null);

@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   Button,
   Heading,
@@ -40,7 +40,7 @@ export default function InfoModal() {
   const handleSubmit = () => {
     if (infoModal?.submitCb) {
       infoModal.submitCb();
-      if (infoModal.submitData.hasLoader) {
+      if (infoModal?.submitData?.hasLoader) {
         setLoadingSubmit(true);
       }
     }
@@ -51,6 +51,11 @@ export default function InfoModal() {
       dispatch(hideInfoModal());
     }
   };
+  useEffect(()=>{
+    if(!Boolean(infoModal)){
+      setLoadingSubmit(false)
+    }
+  },[infoModal])
   return (
     <Modal isOpen={Boolean(infoModal)} bg="$primary100">
       <ModalBackdrop />
@@ -85,7 +90,7 @@ export default function InfoModal() {
             {infoModal?.hasSubmit && infoModal?.submitData && (
               <BaseButton
                 title={infoModal?.submitData?.text}
-                bg={infoModal?.submitData?.background}
+                background={infoModal?.submitData?.background}
                 color="$white"
                 onPress={handleSubmit}
                 disabled={loadingSubmit}
