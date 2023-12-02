@@ -43,7 +43,7 @@ export default function UserWaitingRoom({route}: any) {
           <Text color="$textDark500">
             Tienes un turno agendado para :{' '}
             <Text color="$textDark900" fontWeight="bold">
-              {moment(data.turn[0].startDate).format('hh:mm')}
+              {moment(data.turn[0].startDate).utc().utcOffset(3, true).format('hh:mm')}
             </Text>
           </Text>
           <Text color="$textDark500">

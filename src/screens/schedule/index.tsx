@@ -319,8 +319,8 @@ export default function Schedule() {
       PushNotification.localNotification({
         /* Android Only Properties */
         channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
-        bigText: `Turno agendado para ${moment(data.startDate).format(
-          'hh:mm',
+        bigText: `Turno agendado para ${moment(data.startDate).utc().utcOffset(3, true).format(
+          'hh:mm A',
         )}`, // (optional) default: "message" prop
         vibrate: true, // (optional) default: true
         vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
@@ -334,7 +334,6 @@ export default function Schedule() {
         /* iOS only properties */
 
         message: 'Tienes un nuevo turno', // (required)
-        repeatType: 'minute', // (optional) Repeating interval. Check 'Repeating Notifications' section for more info.
       });
     });
 
