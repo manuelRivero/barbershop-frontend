@@ -89,10 +89,6 @@ export default function UserLoading() {
   }, []);
 
   return (
-    <HStack justifyContent="center" alignItems="center" flex={1} w={'$full'}>
-      <VStack justifyContent="center" alignItems="center" flex={1} w={'$full'}>
-        <Loader />
-      </VStack>
-    </HStack>
+    <Loader />
   );
 }
