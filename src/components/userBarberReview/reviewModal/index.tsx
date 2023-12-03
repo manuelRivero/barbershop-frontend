@@ -70,7 +70,6 @@ export default function ReviewModal({onClose, show, barberId}: Props) {
               render={({field, fieldState}) => {
                 return (
                   <BaseTextArea
-                    keyboard="default"
                     label="Comentario"
                     value={field.value}
                     onChange={e => field.onChange(e.nativeEvent.text)}
