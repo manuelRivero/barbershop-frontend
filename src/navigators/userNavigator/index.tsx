@@ -5,11 +5,13 @@ import UserServiceSelection from '../../screens/userServiseSelection';
 import UserWaitingRoom from '../../screens/userWaitingRoom';
 import UserTabBar from '../../components/layout/userTabBar';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import UserBarberReview from '../../screens/userBarberReview';
 
 export type RootStackParamList = {
   BarberSelection: undefined;
   UserServiceSelection: {id: number};
   UserWaitingRoom: {turnId: number};
+  UserBarberReview: {id: number}
 };
 
 export type TabsStackParamList = {
@@ -40,6 +42,7 @@ const Schedule = () => {
       initialRouteName="BarberSelection"
       screenOptions={{headerShown: false}}>
       <Stack.Screen name="BarberSelection" component={BarberSelection} />
+      <Stack.Screen name="UserBarberReview" component={UserBarberReview} />
       <Stack.Screen
         name="UserServiceSelection"
         component={UserServiceSelection}

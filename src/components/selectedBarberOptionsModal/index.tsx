@@ -17,7 +17,6 @@ import {
 } from '@gluestack-ui/themed';
 import React, {useRef} from 'react';
 import {useNavigation} from '@react-navigation/native';
-import {useGetBarbersQuery} from '../../api/barbersApi';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 interface Props {
   show: boolean;
@@ -35,25 +34,30 @@ export default function SelectBarberOptionsModal({
 
   const handleReview = () => {
     navigation.navigate("UserBarberReview",{id:barberId})
+    onClose()
   }
   const handleGallery = () => {
     navigation.navigate("UserBarberGallery",{id:barberId})
+    onClose()
+
   }
   const handleReservation = () => {
     navigation.navigate('UserServiceSelection', {
       id: barberId,
     })
+    onClose()
+
   }
   return (
     <Modal
       isOpen={show && Boolean(barberId)}
       onClose={onClose}
       finalFocusRef={ref}
-      bg={'$primary100'}>
+      >
       <ModalBackdrop />
       <ModalContent bg={'$white'}>
         <ModalHeader>
-          <Heading size="lg">Servicios</Heading>
+          <Heading size="lg"></Heading>
           <ModalCloseButton>
             <Icon as={CloseIcon} />
           </ModalCloseButton>
@@ -62,6 +66,7 @@ export default function SelectBarberOptionsModal({
           <Pressable onPress={handleGallery}>
             <Box
               softShadow={'2'}
+              mb="$2"
               borderColor="$primary100"
               borderWidth={2}
               borderStyle="solid"
@@ -74,6 +79,7 @@ export default function SelectBarberOptionsModal({
           <Pressable onPress={handleReview}>
             <Box
               softShadow={'2'}
+              mb="$2"
               borderColor="$primary100"
               borderWidth={2}
               borderStyle="solid"
@@ -86,6 +92,7 @@ export default function SelectBarberOptionsModal({
           <Pressable onPress={handleReservation}>
             <Box
               softShadow={'2'}
+              mb="$2"
               borderColor="$primary100"
               borderWidth={2}
               borderStyle="solid"

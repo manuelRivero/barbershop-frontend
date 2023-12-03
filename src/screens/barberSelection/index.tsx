@@ -16,6 +16,8 @@ export default function BarberSelection() {
   useEffect(() => {
     if (selectedBarber) {
       setIsOpen(true);
+    } else {
+      setIsOpen(false);
     }
   }, [selectedBarber]);
   return isLoading ? (
@@ -35,11 +37,7 @@ export default function BarberSelection() {
               renderItem={(props: ListRenderItemInfo<any>) => {
                 const {item} = props;
                 return (
-                  <Center>
-                    <Pressable onPress={() => setSelectedBarber(item._id)}>
-                      <SelectBarberCard data={item} />
-                    </Pressable>
-                  </Center>
+                      <SelectBarberCard data={item} selectBarber={()=>setSelectedBarber(item._id)} />
                 );
               }}
               ItemSeparatorComponent={() => {

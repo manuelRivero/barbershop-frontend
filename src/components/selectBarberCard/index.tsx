@@ -11,9 +11,10 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 interface Props {
   data: User;
+  selectBarber: any;
 }
 
-export default function SelectBarberCard({data}: Props) {
+export default function SelectBarberCard({data, selectBarber}: Props) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   return (
@@ -71,11 +72,7 @@ export default function SelectBarberCard({data}: Props) {
               <BaseButton
                 background="$primary500"
                 color="$white"
-                onPress={() =>
-                  navigation.navigate('UserServiceSelection', {
-                    id: data._id,
-                  })
-                }
+                onPress={selectBarber}
                 title="Seleccionar"
                 hasIcon={false}
                 disabled={false}

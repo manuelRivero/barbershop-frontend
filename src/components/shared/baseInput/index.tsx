@@ -22,6 +22,8 @@ interface Props {
   keyboard: 'default' | 'number-pad';
   errorMessage: string | undefined;
   type?: 'text' | 'password';
+  multiline?: boolean;
+  numberOfLines?: number;
 }
 export default function BaseInput({
   label,
@@ -34,11 +36,13 @@ export default function BaseInput({
   keyboard,
   errorMessage,
   type = 'text',
+  multiline = false,
+  numberOfLines = 1,
 }: Props) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   return (
     <VStack space="xs">
-      <Text color="$textDark900">{label}</Text>
+      <Text color="$textDark500">{label}</Text>
       <Input
         variant="outline"
         size="md"
@@ -51,6 +55,8 @@ export default function BaseInput({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
         />
         {type === 'password' && (
           <InputSlot pr="$3">
