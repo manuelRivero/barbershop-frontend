@@ -37,7 +37,10 @@ export default function BarberSelection() {
               renderItem={(props: ListRenderItemInfo<any>) => {
                 const {item} = props;
                 return (
-                      <SelectBarberCard data={item} selectBarber={()=>setSelectedBarber(item._id)} />
+                  <Center>
+
+                    <SelectBarberCard data={item} selectBarber={()=>setSelectedBarber(item._id)} />
+                  </Center>
                 );
               }}
               ItemSeparatorComponent={() => {

@@ -6,6 +6,7 @@ import UserWaitingRoom from '../../screens/userWaitingRoom';
 import UserTabBar from '../../components/layout/userTabBar';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import UserBarberReview from '../../screens/userBarberReview';
+import UserBarberGallery from '../../screens/userBarberGallery';
 
 export type RootStackParamList = {
   BarberSelection: undefined;
@@ -43,6 +44,7 @@ const Schedule = () => {
       screenOptions={{headerShown: false}}>
       <Stack.Screen name="BarberSelection" component={BarberSelection} />
       <Stack.Screen name="UserBarberReview" component={UserBarberReview} />
+      <Stack.Screen name="UserBarberGallery" component={UserBarberGallery} />
       <Stack.Screen
         name="UserServiceSelection"
         component={UserServiceSelection}
