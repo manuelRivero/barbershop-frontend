@@ -1,5 +1,5 @@
 export interface Service {
-  _id?: string;
+  _id: string;
   name: string;
   description: string;
   duration: number;

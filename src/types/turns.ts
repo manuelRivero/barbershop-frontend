@@ -1,4 +1,5 @@
 export interface Event {
+  type:string;
   name?: string;
   barber?: string;
   _id?: string;

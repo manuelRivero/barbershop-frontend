@@ -153,6 +153,7 @@ export default function UserServiceSelection({route}: any) {
       const handleRequest = async () => {
         return addTurnRequest({
           data: {
+            type: selectedService._id,
             name: selectedService.name,
             barber: user?.role === 'barber' ? user?._id : id,
             user: user?.role === 'user' ? user?._id : null,

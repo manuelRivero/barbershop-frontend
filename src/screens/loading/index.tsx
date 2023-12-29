@@ -111,8 +111,6 @@ export default function Loading() {
   },[])
 
   return (
-    <VStack justifyContent="center" alignItems="center" flex={1}>
       <Loader />
-    </VStack>
   );
 }

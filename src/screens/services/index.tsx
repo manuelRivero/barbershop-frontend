@@ -8,6 +8,7 @@ import {
   Image,
   Text,
   FlatList,
+  VStack,
 } from '@gluestack-ui/themed';
 import Clock from 'react-live-clock';
 import BaseButton from '../../components/shared/baseButton';
@@ -15,7 +16,7 @@ import CreateServiceModal from '../../components/createServiceModal';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {Service} from '../../types/services';
 import ServiceCard from '../../components/shared/serviceCard';
-import {ListRenderItemInfo} from 'react-native';
+import {Dimensions, ListRenderItemInfo} from 'react-native';
 import {
   addAllServices,
   toggleCreateServiceModal,
@@ -23,6 +24,10 @@ import {
 import {useGetServicesQuery} from '../../api/servicesApi';
 import {useNavigation} from '@react-navigation/native';
 import Loader from '../../components/shared/loader';
+import LinearGradient from 'react-native-linear-gradient';
+
+const {width} = Dimensions.get('window');
+
 
 export default function Services() {
   const navigation = useNavigation();
@@ -56,14 +61,26 @@ export default function Services() {
     return(<Loader />)
   }
   return (
-    <>
-      <Box bg="$primary100" flex={1}>
-        <HStack
-          sx={{
-            _text: {
-              color: '$amber100',
-            },
-          }}
+    <LinearGradient
+    style={{flex: 1}}
+    colors={['#fff', '#f1e2ca']}
+    start={{x: 0, y: 0.6}}
+    end={{x: 0, y: 1}}>
+      <Box flex={1} position='relative'>
+
+      <Box
+          borderRadius={9999}
+          w={width * 3}
+          h={width * 3}
+          position="absolute"
+          bg="#f1e2ca"
+          overflow="hidden"
+          top={-width * 2.75}
+          left={-width}
+          opacity={0.5}
+        />
+        <VStack
+        alignItems='center'
           mt={'$4'}
           width={'100%'}
           justifyContent="center">
@@ -73,15 +90,14 @@ export default function Services() {
             element={Text}
             style={{fontSize: 22, color: '#1f3d56'}}
           />
-        </HStack>
-
-        <ScrollView flex={1}>
           <Heading textAlign="center" color="$textDark500">
             Servicios disponibles
           </Heading>
+        </VStack>
+
           <FlatList
-            contentContainerStyle={{paddingBottom: 50}}
-            p="$4"
+            contentContainerStyle={{padding:16, paddingBottom: 80}}
+            mt="$10"
             data={services}
             renderItem={(props: ListRenderItemInfo<any>) => {
               const {item} = props;
@@ -98,7 +114,6 @@ export default function Services() {
               );
             }}
           />
-        </ScrollView>
 
         <HStack
           position="absolute"
@@ -121,6 +136,6 @@ export default function Services() {
         show={showCreateServiceModal}
         onClose={handleCloseModal}
       />
-    </>
+    </LinearGradient>
   );
 }

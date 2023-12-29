@@ -6,10 +6,11 @@ import layoutSlice from './features/layoutSlice';
 import turnsSlice from './features/turnsSlice';
 import authSlice from './features/authSlice';
 import {authApi} from '../api/authApi';
-import { servicesApi } from '../api/servicesApi';
-import { turnsApi } from '../api/turnsApi';
-import { facebookApi } from '../api/facebookApi';
-import { barbersApi } from '../api/barbersApi';
+import {servicesApi} from '../api/servicesApi';
+import {turnsApi} from '../api/turnsApi';
+import {facebookApi} from '../api/facebookApi';
+import {barbersApi} from '../api/barbersApi';
+import {statApi} from '../api/statsApi';
 
 export const store = configureStore({
   reducer: {
@@ -21,12 +22,20 @@ export const store = configureStore({
     [servicesApi.reducerPath]: servicesApi.reducer,
     [turnsApi.reducerPath]: turnsApi.reducer,
     [barbersApi.reducerPath]: barbersApi.reducer,
-    [facebookApi.reducerPath]: facebookApi.reducer
+    [facebookApi.reducerPath]: facebookApi.reducer,
+    [statApi.reducerPath]: statApi.reducer,
   },
   middleware: getDefaultMiddleware =>
-  getDefaultMiddleware({
-    serializableCheck: false
-  }).concat([authApi.middleware, servicesApi.middleware, turnsApi.middleware, barbersApi.middleware, facebookApi.middleware]),
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }).concat([
+      authApi.middleware,
+      servicesApi.middleware,
+      turnsApi.middleware,
+      barbersApi.middleware,
+      facebookApi.middleware,
+      statApi.middleware,
+    ]),
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

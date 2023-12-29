@@ -1,6 +1,6 @@
 import React from 'react';
 import {Service} from '../../../types/services';
-import {Box, Icon, Pressable} from '@gluestack-ui/themed';
+import {Box, Icon, Pressable, VStack} from '@gluestack-ui/themed';
 import FastImage from 'react-native-fast-image';
 import {Text} from '@gluestack-ui/themed';
 import {HStack} from '@gluestack-ui/themed';
@@ -76,7 +76,7 @@ export default function ServiceCard({data}: Props) {
   };
   
   return (
-    <Box softShadow={'1'} p="$4" borderRadius="$lg" bg="$white">
+    <Box hardShadow={'1'} p="$4" borderRadius="$lg" bg="$white">
       <HStack space="lg" mb={'$4'}>
         <Image
           style={{width: 100, height: 100}}
@@ -96,7 +96,7 @@ export default function ServiceCard({data}: Props) {
           <Text fontWeight="bold" color="$textDark500">
             {data.name}
           </Text>
-          <HStack space="xs" mt={'$2'} flexWrap="wrap">
+          <VStack space="xs" mt={'$2'} flexWrap="wrap">
             <HStack
               space="xs"
               bg={'$primary100'}
@@ -119,7 +119,7 @@ export default function ServiceCard({data}: Props) {
                 {data.price} pesos
               </Text>
             </HStack>
-          </HStack>
+          </VStack>
         </Box>
       </HStack>
 

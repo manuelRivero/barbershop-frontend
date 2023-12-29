@@ -8,6 +8,7 @@ import {
   HStack,
   Image,
   Text,
+  VStack,
 } from '@gluestack-ui/themed';
 import {Event, TurnSelectItem} from '../../types/turns';
 import Clock from 'react-live-clock';
@@ -26,8 +27,9 @@ import {useAddTurnMutation, useGetTurnsQuery} from '../../api/turnsApi';
 import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
-
+import LinearGradient from 'react-native-linear-gradient';
 import PushNotification from 'react-native-push-notification';
+import { Dimensions } from 'react-native';
 
 
 const hours = [
@@ -35,7 +37,7 @@ const hours = [
 ];
 
 const businessHoursStart = moment().set({hour: 9, minute: 0, second: 0});
-
+const {width} = Dimensions.get("window")
 export default function Schedule() {
   const businessHoursEnd = moment().set({ hour: 23, minute: 50, second: 0}).utc().utcOffset(3, true);
   
@@ -72,6 +74,7 @@ export default function Schedule() {
         return addTurnRequest({
           data: {
             name: selectedService.name,
+            type: selectedService._id,
             barber: user?._id,
             user: null,
             status: 'INCOMPLETE',
@@ -344,36 +347,45 @@ export default function Schedule() {
 
 
   return (
-    <>
-      <Box bg="$primary100" flex={1}>
-        <HStack
-          sx={{
-            _text: {
-              color: '$amber100',
-            },
-          }}
-          mt={'$4'}
+    <LinearGradient style={{flex:1}} colors={['#fff', '#f1e2ca']} start={{x: 0, y: .6}} end={{x: 0, y: 1}}>
+      <Box  flex={1} position="relative">
+
+
+        <Box borderRadius={9999}
+        w={width * 3}
+        h={width * 3}
+        position='absolute' bg="#f1e2ca" overflow='hidden' top={- width * 2.75} left={- width} opacity={.5} />
+        <HStack paddingHorizontal={'$3'}>
+        <VStack
+        alignItems="center"
+        
+        p={'$4'}
           width={'100%'}
-          justifyContent="center">
+          justifyContent="flex-end">
           <Clock
             format={'hh:mm:ss'}
             ticking={true}
             element={Text}
             style={{fontSize: 22, color: '#1f3d56'}}
           />
-        </HStack>
-
-        <ScrollView flex={1}>
-          <Heading textAlign="center" color="$textDark500">
+            <Heading textAlign="center" color="$textDark500">
             Turnos agendados
           </Heading>
-          <Box padding={'$4'}>
-            {turns.length > 0 && (
+          {turns.length > 0 && (
               <Text color="$textDark500" textAlign="center" mb={'$4'}>
                 Los turnos agendados para el día de hoy serán visibles en tu
                 agenda hasta las 11pm.
               </Text>
             )}
+            
+        </VStack>
+
+        </HStack>
+
+        <ScrollView flex={1}>
+        
+          <Box padding={'$4'}>
+           
             {[...turns]
               .sort(function (left, right) {
                 return moment(left.startDate).diff(moment(right.startDate));
@@ -434,6 +446,6 @@ export default function Schedule() {
           setSelectedService(null);
         }}
       />
-    </>
+    </LinearGradient>
   );
 }
