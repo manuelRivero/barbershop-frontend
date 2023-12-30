@@ -14,7 +14,7 @@ interface Props {
 export default function ProfileCard({data}: Props) {
   if (!data) return null;
   return (
-    <Box p="$4" softShadow="1" borderRadius={10} bg="$white">
+    <Box p="$4" hardShadow="1" borderRadius={10} bg="$white">
       <VStack space="md" alignItems="center">
         <Box
           hardShadow="1"

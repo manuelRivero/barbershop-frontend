@@ -371,12 +371,7 @@ export default function Schedule() {
             <Heading textAlign="center" color="$textDark500">
             Turnos agendados
           </Heading>
-          {turns.length > 0 && (
-              <Text color="$textDark500" textAlign="center" mb={'$4'}>
-                Los turnos agendados para el día de hoy serán visibles en tu
-                agenda hasta las 11pm.
-              </Text>
-            )}
+         
             
         </VStack>
 
@@ -385,7 +380,12 @@ export default function Schedule() {
         <ScrollView flex={1}>
         
           <Box padding={'$4'}>
-           
+          {turns.length > 0 && (
+              <Text color="$textDark500" textAlign="center"  mt={'$10'} mb={'$4'}>
+                Los turnos agendados para el día de hoy serán visibles en tu
+                agenda hasta las 11pm.
+              </Text>
+            )}
             {[...turns]
               .sort(function (left, right) {
                 return moment(left.startDate).diff(moment(right.startDate));
@@ -412,6 +412,7 @@ export default function Schedule() {
                 </HStack>
               </>
             )}
+           
           </Box>
         </ScrollView>
         <HStack

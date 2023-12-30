@@ -96,7 +96,7 @@ export default function ServiceCard({data}: Props) {
           <Text fontWeight="bold" color="$textDark500">
             {data.name}
           </Text>
-          <VStack space="xs" mt={'$2'} flexWrap="wrap">
+          <VStack space="sm" mt={'$1'} flexWrap="wrap">
             <HStack
               space="xs"
               bg={'$primary100'}
