@@ -23,7 +23,7 @@ export default function BaseTextArea({
 }: Props) {
   return (
     <VStack space="xs">
-      <Text>{label}</Text>
+      <Text color="$textDark500">{label}</Text>
       <Textarea
         size="md"
         isDisabled={disabled}

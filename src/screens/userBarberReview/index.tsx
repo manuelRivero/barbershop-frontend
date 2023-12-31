@@ -8,30 +8,77 @@ import {ListRenderItemInfo} from 'react-native';
 import {AirbnbRating} from 'react-native-ratings';
 import BaseButton from '../../components/shared/baseButton';
 import ReviewModal from '../../components/userBarberReview/reviewModal';
+import {useGetReviewsQuery} from '../../api/reviewsApi';
+import Loader from '../../components/shared/loader';
+import {User} from '../../types/user';
+import LinearGradient from 'react-native-linear-gradient';
+import {Dimensions} from 'react-native';
 
-const AvatarPlaceholder = require('./../../assets/images/avatar-placeholder.jpeg');
+interface Review {
+  comment: string;
+  score: string;
+  user: User;
+  barber: User;
+  createdAt: string;
+}
+const {width} = Dimensions.get('window');
 
 export default function UserBarberReview({route}: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const [open, setOpen] = useState<boolean>(false);
   const {id} = route.params;
+  const [page, setPage] = useState<number>(1);
+  const {data, isLoading, refetch} = useGetReviewsQuery({barber: id, page});
+  const [open, setOpen] = useState<boolean>(false);
+
+  console.log('data', data);
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      refetch();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  if (isLoading) {
+    return <Loader />;
+  }
   return (
-    <>
-      <Box bg="$primary100" flex={1}>
-        <Box style={{marginTop: 38, marginBottom: 100}}>
-          <HStack justifyContent="space-between" alignItems="center">
-            <Pressable onPress={() => navigation.goBack()} p={'$4'}>
-              <Icon as={ChevronLeftIcon} size={24} color="$textDark500" />
-            </Pressable>
-            <Heading textAlign="center" color="$textDark500">
-              Calificaciones
-            </Heading>
-            <Box p="$6"></Box>
-          </HStack>
+    <LinearGradient
+      style={{flex: 1}}
+      colors={['#fff', '#f1e2ca']}
+      start={{x: 0, y: 0.6}}
+      end={{x: 0, y: 1}}>
+      <Box flex={1} position="relative">
+        <Box
+          borderRadius={9999}
+          w={width * 3}
+          h={width * 3}
+          position="absolute"
+          bg="#f1e2ca"
+          overflow="hidden"
+          top={-width * 2.75}
+          left={-width}
+          opacity={0.5}
+        />
+        <HStack justifyContent="space-between" alignItems="center" p={'$4'}>
+          <Pressable onPress={() => navigation.goBack()} p={'$4'}>
+            <Icon as={ChevronLeftIcon} size={24} color="$textDark500" />
+          </Pressable>
+          <Heading textAlign="center" color="$textDark500">
+            Calificaciones
+          </Heading>
+          <Box p="$6"></Box>
+        </HStack>
+        <Box mt="$10">
           <FlatList
-            contentContainerStyle={{paddingBottom: 50}}
-            p="$4"
-            data={[1, 2, 3, 4]}
+            contentContainerStyle={{padding: 16, paddingBottom: 24}}
+            data={data?.data}
+            onEndReached={() => {
+              if (data && data?.metadata.totalPages > page) {
+                setPage(prevState => prevState + 1);
+              }
+            }}
             renderItem={(props: ListRenderItemInfo<any>) => {
               const {item} = props;
               return (
@@ -40,22 +87,18 @@ export default function UserBarberReview({route}: any) {
                     <Image
                       borderRadius={9999}
                       style={{width: 45, height: 45}}
-                      source={AvatarPlaceholder}
+                      source={{uri: item.userData[0].image}}
                     />
                     <Box>
                       <VStack alignItems="flex-start">
                         <AirbnbRating
                           count={5}
                           showRating={false}
-                          defaultRating={4}
+                          defaultRating={item.score | 0}
                           size={24}
+                          isDisabled={true}
                         />
-                        <Text color="$textDark500">
-                          Lorem ipsum dolor sit amet, consectetur adipiscing
-                          elit. Aenean et ultrices nibh. Aenean sollicitudin
-                          massa sit amet feugiat ornare. Praesent a sem sapien.
-                          Vestibulum pharetra aliquam mauris ut auctor
-                        </Text>
+                        <Text color="$textDark500">{item.comment}</Text>
                       </VStack>
                     </Box>
                   </HStack>
@@ -86,7 +129,14 @@ export default function UserBarberReview({route}: any) {
           </HStack>
         </Box>
       </Box>
-      <ReviewModal show={open} onClose={() => setOpen(false)} barberId={id} />
-    </>
+      <ReviewModal
+        show={open}
+        onClose={() => {
+          setOpen(false);
+          refetch();
+        }}
+        barberId={id}
+      />
+    </LinearGradient>
   );
 }

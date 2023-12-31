@@ -18,6 +18,8 @@ import {
 import React, {useRef} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+
 interface Props {
   show: boolean;
   onClose: () => void;
@@ -66,7 +68,7 @@ export default function SelectBarberOptionsModal({
           <Pressable onPress={handleGallery}>
             <Box
               softShadow={'2'}
-              mb="$2"
+              mb="$3"
               borderColor="$primary100"
               borderWidth={2}
               borderStyle="solid"
@@ -79,20 +81,20 @@ export default function SelectBarberOptionsModal({
           <Pressable onPress={handleReview}>
             <Box
               softShadow={'2'}
-              mb="$2"
+              mb="$3"
               borderColor="$primary100"
               borderWidth={2}
               borderStyle="solid"
               p="$4"
               borderRadius="$lg"
               bg="$white">
-              <Text color="$textDark900">Calificar</Text>
+              <Text color="$textDark900">Ver calificaciones</Text>
             </Box>
           </Pressable>
           <Pressable onPress={handleReservation}>
             <Box
               softShadow={'2'}
-              mb="$2"
+              mb="$3"
               borderColor="$primary100"
               borderWidth={2}
               borderStyle="solid"

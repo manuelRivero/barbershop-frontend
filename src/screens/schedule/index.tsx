@@ -66,7 +66,6 @@ export default function Schedule() {
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
 
-  const [firtsAvailableTurnTime, setFirtsAvailableTurnTime] = useState<moment.Moment | null >(null)
 
   const handleAddTurn = async (turn: TurnSelectItem) => {
     if (selectedService && user) {
@@ -441,7 +440,6 @@ export default function Schedule() {
         onSelect={handleAddTurn}
         turns={turnList}
         show={showTurnModal}
-        time={firtsAvailableTurnTime}
         onClose={() => {
           setShowTurnModal(false);
           setSelectedService(null);

@@ -11,6 +11,7 @@ import {turnsApi} from '../api/turnsApi';
 import {facebookApi} from '../api/facebookApi';
 import {barbersApi} from '../api/barbersApi';
 import {statApi} from '../api/statsApi';
+import { reviewsApi } from '../api/reviewsApi';
 
 export const store = configureStore({
   reducer: {
@@ -24,6 +25,8 @@ export const store = configureStore({
     [barbersApi.reducerPath]: barbersApi.reducer,
     [facebookApi.reducerPath]: facebookApi.reducer,
     [statApi.reducerPath]: statApi.reducer,
+    [reviewsApi.reducerPath]: reviewsApi.reducer,
+
   },
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
@@ -35,6 +38,7 @@ export const store = configureStore({
       barbersApi.middleware,
       facebookApi.middleware,
       statApi.middleware,
+      reviewsApi.middleware
     ]),
 });
 
