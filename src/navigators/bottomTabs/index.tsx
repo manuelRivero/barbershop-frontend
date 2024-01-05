@@ -1,26 +1,39 @@
 import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+
 import TabBar from '../../components/layout/tabBar';
 import Schedule from '../../screens/schedule';
 import Services from '../../screens/services';
 import Profile from '../../screens/profile';
 import Stats from '../../screens/stats';
+import Gallery from '../../screens/gallery';
+import { RootState, useAppSelector } from '../../store';
+import StatsBarberSelection from '../../screens/statsBarberSelection';
+import AdminBarberStats from '../../screens/AdminBarberStats';
 
 type RootStackParamList = {
   Schedule: undefined;
   Services: undefined;
   Profile: undefined;
   Stats: undefined;
+  BarberStats: undefined;
+
 };
 
 const Tab = createBottomTabNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator();
+
 
 function BottomTabs(): JSX.Element {
+  const {user} = useAppSelector((state: RootState) => state.auth);
+
   return (
-    <Tab.Navigator tabBar={props => <TabBar {...props} />} 
-    screenOptions={{
-      headerShown: false,
-    }}>
+    <Tab.Navigator
+      tabBar={props => <TabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}>
       <Tab.Screen
         name="Schedule"
         component={Schedule}
@@ -32,14 +45,19 @@ function BottomTabs(): JSX.Element {
         component={Services}
         options={{title: 'Servicios'}}
       />
-       <Tab.Screen
+      <Tab.Screen
         name="Stats"
         component={Stats}
         options={{title: 'Estadisticas'}}
       />
+      {user?.role === "admin-barber" && <Tab.Screen
+        name="BarberStats"
+        component={BarberStatsScreens}
+        options={{title: 'Estadisticas'}}
+      />}
       <Tab.Screen
         name="Profile"
-        component={Profile}
+        component={ProfileScreens}
         options={{title: 'Perfil'}}
       />
     </Tab.Navigator>
@@ -47,3 +65,24 @@ function BottomTabs(): JSX.Element {
 }
 
 export default BottomTabs;
+
+
+const ProfileScreens = () => {
+  return (
+    <Stack.Navigator 
+    screenOptions={{headerShown: false}} initialRouteName='BarberProfile'>
+      <Stack.Screen name="BarberProfile" component={Profile} options={{title: 'Perfil'}} />
+      <Stack.Screen name="BarberGallery" component={Gallery} options={{title: 'Perfil'}} />
+    </Stack.Navigator>
+  );
+};
+
+const BarberStatsScreens = () => {
+  return (
+    <Stack.Navigator 
+    screenOptions={{headerShown: false}} initialRouteName='BarberStatsSelection'>
+     <Stack.Screen name="BarberStatsSelection" component={StatsBarberSelection} options={{title: 'Seleccion de barbero'}} />
+      <Stack.Screen name="BarberStatsReview" component={AdminBarberStats} options={{title: 'estadisticas del barbero'}} />
+    </Stack.Navigator>
+  );
+};

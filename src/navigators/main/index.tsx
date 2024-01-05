@@ -19,7 +19,7 @@ export default function MainNavigator(): JSX.Element {
     const socket = io('https://barbershop-backend-ozy5.onrender.com');
     dispatch(setSocket(socket));
     return () => {
-      if(user?.role === "barber"){
+      if(user?.role === "barber" || user?.role === "admin-barber" ){
         socket.emit('remove-online-barber', {user: {_id: user?._id}});
       }
       socket.close();
@@ -33,7 +33,7 @@ export default function MainNavigator(): JSX.Element {
       screenOptions={{headerShown: false}}>
       <>
         {user ? (
-          user.role === 'barber' ? (
+          user.role === 'barber' || user.role === 'admin-barber' ? (
             <>
               <Stack.Screen name="Loading" component={Loading} />
               <Stack.Screen name="BottomsTabs" component={BottomTabs} />

@@ -2,19 +2,21 @@ import {Box, HStack, Pressable, VStack} from '@gluestack-ui/themed';
 import React from 'react';
 import {BottomTabBarProps} from '@react-navigation/bottom-tabs/src/types';
 import {Icon} from '@gluestack-ui/themed';
-import {Briefcase, CalendarPlus, User, LineChart} from 'lucide-react-native';
+import {Briefcase, CalendarPlus, User, LineChart, UsersIcon, LucideIcon} from 'lucide-react-native';
 
 interface Icons {
-  Schedule: any;
-  Services: any;
-  Profile:any;
-  Stats:any
+  Schedule: LucideIcon;
+  Services: LucideIcon;
+  Profile:LucideIcon;
+  Stats:LucideIcon
+  BarberStats: LucideIcon
 }
 const icons: Icons = {
   Schedule: CalendarPlus,
   Services: Briefcase,
   Profile: User,
-  Stats: LineChart
+  Stats: LineChart,
+  BarberStats: UsersIcon
 };
 
 const getIcon = (name: string) => {

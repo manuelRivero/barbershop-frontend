@@ -50,6 +50,8 @@ export default function Login() {
         }),
       );
     } catch (error) {
+      console.log("error", error)
+
       dispatch(
         showInfoModal({
           title: '¡Ups! No se ha podido iniciar sesión',

@@ -155,7 +155,7 @@ export default function UserServiceSelection({route}: any) {
           data: {
             type: selectedService._id,
             name: selectedService.name,
-            barber: user?.role === 'barber' ? user?._id : id,
+            barber: user?.role === 'barber' || user?.role === 'admin-barber' ? user?._id : id,
             user: user?.role === 'user' ? user?._id : null,
             status: 'INCOMPLETE',
             price: selectedService.price,

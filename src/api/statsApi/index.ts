@@ -5,6 +5,9 @@ import {Service} from '../../types/services';
 interface GetWeekStatsResponse {
   data: any[];
 }
+interface GetWeekStatsRequest {
+  id: number | null
+}
 
 
 export const statApi = createApi({
@@ -13,11 +16,14 @@ export const statApi = createApi({
   endpoints: builder => ({
  
     
-    getWeekStats: builder.query<GetWeekStatsResponse, void>({
-      query() {
+    getWeekStats: builder.query<GetWeekStatsResponse, GetWeekStatsRequest>({
+      query(args) {
         return {
           url: `/stats/get-week-stats`,
-        };
+          params:{
+            id: args.id
+          }
+        }
       },
     }),
   })
