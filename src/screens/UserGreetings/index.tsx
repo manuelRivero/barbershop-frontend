@@ -9,14 +9,44 @@ import LottieView from 'lottie-react-native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 import {BackHandler} from 'react-native';
+import { useAppDispatch } from '../../store';
+import PushNotification from 'react-native-push-notification';
 
 export default function UserGreetings({route}: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const dispatch = useAppDispatch();
   const {turnId} = route.params;
   const {data, isLoading} = useGetTurnDetailsQuery({id: turnId});
   const [restartTime, setRestartTime] = useState<moment.Moment>(
     moment().utc().utcOffset(3, true).set({hour: 23, minutes: 0}),
   );
+
+  useEffect(() => {
+    console.log("Data de barbero ", data)
+
+      PushNotification.localNotification({
+        /* Android Only Properties */
+        channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
+        bigText: `¡Genial! Tu corte ya fue realizado`, // (optional) default: "message" prop
+        vibrate: true, // (optional) default: true
+        vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
+        groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
+        ongoing: false, // (optional) set whether this is an "ongoing" notification
+        priority: 'high', // (optional) set notification priority, default: high
+        visibility: 'private', // (optional) set notification visibility, default: private
+        ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
+        title: '¡Nueva notificación!', // (optional)
+        // @ts-ignore
+        data: {
+          barberId: data.turn[0].barberData[0]._id,
+          path:"UserBarberReview"
+        },
+
+        /* iOS only properties */
+
+        message: `Gracias por elegir nuestro servicio. ¿Deseas calificar a ${data.turn[0].barberData[0].name} ${data.turn[0].barberData[0].lastname}?`, // (required)
+      });
+  }, []);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', function () {
@@ -35,7 +65,7 @@ export default function UserGreetings({route}: any) {
             .utc()
             .utcOffset(3, true),
         );
-        navigation.navigate('UserGreetings');
+        navigation.navigate('BarberSelection');
       }
     }, 1000);
 
@@ -69,8 +99,13 @@ export default function UserGreetings({route}: any) {
       <Center>
         <Box p="$4" w={'$full'} maxWidth={400}>
           <Text color="$textDark500">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel
-            egestas dolor, nec dignissim metus.
+            ¡Gracias por preferir nuestro servicio!
+          </Text>
+          <Text color="$textDark500">
+            ¿Deseas calificar a?
+          </Text>
+          <Text color="$textDark500">
+            Podrá agendar nuevos servicios a partir de mañana
           </Text>
           <HStack justifyContent="center" mt="$4">
             <LottieView
