@@ -1,25 +1,25 @@
-import {HStack, Box, Text, Heading, Center} from '@gluestack-ui/themed';
+import { HStack, Box, Text, Heading, Center } from '@gluestack-ui/themed';
 import Clock from 'react-live-clock';
 
-import React, {useEffect, useState} from 'react';
-import {useGetTurnDetailsQuery} from '../../api/turnsApi';
+import React, { useEffect, useState } from 'react';
+import { useGetTurnDetailsQuery } from '../../api/turnsApi';
 import Loader from '../../components/shared/loader';
 import moment from 'moment';
 import LottieView from 'lottie-react-native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
-import {BackHandler, Dimensions} from 'react-native';
-import {RootState, useAppSelector} from '../../store';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import { BackHandler, Dimensions } from 'react-native';
+import { RootState, useAppSelector } from '../../store';
 import LinearGradient from 'react-native-linear-gradient';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 
-export default function UserWaitingRoom({route}: any) {
+export default function UserWaitingRoom({ route }: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const {turnId} = route.params;
-  const {data, isLoading} = useGetTurnDetailsQuery({id: turnId});
-  const {userTurn} = useAppSelector((state: RootState) => state.turns);
+  const { turnId } = route.params;
+  const { data, isLoading } = useGetTurnDetailsQuery({ id: turnId });
+  const { userTurn } = useAppSelector((state: RootState) => state.turns);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', function () {
@@ -27,7 +27,7 @@ export default function UserWaitingRoom({route}: any) {
     });
     const interval = setInterval(() => {
       if (moment().utc().utcOffset(3, true).isAfter(userTurn?.endDate)) {
-        navigation.navigate('UserGreetings', {turnId});
+        navigation.navigate('UserGreetings', { turnId });
       }
     }, 1000);
 
@@ -39,12 +39,12 @@ export default function UserWaitingRoom({route}: any) {
   }
   return (
     <LinearGradient
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       colors={['#fff', '#f1e2ca']}
-      start={{x: 0, y: 0.6}}
-      end={{x: 0, y: 1}}>
+      start={{ x: 0, y: 0.6 }}
+      end={{ x: 0, y: 1 }}>
       <Box position="relative" flex={1}>
-      <Box
+        <Box
           borderRadius={9999}
           w={width * 3}
           h={width * 3}
@@ -63,7 +63,7 @@ export default function UserWaitingRoom({route}: any) {
             format={'hh:mm:ss'}
             ticking={true}
             element={Text}
-            style={{fontSize: 22, color: '#1f3d56'}}
+            style={{ fontSize: 22, color: '#1f3d56' }}
           />
         </HStack>
         <Heading textAlign="center" color="$textDark500">
@@ -96,7 +96,7 @@ export default function UserWaitingRoom({route}: any) {
             </Box>
             <HStack justifyContent="center" mt="$4">
               <LottieView
-                style={{width: 150, height: 150}}
+                style={{ width: 150, height: 150 }}
                 source={require('./../../assets/lottie/waiting.json')}
                 autoPlay
                 loop={true}
