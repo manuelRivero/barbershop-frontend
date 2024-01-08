@@ -35,9 +35,6 @@ import { getDateByTimeZone } from '../../helpers';
 
 moment.tz.setDefault(moment.tz.guess());
 
-const hours = [
-  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,
-];
 const businessHoursStart = moment().set({hour: 9, minute: 0, second: 0});
 
 export default function UserServiceSelection({route}: any) {
@@ -85,6 +82,11 @@ export default function UserServiceSelection({route}: any) {
         const slots = [];
         let turnsList = [...turns]
         let currentTime = moment().utc().utcOffset(3, true);
+
+        if( currentTime.isBefore(businessHoursStart)){
+          const diff = currentTime.diff( businessHoursStart, "minutes")
+          currentTime = currentTime.add("minutes", diff)
+        }
         
         while (currentTime.isBefore(businessHoursEnd)) {
           console.log("currentTime", currentTime)

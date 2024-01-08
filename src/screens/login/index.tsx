@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Heading, Box, HStack, VStack} from '@gluestack-ui/themed';
 
 import BaseInput from '../../components/shared/baseInput';
 import BaseButton from '../../components/shared/baseButton';
 import {useForm, Controller} from 'react-hook-form';
-import {useAppDispatch} from '../../store';
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {setToken, setUser} from '../../store/features/authSlice';
 import {authApi, useLoginMutation} from '../../api/authApi';
 import {LoginManager, Settings, AccessToken} from 'react-native-fbsdk-next';
@@ -21,7 +21,9 @@ interface Form {
 
 export default function Login() {
   const dispatch = useAppDispatch();
-  const [login, {isLoading, isError}] = useLoginMutation();
+  const {user, token} = useAppSelector((state: RootState) => state.auth);
+
+  const [login, {isLoading, isError, data}] = useLoginMutation();
   console.log('is error', isError);
   const [facebookLogin, {isLoading: isLoadingFacebook}] =
     useFacebookLoginMutation();
@@ -35,20 +37,8 @@ export default function Login() {
   const submit = async (values: Form): Promise<void> => {
     try {
       const response = await login(values).unwrap();
-      dispatch(setToken(response.token));
-      const {data, isError} = await dispatch(
-        authApi.endpoints.getMe.initiate(),
-      );
-      console.log('data', data);
-      console.log('isError', isError);
-      if (isError) {
-        throw new Error();
-      }
-      dispatch(
-        setUser({
-          ...data?.data,
-        }),
-      );
+      await dispatch(setToken(response.token));
+      
     } catch (error) {
       console.log("error", error)
 
@@ -89,7 +79,7 @@ export default function Login() {
             }).unwrap();
             dispatch(setToken(response.token));
             const {data, isError} = await dispatch(
-              authApi.endpoints.getMe.initiate(),
+              authApi.endpoints.getMe.initiate({},{ forceRefetch: true }),
             );
             if (isError) {
               throw new Error();
@@ -109,7 +99,28 @@ export default function Login() {
       },
     );
   };
-
+  useEffect(()=>{
+    const getMe = async ()=>{
+      const {data, isError} = await dispatch(
+        authApi.endpoints.getMe.initiate({},{ forceRefetch: true }),
+      );
+      console.log('data', data);
+      console.log('isError', isError);
+      if (isError) {
+        throw new Error();
+      }
+      dispatch(
+        setUser({
+          ...data?.data,
+        }),
+      );
+    }
+    if(data){
+      getMe()
+    }
+  },[data])
+  console.log("user", user)
+  console.log("token", token)
   return (
     <Box flex={1} bg="$primary100" p={'$4'}>
       <VStack flex={1} justifyContent="center" alignItems="center">

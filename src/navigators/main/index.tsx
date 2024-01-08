@@ -33,7 +33,7 @@ export default function MainNavigator(): JSX.Element {
       screenOptions={{headerShown: false}}>
       <>
         {user ? (
-          user.role === 'barber' || user.role === 'admin-barber' ? (
+          user.role === 'barber' || user.role === 'admin-barber' || user.role === 'admin' ? (
             <>
               <Stack.Screen name="Loading" component={Loading} />
               <Stack.Screen name="BottomsTabs" component={BottomTabs} />

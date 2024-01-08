@@ -9,14 +9,16 @@ interface Icons {
   Services: LucideIcon;
   Profile:LucideIcon;
   Stats:LucideIcon
-  BarberStats: LucideIcon
+  BarberStats: LucideIcon;
+  BarberStatsSelection: LucideIcon;
 }
 const icons: Icons = {
   Schedule: CalendarPlus,
   Services: Briefcase,
   Profile: User,
   Stats: LineChart,
-  BarberStats: UsersIcon
+  BarberStats: UsersIcon,
+  BarberStatsSelection: UsersIcon
 };
 
 const getIcon = (name: string) => {
@@ -38,10 +40,9 @@ export default function TabBar({
           flex={1}>
           {state.routes.map((route, index) => {
             const {options} = descriptors[route.key];
-            console.log('route options', state.routes);
-            const label = options.title;
-
             const isFocused = state.index === index;
+            console.log("route", state.routes[index])
+
 
             const onPress = () => {
               const event = navigation.emit({

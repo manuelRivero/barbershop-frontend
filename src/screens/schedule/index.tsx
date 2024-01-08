@@ -32,10 +32,6 @@ import PushNotification from 'react-native-push-notification';
 import { Dimensions } from 'react-native';
 
 
-const hours = [
-  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 0, 1, 2, 3,
-];
-
 const businessHoursStart = moment().set({hour: 9, minute: 0, second: 0});
 const {width} = Dimensions.get("window")
 export default function Schedule() {
@@ -48,7 +44,7 @@ export default function Schedule() {
   const {turns} = useAppSelector((state: RootState) => state.turns);
   const {user} = useAppSelector((state: RootState) => state.auth);
   const {socket} = useAppSelector((state: RootState) => state.layout);
-  const [restartTime, setRestartTime] = useState<moment.Moment>(moment().utc().utcOffset(3, true).set({hour: 0, minutes: 0}))
+  const [restartTime, setRestartTime] = useState<moment.Moment>(moment().utc().utcOffset(3, true).set({hour: 23, minutes: 0}))
 
   const {
     data: turnsData,
@@ -221,6 +217,10 @@ export default function Schedule() {
         const slots = [];
         let turnsList = [...turns]
         let currentTime = moment().utc().utcOffset(3, true);
+        if( currentTime.isBefore(businessHoursStart)){
+          const diff = currentTime.diff( businessHoursStart, "minutes")
+          currentTime = currentTime.add("minutes", diff)
+        }
         
         while (currentTime.isBefore(businessHoursEnd)) {
           console.log("currentTime", currentTime)
@@ -343,7 +343,6 @@ export default function Schedule() {
       socket?.off('add-turn');
     };
   }, []);
-
 
   return (
     <LinearGradient style={{flex:1}} colors={['#fff', '#f1e2ca']} start={{x: 0, y: .6}} end={{x: 0, y: 1}}>

@@ -47,7 +47,9 @@ export default function Stats() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const {turns} = useAppSelector((state: RootState) => state.turns);
-  const {data: statsData, isLoading, refetch} = useGetWeekStatsQuery();
+  const {user} = useAppSelector((state: RootState) => state.auth);
+
+  const {data: statsData, isLoading, refetch} = useGetWeekStatsQuery({id:user?._id});
   const [mappedData, setMappedData] = useState<any>();
 
   console.log('statsData', statsData);

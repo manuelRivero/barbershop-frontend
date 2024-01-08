@@ -1,16 +1,40 @@
 import {HStack, Box, Text, Heading, Center} from '@gluestack-ui/themed';
 import Clock from 'react-live-clock';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {useGetTurnDetailsQuery} from '../../api/turnsApi';
 import Loader from '../../components/shared/loader';
 import moment from 'moment';
 import LottieView from 'lottie-react-native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useNavigation} from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
 
 export default function UserWaitingRoom({route}: any) {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {turnId} = route.params;
   const {data, isLoading} = useGetTurnDetailsQuery({id: turnId});
+  const [restartTime, setRestartTime] = useState<moment.Moment>(moment().utc().utcOffset(3, true).set({hour: 23, minutes: 0}))
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', function() {return true})
+    const interval = setInterval(() => {
+      if (
+        moment()
+          .utc()
+          .utcOffset(3, true)
+          .isAfter(restartTime)
+          
+      ) {
+        const day = moment().utc().utcOffset(3, true).get("date").toLocaleString()
+        setRestartTime(moment().set({date: parseInt(day) + 1, hour: 23, minute: 0, second: 0}).utc().utcOffset(3, true))
+        navigation.navigate("Usergreetings")
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [restartTime]);
 
   if (isLoading) {
     return <Loader />;
