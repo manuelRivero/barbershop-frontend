@@ -7,11 +7,13 @@ import { Event } from '../../../types/turns';
 // Define a type for the slice state
 interface State {
   turns :Event[]
+  userTurn : Event | null
 }
 
 // Define the initial state using that type
 const initialState: State = {
-  turns:[]
+  turns:[],
+  userTurn: null
 };
 
 export const turnsSlice = createSlice({
@@ -31,10 +33,16 @@ export const turnsSlice = createSlice({
     },
     initTurns: (state, action) => {
       state.turns = action.payload
+    },
+    setUserTurn : (state, action) => {
+      state.userTurn = action.payload
+    },
+    resetUserTurn : (state) => {
+      state.userTurn = null
     }
   },
 });
 
-export const {setCompleteTurn, addTurn, resetAllturns, initTurns} = turnsSlice.actions;
+export const {setCompleteTurn, addTurn, resetAllturns, initTurns, setUserTurn, resetUserTurn} = turnsSlice.actions;
 
 export default turnsSlice.reducer;

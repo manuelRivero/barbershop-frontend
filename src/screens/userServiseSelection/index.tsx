@@ -23,6 +23,7 @@ import {
   addTurn,
   initTurns,
   resetAllturns,
+  setUserTurn,
 } from '../../store/features/turnsSlice';
 import SelectTurnModal from '../../components/selectTurnModal';
 import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
@@ -31,14 +32,19 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 
 import moment from 'moment-timezone';
-import { getDateByTimeZone } from '../../helpers';
+import {getDateByTimeZone} from '../../helpers';
 
 moment.tz.setDefault(moment.tz.guess());
 
-const businessHoursStart = moment().set({hour: 9, minute: 0, second: 0});
-
 export default function UserServiceSelection({route}: any) {
-  const businessHoursEnd = moment().set({hour: 23, minute: 0, second: 0}).utc().utcOffset(3, true);
+  const businessHoursStart = moment()
+    .set({hour: 9, minute: 0, second: 0})
+    .utc()
+    .utcOffset(3, true);
+  const businessHoursEnd = moment()
+    .set({hour: 23, minute: 0, second: 0})
+    .utc()
+    .utcOffset(3, true);
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {id} = route.params;
   const timeRef = useRef<number | null>(null);
@@ -57,13 +63,16 @@ export default function UserServiceSelection({route}: any) {
     data: turnsData,
     refetch: refetchTurns,
     isLoading: isLoadingTurns,
+    fulfilledTimeStamp: turnsFulfilledTimeStamp
   } = useGetTurnsQuery({id});
   const [addTurnRequest, {isLoading: isLoadingAddTurn}] = useAddTurnMutation();
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
-  const [restartTime, setRestartTime] = useState<moment.Moment>(moment().utc().utcOffset(3, true).set({hour: 0, minutes: 0}))
+  const [restartTime, setRestartTime] = useState<moment.Moment>(
+    moment().utc().utcOffset(3, true).set({hour: 0, minutes: 0}),
+  );
 
   useEffect(() => {
     if (data) {
@@ -72,65 +81,91 @@ export default function UserServiceSelection({route}: any) {
   }, [data]);
 
   useEffect(() => {
-    function removeElementAt(arr:any, index:number) {
+    function removeElementAt(arr: any, index: number) {
       let frontPart = arr.slice(0, index);
-      let lastPart  = arr.slice( index+1 ); // index to end of array
+      let lastPart = arr.slice(index + 1); // index to end of array
       return [...frontPart, ...lastPart];
-   }
+    }
     const checkTurnForServiceTime = async () => {
       if (selectedService) {
         const slots = [];
-        let turnsList = [...turns]
+        let turnsList = [...turns];
+        console.log("turnsList",turnsList)
         let currentTime = moment().utc().utcOffset(3, true);
 
-        if( currentTime.isBefore(businessHoursStart)){
-          const diff = currentTime.diff( businessHoursStart, "minutes")
-          currentTime = currentTime.add("minutes", diff)
+        if (currentTime.isBefore(businessHoursStart)) {
+          console.log('before');
+          const diff = currentTime.diff(businessHoursStart, 'minutes');
+          currentTime = currentTime.add('minutes', diff);
         }
-        
         while (currentTime.isBefore(businessHoursEnd)) {
-          console.log("currentTime", currentTime)
-          const endTime = currentTime.clone().add(
-            selectedService.duration,
-            'minutes',
-          );
-          const isSlotInavailable = [...turnsList].sort(function (left, right) {
-            return moment(left.startDate).diff(moment(right.startDate));
-          }).findIndex((slot, slotIndex, slotArray) => {
-            const hasNextSlot = slotIndex + 1 < slotArray.length;
-            let nextSlotValidation = false;
-            if(hasNextSlot){
-              nextSlotValidation = endTime.clone().isBetween( moment(slotArray[slotIndex + 1].startDate),moment(slotArray[slotIndex + 1].endDate)) || currentTime.clone().isBetween( moment(slotArray[slotIndex + 1].startDate),moment(slotArray[slotIndex + 1].endDate))
-            }
-            return (
-              moment(slot.startDate).isBetween(
-                currentTime,
-                endTime,
-              ) ||
-              moment(slot.endDate).isBetween(currentTime, endTime) ||
-              moment(currentTime).isBetween(slot.startDate, slot.endDate) ||
-              nextSlotValidation || endTime.isBetween(slot.startDate, slot.endDate) 
-            );
-          });
+          const endTime = currentTime
+            .clone()
+            .add(selectedService.duration, 'minutes');
+          const isSlotInavailable = [...turnsList]
+            .sort(function (left, right) {
+              return moment(left.startDate).diff(moment(right.startDate));
+            })
+            .findIndex((slot, slotIndex, slotArray) => {
+              const hasNextSlot = slotIndex + 1 < slotArray.length;
+              let nextSlotValidation = false;
+              if (hasNextSlot) {
+                nextSlotValidation =
+                  endTime
+                    .clone()
+                    .isBetween(
+                      moment(slotArray[slotIndex + 1].startDate),
+                      moment(slotArray[slotIndex + 1].endDate),
+                    ) ||
+                  currentTime
+                    .clone()
+                    .isBetween(
+                      moment(slotArray[slotIndex + 1].startDate),
+                      moment(slotArray[slotIndex + 1].endDate),
+                    );
+              }
+              return (
+                moment(slot.startDate).isBetween(currentTime, endTime) ||
+                moment(slot.endDate).isBetween(currentTime, endTime) ||
+                moment(currentTime).isBetween(slot.startDate, slot.endDate) ||
+                nextSlotValidation ||
+                endTime.isBetween(slot.startDate, slot.endDate)
+              );
+            });
           if (isSlotInavailable < 0) {
-            console.log("available slot", currentTime, endTime)
             slots.push({
               startDate: currentTime.toDate(),
               endDate: endTime.toDate(),
             });
             currentTime = endTime;
           } else {
-            if(moment(turnsList[isSlotInavailable].endDate).isAfter(currentTime)){
-              console.log("diff", currentTime, turnsList[isSlotInavailable].endDate, moment(turnsList[isSlotInavailable].endDate).diff(currentTime, 'minutes') )
-              currentTime = currentTime.clone().add(moment(turnsList[isSlotInavailable].endDate).diff(currentTime, 'minutes') + 1, "minutes")
-
+            if (
+              moment(turnsList[isSlotInavailable].endDate).isAfter(currentTime)
+            ) {
+              console.log(
+                'diff',
+                currentTime,
+                turnsList[isSlotInavailable].endDate,
+                moment(turnsList[isSlotInavailable].endDate).diff(
+                  currentTime,
+                  'minutes',
+                ),
+              );
+              currentTime = currentTime
+                .clone()
+                .add(
+                  moment(turnsList[isSlotInavailable].endDate).diff(
+                    currentTime,
+                    'minutes',
+                  ) + 1,
+                  'minutes',
+                );
             }
 
-            turnsList = removeElementAt(turnsList,isSlotInavailable)
+            turnsList = removeElementAt(turnsList, isSlotInavailable);
           }
-
         }
-        
+
         setTurnList(slots);
         setShowTurnModal(true);
       }
@@ -157,7 +192,10 @@ export default function UserServiceSelection({route}: any) {
           data: {
             type: selectedService._id,
             name: selectedService.name,
-            barber: user?.role === 'barber' || user?.role === 'admin-barber' ? user?._id : id,
+            barber:
+              user?.role === 'barber' || user?.role === 'admin-barber'
+                ? user?._id
+                : id,
             user: user?.role === 'user' ? user?._id : null,
             status: 'INCOMPLETE',
             price: selectedService.price,
@@ -171,9 +209,10 @@ export default function UserServiceSelection({route}: any) {
 
       dispatch(
         showInfoModal({
-          title: `¡Deseas agendar este turno ${moment(turn.startDate).utc().utcOffset(3, true).format(
-            'hh:mm',
-          )}?`,
+          title: `¡Deseas agendar este turno ${moment(turn.startDate)
+            .utc()
+            .utcOffset(3, true)
+            .format('hh:mm')}?`,
           type: 'info',
           hasCancel: true,
           cancelCb: () => {},
@@ -231,12 +270,29 @@ export default function UserServiceSelection({route}: any) {
           submitData: {
             text: 'Agendar',
             background: '$green500',
-            hasLoader: true
+            hasLoader: true,
           },
           cancelData: {
             text: 'Cancelar',
             background: '$blueGray200',
           },
+        }),
+      );
+      dispatch(
+        setUserTurn({
+          type: selectedService._id,
+          name: selectedService.name,
+          barber:
+            user?.role === 'barber' || user?.role === 'admin-barber'
+              ? user?._id
+              : id,
+          user: user?.role === 'user' ? user?._id : null,
+          status: 'INCOMPLETE',
+          price: selectedService.price,
+          startDate: moment(turn.startDate).toISOString(),
+          endDate: moment(turn.startDate)
+            .add(selectedService.duration, 'minutes')
+            .toISOString(),
         }),
       );
     }
@@ -258,15 +314,18 @@ export default function UserServiceSelection({route}: any) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (
-        moment()
+      if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
+        const day = moment()
           .utc()
           .utcOffset(3, true)
-          .isAfter(restartTime)
-          
-      ) {
-        const day = moment().utc().utcOffset(3, true).get("date").toLocaleString()
-        setRestartTime(moment().set({date: parseInt(day) + 1, hour: 0, minute: 0, second: 0}).utc().utcOffset(3, true))
+          .get('date')
+          .toLocaleString();
+        setRestartTime(
+          moment()
+            .set({date: parseInt(day) + 1, hour: 0, minute: 0, second: 0})
+            .utc()
+            .utcOffset(3, true),
+        );
         if (turns.length > 0) {
           dispatch(resetAllturns());
         }
@@ -289,7 +348,7 @@ export default function UserServiceSelection({route}: any) {
       console.log('turns data', turnsData.turns);
       dispatch(initTurns(turnsData.turns));
     }
-  }, [fulfilledTimeStamp]);
+  }, [turnsFulfilledTimeStamp]);
 
   if (isLoading || isLoadingTurns) {
     return <Loader />;

@@ -6,6 +6,7 @@ import { Clock2, CircleDollarSign} from 'lucide-react-native';
 import {Image} from 'react-native';
 import { useAppDispatch } from '../../store';
 import { Service } from '../../types/services';
+import { VStack } from '@gluestack-ui/themed';
 
 
 
@@ -37,7 +38,7 @@ export default function UserServiceCard({data}: Props) {
           <Text fontWeight="bold" color="$textDark500">
             {data.name}
           </Text>
-          <HStack space="xs" mt={'$2'} flexWrap="wrap">
+          <VStack space="xs" mt={'$2'} flexWrap="wrap">
             <HStack
               space="xs"
               bg={'$primary100'}
@@ -60,7 +61,7 @@ export default function UserServiceCard({data}: Props) {
                 {data.price} pesos
               </Text>
             </HStack>
-          </HStack>
+          </VStack>
         </Box>
       </HStack>
 
