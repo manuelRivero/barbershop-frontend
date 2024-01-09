@@ -8,6 +8,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import UserBarberReview from '../../screens/userBarberReview';
 import UserBarberGallery from '../../screens/userBarberGallery';
 import UserGreetings from '../../screens/UserGreetings';
+import { RootState, useAppSelector } from '../../store';
 
 export type RootStackParamList = {
   BarberSelection: undefined;
@@ -23,6 +24,7 @@ export type TabsStackParamList = {
 const Tab = createBottomTabNavigator<TabsStackParamList>();
 
 export default function UserNavigator(): JSX.Element {
+
   return (
     <Tab.Navigator
       tabBar={props => <UserTabBar {...props} />}
@@ -39,11 +41,14 @@ export default function UserNavigator(): JSX.Element {
 const Stack = createNativeStackNavigator();
 
 const Schedule = () => {
+  const {userTurn} = useAppSelector((state: RootState) => state.turns);
+
   return (
     <Stack.Navigator
-      initialRouteName="BarberSelection"
+      initialRouteName={!userTurn ? "BarberSelection" : "UserWaitingRoom" }
       screenOptions={{headerShown: false}}>
-      <Stack.Screen name="BarberSelection" component={BarberSelection} />
+        {!userTurn && <Stack.Screen name="BarberSelection" component={BarberSelection} />}
+      
       <Stack.Screen name="UserBarberReview" component={UserBarberReview} />
       <Stack.Screen name="UserBarberGallery" component={UserBarberGallery} />
       <Stack.Screen

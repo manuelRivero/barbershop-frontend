@@ -3,13 +3,14 @@ import { GluestackUIProvider } from '@gluestack-ui/themed';
 import { config } from './src/theme';
 import { NavigationContainer } from '@react-navigation/native';
 import MainNavigator from './src/navigators/main';
-import { store } from './src/store';
+import { persistor, store } from './src/store';
 import { Provider } from 'react-redux';
 import InfoModal from './src/components/shared/infoModal';
 import pushNotifications, {
   ReceivedNotification,
 } from 'react-native-push-notification';
 import { Platform } from 'react-native';
+import { PersistGate } from 'redux-persist/integration/react';
 
 
 export default function App() {
@@ -17,7 +18,7 @@ export default function App() {
 
   useEffect(() => {
 
-    if(navigationRef){
+    if (navigationRef) {
 
       pushNotifications.configure({
         onRegister: function (token) {
@@ -38,13 +39,13 @@ export default function App() {
         onAction: function (notification) {
           console.log('ACTION:', notification.action);
           console.log('NOTIFICATION:', notification);
-  
+
           // process the action
         },
         requestPermissions: Platform.OS === 'ios',
       });
-  
-  
+
+
       pushNotifications.channelExists('channel-id', function (exists) {
         console.log("exist", exists); // true/false
         if (!exists) {
@@ -66,12 +67,15 @@ export default function App() {
   return (
     <>
       <Provider store={store}>
-        <GluestackUIProvider config={config}>
-          <NavigationContainer ref={navigationRef}>
-            <MainNavigator />
-          </NavigationContainer>
-          <InfoModal />
-        </GluestackUIProvider>
+        <PersistGate loading={null} persistor={persistor}>
+
+          <GluestackUIProvider config={config}>
+            <NavigationContainer ref={navigationRef}>
+              <MainNavigator />
+            </NavigationContainer>
+            <InfoModal />
+          </GluestackUIProvider>
+        </PersistGate>
       </Provider>
     </>
   );

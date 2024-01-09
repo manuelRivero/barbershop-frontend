@@ -1,4 +1,4 @@
-import {configureStore} from '@reduxjs/toolkit';
+import {combineReducers, configureStore} from '@reduxjs/toolkit';
 import {useDispatch, useSelector} from 'react-redux';
 import type {TypedUseSelectorHook} from 'react-redux';
 import servicesSlice from './features/servicesSlice';
@@ -14,21 +14,33 @@ import {statApi} from '../api/statsApi';
 import {reviewsApi} from '../api/reviewsApi';
 import { galleryApi } from '../api/galleryApi';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { persistReducer, persistStore } from 'redux-persist'
+
+const persistConfig = {
+  key: 'root',
+  storage: AsyncStorage,
+    whitelist: ['auth', 'turns'] // only navigation will be persisted
+
+}
+
+const rootReducer = combineReducers({
+  services: servicesSlice,
+  layout: layoutSlice,
+  turns: turnsSlice,
+  auth: authSlice,
+  [authApi.reducerPath]: authApi.reducer,
+  [servicesApi.reducerPath]: servicesApi.reducer,
+  [turnsApi.reducerPath]: turnsApi.reducer,
+  [barbersApi.reducerPath]: barbersApi.reducer,
+  [facebookApi.reducerPath]: facebookApi.reducer,
+  [statApi.reducerPath]: statApi.reducer,
+  [reviewsApi.reducerPath]: reviewsApi.reducer,
+  [galleryApi.reducerPath]: galleryApi.reducer,
+})
+const persistedReducer = persistReducer(persistConfig, rootReducer)
 export const store = configureStore({
-  reducer: {
-    services: servicesSlice,
-    layout: layoutSlice,
-    turns: turnsSlice,
-    auth: authSlice,
-    [authApi.reducerPath]: authApi.reducer,
-    [servicesApi.reducerPath]: servicesApi.reducer,
-    [turnsApi.reducerPath]: turnsApi.reducer,
-    [barbersApi.reducerPath]: barbersApi.reducer,
-    [facebookApi.reducerPath]: facebookApi.reducer,
-    [statApi.reducerPath]: statApi.reducer,
-    [reviewsApi.reducerPath]: reviewsApi.reducer,
-    [galleryApi.reducerPath]: galleryApi.reducer,
-  },
+  reducer: persistedReducer,
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: false,
@@ -43,6 +55,7 @@ export const store = configureStore({
       galleryApi.middleware,
     ]),
 });
+export const persistor = persistStore(store);
 
 // Infer the `RootState` and `AppDispatch` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;
