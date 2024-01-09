@@ -101,7 +101,8 @@ export default function Profile() {
             disabled={false}
           />
         </HStack>
-        {user?.role === 'barber' || user?.role === 'admin-barber' && (
+        {console.log("user role", user?.role === 'barber')}
+        {(user?.role === 'barber' || user?.role === 'admin-barber') && (
           <Box mt="$4" p="$4">
             <Heading size="lg" color="$textDark500">
               Ultimas calificaciones
@@ -130,7 +131,7 @@ export default function Profile() {
             />
           </Box>
         )}
-        {user?.role === 'barber' || user?.role === 'admin-barber' && (
+        {(user?.role === 'barber' || user?.role === 'admin-barber') && (
           <Box mt="$4" p="$4">
             <Heading size="lg" color="$textDark500" mb="$4">
               Galería{' '}

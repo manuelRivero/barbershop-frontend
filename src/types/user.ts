@@ -5,4 +5,5 @@ export interface User {
   email: string;
   _id: string;
   role: string
+  commission?: number
 }

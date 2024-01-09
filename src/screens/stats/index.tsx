@@ -8,18 +8,19 @@ import {
   Text,
   VStack,
 } from '@gluestack-ui/themed';
-import React, {useEffect, useState} from 'react';
-import {RootState, useAppSelector} from '../../store';
-import {Event} from '../../types/turns';
+import React, { useEffect, useState } from 'react';
+import { RootState, useAppSelector } from '../../store';
+import { Event } from '../../types/turns';
 import Clock from 'react-live-clock';
-import {LineChart} from 'react-native-chart-kit';
-import {useGetWeekStatsQuery} from '../../api/statsApi';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
+import { LineChart } from 'react-native-chart-kit';
+import { useGetWeekStatsQuery } from '../../api/statsApi';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
 import Loader from '../../components/shared/loader';
-import {Dimensions} from 'react-native';
+import { Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import WeekPicker from '../../components/shared/weekPicker';
 
 const chartConfig = {
   backgroundGradientFrom: '#fff',
@@ -41,27 +42,26 @@ const daysOfWeek = [
   'Viernes',
   'Sabado',
 ];
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function Stats() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-  const {turns} = useAppSelector((state: RootState) => state.turns);
-  const {user} = useAppSelector((state: RootState) => state.auth);
+  const { turns } = useAppSelector((state: RootState) => state.turns);
+  const { user } = useAppSelector((state: RootState) => state.auth);
 
-  const {data: statsData, isLoading, refetch} = useGetWeekStatsQuery({id:user?._id});
+  const { data: statsData, isLoading, refetch } = useGetWeekStatsQuery({ id: user ? user._id : null }, { skip: !user ? true : false });
   const [mappedData, setMappedData] = useState<any>();
 
-  console.log('statsData', statsData);
   useEffect(() => {
     if (statsData) {
       const actualDateOfWeek = moment().weekday();
-      const sortedData = statsData.data.sort((a, b) => a._id - b._id);
+      const sortedData = [...statsData.data].sort((a, b) => a._id - b._id);
       const dataWithDates = sortedData.map(e => ({
         date: moment()
           .utc()
           .utcOffset(3, true)
-          .set({day: e._id, hour: 0, minutes: 0})
+          .set({ day: e._id, hour: 0, minutes: 0 })
           .format('dddd'),
         ...e,
       }));
@@ -112,13 +112,13 @@ export default function Stats() {
   if (isLoading) {
     return <Loader />;
   }
-  console.log("mapped data", mappedData)
+
   return (
     <LinearGradient
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       colors={['#fff', '#f1e2ca']}
-      start={{x: 0, y: 0.6}}
-      end={{x: 0, y: 1}}>
+      start={{ x: 0, y: 0.6 }}
+      end={{ x: 0, y: 1 }}>
       <Box position="relative" flex={1}>
         <Box
           borderRadius={9999}
@@ -137,7 +137,7 @@ export default function Stats() {
             format={'hh:mm:ss'}
             ticking={true}
             element={Text}
-            style={{fontSize: 22, color: '#1f3d56'}}
+            style={{ fontSize: 22, color: '#1f3d56' }}
           />
           <Heading textAlign="center" color="$textDark500">
             Estadisticas
@@ -145,6 +145,7 @@ export default function Stats() {
         </VStack>
         <Box flex={1}>
           <ScrollView flex={1} mt="$10">
+
             {mappedData && (
               <Box p="$4">
                 <Box
@@ -166,12 +167,19 @@ export default function Stats() {
                   <HStack alignItems="center">
                     <Text color="$textDark500">Total el día de hoy: </Text>
                     <Text color="$textDark500" fontWeight="bold">
-                      {turns.reduce((accumulator, object) => {
+                      {[...turns].reduce((accumulator, object) => {
                         return object.status === 'COMPLETE'
                           ? accumulator + object.price
                           : accumulator;
-                      }, 0)}{' '}
-                      Pesos
+                      }, 0) * 50 / 100}
+                      {" "}Pesos
+                    </Text>
+
+                  </HStack>
+                  <HStack>
+                    <Text color="$textDark500">Comisión: </Text>
+                    <Text color="$textDark500" fontWeight="bold">
+                      {user?.commission}
                     </Text>
                   </HStack>
                   <Text color="$textDark500">
@@ -185,7 +193,10 @@ export default function Stats() {
                     </Text>
                   </Text>
                 </Box>
+                <Box mb="$2" mt="$4">
+                  <WeekPicker />
 
+                </Box>
                 <Box mt={'$4'} position="relative" hardShadow='1' bg="$white" borderRadius="$lg" overflow='hidden'>
                   <LineChart
                     data={mappedData}
@@ -194,7 +205,7 @@ export default function Stats() {
                     chartConfig={chartConfig}
                     verticalLabelRotation={30}
                     bezier
-                    renderDotContent={({x, y, index, indexData}) => {
+                    renderDotContent={({ x, y, index, indexData }) => {
                       console.log('Index data', indexData);
                       return (
                         <Text
@@ -215,17 +226,17 @@ export default function Stats() {
                       (e, index) => index < moment().weekday() && index > 0,
                     )
                     .map((dayOfWeek: string) => {
-                      const target = statsData?.data
+                      const target = statsData ? [...statsData?.data]
                         .sort((a, b) => a._id - b._id)
                         .map(e => ({
                           date: moment()
                             .utc()
                             .utcOffset(3, true)
-                            .set({day: e._id, hour: 0, minutes: 0})
+                            .set({ day: e._id, hour: 0, minutes: 0 })
                             .format('dddd'),
                           ...e,
                         }))
-                        .find(e => e.date === dayOfWeek);
+                        .find(e => e.date === dayOfWeek) : []
                       return (
                         <Box
                           key={dayOfWeek}

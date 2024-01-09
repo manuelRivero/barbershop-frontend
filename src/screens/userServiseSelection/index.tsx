@@ -71,7 +71,7 @@ export default function UserServiceSelection({route}: any) {
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [restartTime, setRestartTime] = useState<moment.Moment>(
-    moment().utc().utcOffset(3, true).set({hour: 23, minutes: 0}),
+    moment().set({hour: 23, minutes: 0}).utc().utcOffset(3, true),
   );
 
   useEffect(() => {
@@ -93,7 +93,7 @@ export default function UserServiceSelection({route}: any) {
         console.log("turnsList",turnsList)
         let currentTime = moment().utc().utcOffset(3, true);
 
-        if (currentTime.isBefore(businessHoursStart)) {
+        if (currentTime.clone().add(selectedService.duration, "minutes").isBefore(businessHoursEnd)) {
           // const diff = currentTime.clone().diff(businessHoursStart, 'minutes');
           const diff = businessHoursStart.clone().diff(currentTime, 'minutes');
           currentTime = currentTime.add('minutes', diff);
@@ -134,12 +134,10 @@ export default function UserServiceSelection({route}: any) {
               );
             });
           if (isSlotInavailable < 0) {
-            if (!currentTime.clone().add("minutes", selectedService.duration).isAfter(businessHoursEnd.clone())) {
               slots.push({
                 startDate: currentTime.toDate(),
                 endDate: endTime.toDate(),
               });
-            }
             currentTime = endTime;
           } else {
             if (

@@ -45,7 +45,7 @@ export default function Schedule() {
   const { user } = useAppSelector((state: RootState) => state.auth);
   const { socket } = useAppSelector((state: RootState) => state.layout);
   const [restartTime, setRestartTime] = useState<moment.Moment>(
-    moment().utc().utcOffset(3, true).set({ hour: 23, minutes: 0 }),
+    moment().set({ hour: 23, minutes: 0 }).utc().utcOffset(3, true),
   );
 
   const {
@@ -226,7 +226,7 @@ export default function Schedule() {
           console.log('before', diff);
         }
 
-        while (currentTime.isBefore(businessHoursEnd)) {
+        while (currentTime.clone().add(selectedService.duration, "minutes").isBefore(businessHoursEnd)) {
           console.log("currentTime", currentTime)
           const endTime = currentTime.clone().add(
             selectedService.duration,
@@ -252,14 +252,12 @@ export default function Schedule() {
             );
           });
           if (isSlotInavailable < 0) {
-            console.log("available slot", currentTime, endTime)
 
-            if (!currentTime.clone().add("minutes", selectedService.duration).isAfter(businessHoursEnd.clone())) {
-              slots.push({
-                startDate: currentTime.toDate(),
-                endDate: endTime.toDate(),
-              });
-            }
+            slots.push({
+              startDate: currentTime.toDate(),
+              endDate: endTime.toDate(),
+            });
+
             currentTime = endTime;
           } else {
             if (moment(turnsList[isSlotInavailable].endDate).isAfter(currentTime)) {
@@ -333,13 +331,13 @@ export default function Schedule() {
         setRestartTime(moment().set({ date: day + 1, hour: 0, minute: 0, second: 0 }).utc().utcOffset(3, true))
         setBusinessHoursStart(
           moment()
-            .set({date: day + 1, hour: 9, minute:0})
+            .set({ date: day + 1, hour: 9, minute: 0 })
             .utc()
             .utcOffset(3, true),
         );
         setBusinessHoursEnd(
           moment()
-            .set({date: day + 1, hour:11, minute:0})
+            .set({ date: day + 1, hour: 11, minute: 0 })
             .utc()
             .utcOffset(3, true),
         );

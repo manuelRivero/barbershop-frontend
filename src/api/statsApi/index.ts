@@ -6,7 +6,7 @@ interface GetWeekStatsResponse {
   data: any[];
 }
 interface GetWeekStatsRequest {
-  id: number | null
+  id: string | null
 }
 
 
