@@ -13,6 +13,7 @@ import { useAppDispatch } from '../../store';
 import PushNotification from 'react-native-push-notification';
 import BaseButton from '../../components/shared/baseButton';
 import LinearGradient from 'react-native-linear-gradient';
+import { resetUserTurn } from '../../store/features/turnsSlice';
 
 const { width } = Dimensions.get('window');
 
@@ -22,9 +23,10 @@ export default function UserGreetings({ route }: any) {
   const { turnId } = route.params;
   const { data, isLoading } = useGetTurnDetailsQuery({ id: turnId });
   const [restartTime, setRestartTime] = useState<moment.Moment>(
-    moment().utc().utcOffset(3, true).set({ hour: 23, minutes: 0 }),
+    moment().set({ hour: 23, minutes: 0 }).utc().utcOffset(3, true),
   );
 
+  console.log("restart time", restartTime)
   useEffect(() => {
     console.log("Data de barbero ", data)
 
@@ -58,17 +60,14 @@ export default function UserGreetings({ route }: any) {
     });
     const interval = setInterval(() => {
       if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
-        const day = moment()
-          .utc()
-          .utcOffset(3, true)
-          .get('date')
-          .toLocaleString();
+        const day = moment().get('date')
         setRestartTime(
           moment()
-            .set({ date: parseInt(day) + 1, hour: 23, minute: 0, second: 0 })
+            .set({ date: day + 1, hour: 23, minute: 0, second: 0 })
             .utc()
             .utcOffset(3, true),
         );
+        dispatch(resetUserTurn())
         navigation.navigate('BarberSelection');
       }
     }, 1000);

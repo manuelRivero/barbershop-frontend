@@ -48,12 +48,13 @@ export default function SelectTurnModal({
       <ModalBackdrop />
       <ModalContent maxHeight={'$3/5'}>
         <ModalHeader>
-          <Heading size="lg">Turnos disponibles</Heading>
+          <Heading size="lg" color="$textDark500">Turnos disponibles</Heading>
           <ModalCloseButton>
             <Icon as={CloseIcon} />
           </ModalCloseButton>
         </ModalHeader>
         <Box p="$4">
+          <Text textAlign="center" mb="$4" fontSize="$xl" color="$textDark500">{moment().utc().utcOffset(3, true).format("DD-MM-yyyy")}</Text>
           <FlatList
             data={turns}
             ItemSeparatorComponent={() => {
@@ -72,7 +73,7 @@ export default function SelectTurnModal({
                 <Pressable onPress={() => handleSelect(item)}>
                   <Box softShadow={'1'} p="$4" borderRadius="$lg" bg="$white">
                     
-                    <Text>{moment.utc(item.startDate).format('hh:mm A')} - {moment.utc(item.endDate).format('hh:mm A')}</Text>
+                    <Text color="$textDark500">{moment.utc(item.startDate).format('hh:mm A')} - {moment.utc(item.endDate).format('hh:mm A')}</Text>
                   </Box>
                 </Pressable>
               );

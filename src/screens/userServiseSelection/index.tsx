@@ -37,14 +37,14 @@ import {getDateByTimeZone} from '../../helpers';
 moment.tz.setDefault(moment.tz.guess());
 
 export default function UserServiceSelection({route}: any) {
-  const businessHoursStart = moment()
+  const [businessHoursStart, setBusinessHoursStart] = useState<moment.Moment>(moment()
     .set({hour: 9, minute: 0, second: 0})
     .utc()
-    .utcOffset(3, true);
-  const businessHoursEnd = moment()
+    .utcOffset(3, true))
+    const [businessHoursEnd, setBusinessHoursEnd] = useState<moment.Moment>(moment()
     .set({hour: 23, minute: 0, second: 0})
     .utc()
-    .utcOffset(3, true);
+    .utcOffset(3, true))
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {id} = route.params;
   const timeRef = useRef<number | null>(null);
@@ -71,7 +71,7 @@ export default function UserServiceSelection({route}: any) {
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [restartTime, setRestartTime] = useState<moment.Moment>(
-    moment().utc().utcOffset(3, true).set({hour: 0, minutes: 0}),
+    moment().utc().utcOffset(3, true).set({hour: 23, minutes: 0}),
   );
 
   useEffect(() => {
@@ -94,9 +94,10 @@ export default function UserServiceSelection({route}: any) {
         let currentTime = moment().utc().utcOffset(3, true);
 
         if (currentTime.isBefore(businessHoursStart)) {
-          console.log('before');
-          const diff = currentTime.diff(businessHoursStart, 'minutes');
+          // const diff = currentTime.clone().diff(businessHoursStart, 'minutes');
+          const diff = businessHoursStart.clone().diff(currentTime, 'minutes');
           currentTime = currentTime.add('minutes', diff);
+          console.log('before',diff);
         }
         while (currentTime.isBefore(businessHoursEnd)) {
           const endTime = currentTime
@@ -133,10 +134,12 @@ export default function UserServiceSelection({route}: any) {
               );
             });
           if (isSlotInavailable < 0) {
-            slots.push({
-              startDate: currentTime.toDate(),
-              endDate: endTime.toDate(),
-            });
+            if (!currentTime.clone().add("minutes", selectedService.duration).isAfter(businessHoursEnd.clone())) {
+              slots.push({
+                startDate: currentTime.toDate(),
+                endDate: endTime.toDate(),
+              });
+            }
             currentTime = endTime;
           } else {
             if (
@@ -314,15 +317,26 @@ export default function UserServiceSelection({route}: any) {
 
   useEffect(() => {
     const interval = setInterval(() => {
+
       if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
-        const day = moment()
-          .utc()
-          .utcOffset(3, true)
-          .get('date')
-          .toLocaleString();
+        const day = moment().get('date')
+
+          console.log("day", day)
         setRestartTime(
           moment()
-            .set({date: parseInt(day) + 1, hour: 0, minute: 0, second: 0})
+            .set({date: day + 1, hour: 0, minute: 0, second: 0})
+            .utc()
+            .utcOffset(3, true),
+        );
+        setBusinessHoursStart(
+          moment()
+            .set({date: day + 1, hour: 9, minute:0})
+            .utc()
+            .utcOffset(3, true),
+        );
+        setBusinessHoursEnd(
+          moment()
+            .set({date: day + 1, hour:11, minute:0})
             .utc()
             .utcOffset(3, true),
         );
@@ -331,7 +345,7 @@ export default function UserServiceSelection({route}: any) {
         }
       }
     }, 1000);
-
+console.log("restart time", restartTime)
     return () => clearInterval(interval);
   }, [restartTime]);
 
@@ -353,6 +367,7 @@ export default function UserServiceSelection({route}: any) {
   if (isLoading || isLoadingTurns) {
     return <Loader />;
   }
+  console.log("start date", businessHoursStart)
   return (
     <>
       <Box bg="$primary100" flex={1}>

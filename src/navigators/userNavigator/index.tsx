@@ -9,6 +9,7 @@ import UserBarberReview from '../../screens/userBarberReview';
 import UserBarberGallery from '../../screens/userBarberGallery';
 import UserGreetings from '../../screens/UserGreetings';
 import { RootState, useAppSelector } from '../../store';
+import Profile from '../../screens/profile';
 
 export type RootStackParamList = {
   BarberSelection: undefined;
@@ -19,6 +20,7 @@ export type RootStackParamList = {
 
 export type TabsStackParamList = {
   Schedule: undefined
+  UserProfile: undefined
 }
 
 const Tab = createBottomTabNavigator<TabsStackParamList>();
@@ -33,6 +35,7 @@ export default function UserNavigator(): JSX.Element {
       }}>
       <>
         <Tab.Screen name="Schedule" component={Schedule}/>
+        <Tab.Screen name="UserProfile" component={Profile}/>
       </>
     </Tab.Navigator>
   );
@@ -57,6 +60,7 @@ const Schedule = () => {
       />
 
       <Stack.Screen name="UserWaitingRoom" component={UserWaitingRoom} />
+      
       <Stack.Screen
         name="UserGreetings"
         component={UserGreetings}
