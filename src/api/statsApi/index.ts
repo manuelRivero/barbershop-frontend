@@ -1,12 +1,15 @@
 import {createApi} from '@reduxjs/toolkit/query/react';
 import fetchBase from '../fetchBase';
 import {Service} from '../../types/services';
+import moment from 'moment';
 
 interface GetWeekStatsResponse {
   data: any[];
 }
 interface GetWeekStatsRequest {
   id: string | null
+  from: Date
+  to: Date
 }
 
 
@@ -21,7 +24,9 @@ export const statApi = createApi({
         return {
           url: `/stats/get-week-stats`,
           params:{
-            id: args.id
+            id: args.id,
+            from: args.from,
+            to: args.to
           }
         }
       },

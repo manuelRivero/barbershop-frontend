@@ -21,6 +21,8 @@ import Loader from '../../components/shared/loader';
 import { Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import WeekPicker from '../../components/shared/weekPicker';
+import "moment/locale/es"
+moment.locale("es")
 
 const chartConfig = {
   backgroundGradientFrom: '#fff',
@@ -34,13 +36,12 @@ const chartConfig = {
   useShadowColorFromDataset: false, // optional
 };
 const daysOfWeek = [
-  'Domingo',
-  'Lunes',
-  'Martes',
-  'Miercoles',
-  'Jueves',
-  'Viernes',
-  'Sabado',
+  'lunes',
+  'martes',
+  'miércoles',
+  'jueves',
+  'viernes',
+  'sábado',
 ];
 const { width } = Dimensions.get('window');
 
@@ -50,54 +51,60 @@ export default function Stats() {
   const { turns } = useAppSelector((state: RootState) => state.turns);
   const { user } = useAppSelector((state: RootState) => state.auth);
 
-  const { data: statsData, isLoading, refetch } = useGetWeekStatsQuery({ id: user ? user._id : null }, { skip: !user ? true : false });
   const [mappedData, setMappedData] = useState<any>();
+  const [startOfWeek, setStartOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek'))
+  const [endOfWeek, setEndOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek').add(5, "days"))
+console.log("endOfWeek", endOfWeek)
+  const { data: statsData, isLoading, refetch } = useGetWeekStatsQuery({
+    id: user ? user._id : null,
+    from: startOfWeek.toDate(),
+    to: endOfWeek.toDate()
+  }, { skip: !user ? true : false });
+  console.log("statsData", statsData)
+
+  const handlePrevWeek = () => {
+
+    setStartOfWeek(startOfWeek.clone().subtract(7, "days"))
+    setEndOfWeek(endOfWeek.clone().subtract(7, "days"))
+  }
+  const handleNextWeek = () => {
+
+    setStartOfWeek(startOfWeek.clone().add(7, "days"))
+    setEndOfWeek(endOfWeek.clone().add(7, "days"))
+  }
 
   useEffect(() => {
     if (statsData) {
-      const actualDateOfWeek = moment().weekday();
-      const sortedData = [...statsData.data].sort((a, b) => a._id - b._id);
-      const dataWithDates = sortedData.map(e => ({
-        date: moment()
-          .utc()
-          .utcOffset(3, true)
-          .set({ day: e._id, hour: 0, minutes: 0 })
-          .format('dddd'),
+      const dataWithDates = [...statsData.data].map(e => ({
         ...e,
+        date: moment(e.date).utc().utcOffset(3, true)
+          .format('dddd')
       }));
+      console.log("dataWithDates", dataWithDates)
       const data = {
-        turns: daysOfWeek
-          .filter((e, index) => index < actualDateOfWeek && index > 0)
-          .map((dayOfWeek: string) => {
-            const target = dataWithDates.find(e => e.date === dayOfWeek);
-            if (target) {
-              return target.dayTotalServices;
-            } else {
-              return 0;
-            }
-          }),
-        labels: daysOfWeek.filter(
-          (e, index) => index < actualDateOfWeek && index > 0,
-        ),
+        // turns: dataWithDates
+        //   .map((e, index: number) => {
+
+        //     return e.dayTotalServices;
+
+        //   }),
+        labels: daysOfWeek,
         datasets: [
           {
-            data: daysOfWeek
-              .filter((e, index) => index < actualDateOfWeek && index > 0)
-              .map((dayOfWeek: string) => {
-                const target = dataWithDates.find(e => e.date === dayOfWeek);
-                if (target) {
-                  return target.dayTotalAmount;
-                } else {
-                  return 0;
-                }
-              }),
+            data: daysOfWeek.map((dayOfWeek: string) => {
+              const target = dataWithDates.find(e => e.date === dayOfWeek);
+              if (target) {
+                return target.dayTotalAmount;
+              } else {
+                return 0;
+              }}),
             color: (opacity = 1) => `#367187`, // optional
             strokeWidth: 2, // optional
           },
         ],
       };
       setMappedData(data);
-      console.log('data', data);
+      console.log("dateset", data.datasets)
     }
   }, [statsData]);
 
@@ -112,6 +119,7 @@ export default function Stats() {
   if (isLoading) {
     return <Loader />;
   }
+
 
   return (
     <LinearGradient
@@ -194,7 +202,7 @@ export default function Stats() {
                   </Text>
                 </Box>
                 <Box mb="$2" mt="$4">
-                  <WeekPicker />
+                  <WeekPicker handlePrevWeek={handlePrevWeek} handleNextWeek={handleNextWeek} endOfWeek={endOfWeek.clone()} startOfWeek={startOfWeek.clone()} />
 
                 </Box>
                 <Box mt={'$4'} position="relative" hardShadow='1' bg="$white" borderRadius="$lg" overflow='hidden'>
@@ -221,45 +229,37 @@ export default function Stats() {
                   />
                 </Box>
                 <Box mt="$6">
-                  {daysOfWeek
-                    .filter(
-                      (e, index) => index < moment().weekday() && index > 0,
-                    )
-                    .map((dayOfWeek: string) => {
-                      const target = statsData ? [...statsData?.data]
-                        .sort((a, b) => a._id - b._id)
-                        .map(e => ({
-                          date: moment()
-                            .utc()
-                            .utcOffset(3, true)
-                            .set({ day: e._id, hour: 0, minutes: 0 })
-                            .format('dddd'),
-                          ...e,
-                        }))
-                        .find(e => e.date === dayOfWeek) : []
-                      return (
-                        <Box
-                          key={dayOfWeek}
-                          hardShadow={'1'}
-                          p="$4"
-                          mb="$6"
-                          borderRadius="$lg"
-                          bg="$white">
-                          <Text color="$textDark500">
-                            {`Total para el día ${dayOfWeek}: `}
-                            <Text color="$textDark500" fontWeight="bold">
-                              {target?.dayTotalAmount | 0}
-                            </Text>
+                  {statsData && [...statsData.data].sort((a, b) => moment(a.date).diff(moment(b.date)))
+                  .map(e => {
+                    const item = {
+                      ...e,
+                      date: moment(e.date).utc().utcOffset(3, true)
+                        .format('dddd')
+                    }
+                    console.log("ITEM", item)
+                    return (
+                      <Box
+                        key={item.date}
+                        hardShadow={'1'}
+                        p="$4"
+                        mb="$6"
+                        borderRadius="$lg"
+                        bg="$white">
+                        <Text color="$textDark500">
+                          {`Total para el día ${item.date}: `}
+                          <Text color="$textDark500" fontWeight="bold">
+                            {item?.dayTotalAmount | 0}
                           </Text>
-                          <Text color="$textDark500">
-                            cortes realizados:{' '}
-                            <Text color="$textDark500" fontWeight="bold">
-                              {target?.dayTotalServices | 0}
-                            </Text>
+                        </Text>
+                        <Text color="$textDark500">
+                          cortes realizados:{' '}
+                          <Text color="$textDark500" fontWeight="bold">
+                            {item?.dayTotalServices | 0}
                           </Text>
-                        </Box>
-                      );
-                    })}
+                        </Text>
+                      </Box>
+                    );
+                  })}
                 </Box>
               </Box>
             )}

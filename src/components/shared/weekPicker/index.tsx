@@ -5,24 +5,20 @@ import { ArrowLeft } from 'lucide-react-native'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
 
+interface Props {
+    handlePrevWeek: () => void;
+    handleNextWeek: () => void;
+    startOfWeek:moment.Moment;
+    endOfWeek:moment.Moment;
+}
 
-export default function WeekPicker() {
 
-    const [startOfWeek, setStartOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek'))
-    const [endOfWeek, setEndOfWeek] = useState<moment.Moment>(moment().endOf('week'))
+export default function WeekPicker({ handlePrevWeek, handleNextWeek, startOfWeek, endOfWeek }: Props) {
+    
     const [showNextArrow, setShowNextArrow] = useState<boolean>(false)
 
 
-    const handlePrevWeek = () => {
-        setStartOfWeek(startOfWeek.clone().subtract(7, "days"))
-        setEndOfWeek(endOfWeek.clone().subtract(7, "days"))
 
-    }
-    const handleNextWeek = () => {
-        setStartOfWeek(startOfWeek.clone().add(7, "days"))
-
-        setEndOfWeek(endOfWeek.clone().add(7, "days"))
-    }
     useEffect(() => {
 
         if (moment().utc().utcOffset(3, true).isAfter(endOfWeek.clone())) {
