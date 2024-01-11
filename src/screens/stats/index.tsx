@@ -54,7 +54,6 @@ export default function Stats() {
   const [mappedData, setMappedData] = useState<any>();
   const [startOfWeek, setStartOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek'))
   const [endOfWeek, setEndOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek').add(5, "days"))
-console.log("endOfWeek", endOfWeek)
   const { data: statsData, isLoading, refetch } = useGetWeekStatsQuery({
     id: user ? user._id : null,
     from: startOfWeek.toDate(),
@@ -82,12 +81,6 @@ console.log("endOfWeek", endOfWeek)
       }));
       console.log("dataWithDates", dataWithDates)
       const data = {
-        // turns: dataWithDates
-        //   .map((e, index: number) => {
-
-        //     return e.dayTotalServices;
-
-        //   }),
         labels: daysOfWeek,
         datasets: [
           {
@@ -97,7 +90,8 @@ console.log("endOfWeek", endOfWeek)
                 return target.dayTotalAmount;
               } else {
                 return 0;
-              }}),
+              }
+            }),
             color: (opacity = 1) => `#367187`, // optional
             strokeWidth: 2, // optional
           },
@@ -230,36 +224,36 @@ console.log("endOfWeek", endOfWeek)
                 </Box>
                 <Box mt="$6">
                   {statsData && [...statsData.data].sort((a, b) => moment(a.date).diff(moment(b.date)))
-                  .map(e => {
-                    const item = {
-                      ...e,
-                      date: moment(e.date).utc().utcOffset(3, true)
-                        .format('dddd')
-                    }
-                    console.log("ITEM", item)
-                    return (
-                      <Box
-                        key={item.date}
-                        hardShadow={'1'}
-                        p="$4"
-                        mb="$6"
-                        borderRadius="$lg"
-                        bg="$white">
-                        <Text color="$textDark500">
-                          {`Total para el día ${item.date}: `}
-                          <Text color="$textDark500" fontWeight="bold">
-                            {item?.dayTotalAmount | 0}
+                    .map(e => {
+                      const item = {
+                        ...e,
+                        date: moment(e.date).utc().utcOffset(3, true)
+                          .format('dddd')
+                      }
+                      console.log("ITEM", item)
+                      return (
+                        <Box
+                          key={item.date}
+                          hardShadow={'1'}
+                          p="$4"
+                          mb="$6"
+                          borderRadius="$lg"
+                          bg="$white">
+                          <Text color="$textDark500">
+                            {`Total para el día ${item.date}: `}
+                            <Text color="$textDark500" fontWeight="bold">
+                              {item?.dayTotalAmount | 0}
+                            </Text>
                           </Text>
-                        </Text>
-                        <Text color="$textDark500">
-                          cortes realizados:{' '}
-                          <Text color="$textDark500" fontWeight="bold">
-                            {item?.dayTotalServices | 0}
+                          <Text color="$textDark500">
+                            cortes realizados:{' '}
+                            <Text color="$textDark500" fontWeight="bold">
+                              {item?.dayTotalServices | 0}
+                            </Text>
                           </Text>
-                        </Text>
-                      </Box>
-                    );
-                  })}
+                        </Box>
+                      );
+                    })}
                 </Box>
               </Box>
             )}

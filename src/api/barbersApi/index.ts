@@ -6,6 +6,14 @@ interface GetBarbersResponse {
     barbers: User[];
 }
 
+interface GetBarberDetailResponse {
+    barber: User[];
+}
+
+interface GetBarberDetailRequest {
+    id: string
+}
+
 export const barbersApi = createApi({
     baseQuery: fetchBase,
     reducerPath: 'barbersApi',
@@ -17,9 +25,20 @@ export const barbersApi = createApi({
                 };
             },
         }),
+
+        getBarberDetail: builder.query<GetBarberDetailResponse, GetBarberDetailRequest>({
+            query(args) {
+                return {
+                    url: `/barbers/${args.id}`,
+                };
+            },
+        }),
     }),
+
+
 });
 
 export const {
     useGetBarbersQuery,
+    useGetBarberDetailQuery
 } = barbersApi;

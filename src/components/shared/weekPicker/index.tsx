@@ -41,7 +41,7 @@ export default function WeekPicker({ handlePrevWeek, handleNextWeek, startOfWeek
                     </Pressable>
                 </Box>
                 <Box>
-                    <Text color='$textDark500'> {startOfWeek.format("DD/MM/yyyy")} - {endOfWeek.format("DD/MM/yyyy")}</Text>
+                    <Text color='$textDark500' fontWeight='bold' fontSize={"$lg"}> {startOfWeek.format("DD/MM/yyyy")} - {endOfWeek.format("DD/MM/yyyy")}</Text>
                 </Box>
                 <Box>
                     {showNextArrow && <Pressable onPress={handleNextWeek}>

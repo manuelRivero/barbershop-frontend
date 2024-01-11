@@ -8,20 +8,24 @@ import {
   Text,
   VStack,
 } from '@gluestack-ui/themed';
-import React, {useEffect, useState} from 'react';
-import {RootState, useAppSelector} from '../../store';
-import {Event} from '../../types/turns';
+import React, { useEffect, useState } from 'react';
+import { RootState, useAppSelector } from '../../store';
+import { Event } from '../../types/turns';
 import Clock from 'react-live-clock';
-import {LineChart} from 'react-native-chart-kit';
-import {useGetWeekStatsQuery} from '../../api/statsApi';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
+import { LineChart } from 'react-native-chart-kit';
+import { useGetWeekStatsQuery } from '../../api/statsApi';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
 import Loader from '../../components/shared/loader';
-import {Dimensions} from 'react-native';
+import { Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { ChevronLeftIcon } from 'lucide-react-native';
 import { Pressable } from '@gluestack-ui/themed';
+import "moment/locale/es"
+import WeekPicker from '../../components/shared/weekPicker';
+import { useGetBarberDetailQuery } from '../../api/barbersApi';
+moment.locale("es")
 
 const chartConfig = {
   backgroundGradientFrom: '#fff',
@@ -35,74 +39,69 @@ const chartConfig = {
   useShadowColorFromDataset: false, // optional
 };
 const daysOfWeek = [
-  'Domingo',
-  'Lunes',
-  'Martes',
-  'Miercoles',
-  'Jueves',
-  'Viernes',
-  'Sabado',
+  'lunes',
+  'martes',
+  'miércoles',
+  'jueves',
+  'viernes',
+  'sábado',
 ];
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-export default function AdminBarberStats({route}: any) {
+export default function AdminBarberStats({ route }: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const {id} = route.params;
+  const { id } = route.params;
 
-  const {turns} = useAppSelector((state: RootState) => state.turns);
-  const {
-    data: statsData,
-    isLoading,
-    refetch,
-  } = useGetWeekStatsQuery({id: id || null});
+  const { turns } = useAppSelector((state: RootState) => state.turns);
   const [mappedData, setMappedData] = useState<any>();
+  const [startOfWeek, setStartOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek'))
+  const [endOfWeek, setEndOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek').add(5, "days"))
+  const { data: statsData, isLoading, refetch } = useGetWeekStatsQuery({
+    id: id || null,
+    from: startOfWeek.toDate(),
+    to: endOfWeek.toDate()
+  });
+  const { data: barberDetail, isLoading: barberDetailLoading, isError: barberDetailError, refetch: refetchBarberDetail } = useGetBarberDetailQuery({ id })
 
-  console.log('statsData', statsData);
+
+  const handlePrevWeek = () => {
+
+    setStartOfWeek(startOfWeek.clone().subtract(7, "days"))
+    setEndOfWeek(endOfWeek.clone().subtract(7, "days"))
+  }
+  const handleNextWeek = () => {
+
+    setStartOfWeek(startOfWeek.clone().add(7, "days"))
+    setEndOfWeek(endOfWeek.clone().add(7, "days"))
+  }
+
   useEffect(() => {
     if (statsData) {
-      const actualDateOfWeek = moment().weekday();
-      const sortedData = statsData.data.sort((a, b) => a._id - b._id);
-      const dataWithDates = sortedData.map(e => ({
-        date: moment()
-          .utc()
-          .utcOffset(3, true)
-          .set({day: e._id, hour: 0, minutes: 0})
-          .format('dddd'),
+      const dataWithDates = [...statsData.data].map(e => ({
         ...e,
+        date: moment(e.date).utc().utcOffset(3, true)
+          .format('dddd')
       }));
+      console.log("dataWithDates", dataWithDates)
       const data = {
-        turns: daysOfWeek
-          .filter((e, index) => index < actualDateOfWeek && index > 0)
-          .map((dayOfWeek: string) => {
-            const target = dataWithDates.find(e => e.date === dayOfWeek);
-            if (target) {
-              return target.dayTotalServices;
-            } else {
-              return 0;
-            }
-          }),
-        labels: daysOfWeek.filter(
-          (e, index) => index < actualDateOfWeek && index > 0,
-        ),
+        labels: daysOfWeek,
         datasets: [
           {
-            data: daysOfWeek
-              .filter((e, index) => index < actualDateOfWeek && index > 0)
-              .map((dayOfWeek: string) => {
-                const target = dataWithDates.find(e => e.date === dayOfWeek);
-                if (target) {
-                  return target.dayTotalAmount;
-                } else {
-                  return 0;
-                }
-              }),
+            data: daysOfWeek.map((dayOfWeek: string) => {
+              const target = dataWithDates.find(e => e.date === dayOfWeek);
+              if (target) {
+                return target.dayTotalAmount;
+              } else {
+                return 0;
+              }
+            }),
             color: (opacity = 1) => `#367187`, // optional
             strokeWidth: 2, // optional
           },
         ],
       };
       setMappedData(data);
-      console.log('data', data);
+      console.log("dateset", data.datasets)
     }
   }, [statsData]);
 
@@ -110,20 +109,23 @@ export default function AdminBarberStats({route}: any) {
     const unsubscribe = navigation.addListener('focus', async () => {
       console.log('focus');
       refetch();
+      refetchBarberDetail();
     });
 
     return unsubscribe;
   }, [navigation]);
-  if (isLoading) {
+  if (isLoading || barberDetailLoading) {
     return <Loader />;
   }
-  console.log('mapped data', mappedData);
+
+  console.log("barber detail", barberDetail)
+
   return (
     <LinearGradient
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       colors={['#fff', '#f1e2ca']}
-      start={{x: 0, y: 0.6}}
-      end={{x: 0, y: 1}}>
+      start={{ x: 0, y: 0.6 }}
+      end={{ x: 0, y: 1 }}>
       <Box position="relative" flex={1}>
         <Box
           borderRadius={9999}
@@ -150,45 +152,9 @@ export default function AdminBarberStats({route}: any) {
           <ScrollView flex={1} mt="$10">
             {mappedData && (
               <Box p="$4">
-                <Box
-                  hardShadow={'1'}
-                  p="$4"
-                  mb="$4"
-                  borderRadius="$lg"
-                  bg="$white">
-                  <Text color="$textDark500">
-                    Cortes realizados el día de hoy:{' '}
-                    <Text color="$textDark500" fontWeight="bold">
-                      {
-                        turns.filter(
-                          (turn: Event) => turn.status === 'COMPLETE',
-                        ).length
-                      }
-                    </Text>
-                  </Text>
-                  <HStack alignItems="center">
-                    <Text color="$textDark500">Total el día de hoy: </Text>
-                    <Text color="$textDark500" fontWeight="bold">
-                      {turns.reduce((accumulator, object) => {
-                        return object.status === 'COMPLETE'
-                          ? accumulator + object.price
-                          : accumulator;
-                      }, 0)}{' '}
-                      Pesos
-                    </Text>
-                  </HStack>
-                  <Text color="$textDark500">
-                    Cortes pendientes el día de hoy:{' '}
-                    <Text color="$textDark500" fontWeight="bold">
-                      {
-                        turns.filter(
-                          (turn: Event) => turn.status !== 'COMPLETE',
-                        ).length
-                      }
-                    </Text>
-                  </Text>
+                <Box mb="$2" mt="$4">
+                  <WeekPicker handlePrevWeek={handlePrevWeek} handleNextWeek={handleNextWeek} endOfWeek={endOfWeek.clone()} startOfWeek={startOfWeek.clone()} />
                 </Box>
-
                 <Box
                   mt={'$4'}
                   position="relative"
@@ -203,7 +169,7 @@ export default function AdminBarberStats({route}: any) {
                     chartConfig={chartConfig}
                     verticalLabelRotation={30}
                     bezier
-                    renderDotContent={({x, y, index, indexData}) => {
+                    renderDotContent={({ x, y, index, indexData }) => {
                       console.log('Index data', indexData);
                       return (
                         <Text
@@ -219,40 +185,44 @@ export default function AdminBarberStats({route}: any) {
                   />
                 </Box>
                 <Box mt="$6">
-                  {daysOfWeek
-                    .filter(
-                      (e, index) => index < moment().weekday() && index > 0,
-                    )
-                    .map((dayOfWeek: string) => {
-                      const target = statsData?.data
-                        .sort((a, b) => a._id - b._id)
-                        .map(e => ({
-                          date: moment()
-                            .utc()
-                            .utcOffset(3, true)
-                            .set({day: e._id, hour: 0, minutes: 0})
-                            .format('dddd'),
-                          ...e,
-                        }))
-                        .find(e => e.date === dayOfWeek);
+                  {statsData && [...statsData.data].sort((a, b) => moment(a.date).diff(moment(b.date)))
+                    .map(e => {
+                      const item = {
+                        ...e,
+                        date: moment(e.date).utc().utcOffset(3, true)
+                          .format('dddd')
+                      }
+                      console.log("ITEM", item)
                       return (
                         <Box
-                          key={dayOfWeek}
+                          key={item.date}
                           hardShadow={'1'}
                           p="$4"
                           mb="$6"
                           borderRadius="$lg"
                           bg="$white">
                           <Text color="$textDark500">
-                            {`Total para el día ${dayOfWeek}: `}
+                            {`Total para el día ${item.date}: `}
                             <Text color="$textDark500" fontWeight="bold">
-                              {target?.dayTotalAmount | 0}
+                              {item?.dayTotalAmount | 0}
                             </Text>
                           </Text>
                           <Text color="$textDark500">
                             cortes realizados:{' '}
                             <Text color="$textDark500" fontWeight="bold">
-                              {target?.dayTotalServices | 0}
+                              {item?.dayTotalServices | 0}
+                            </Text>
+                          </Text>
+                          <Text color="$textDark500">
+                            Total para el barbero:{' '}
+                            <Text color="$textDark500" fontWeight="bold">
+                              { barberDetail?.barber[0].commission && (item?.dayTotalAmount * barberDetail?.barber[0].commission ) / 100 }
+                            </Text>
+                          </Text>
+                          <Text color="$textDark500">
+                            Total de ganancia:{' '}
+                            <Text color="$textDark500" fontWeight="bold">
+                              { barberDetail?.barber[0].commission && item.dayTotalAmount - (item?.dayTotalAmount * barberDetail?.barber[0].commission ) / 100 }
                             </Text>
                           </Text>
                         </Box>
