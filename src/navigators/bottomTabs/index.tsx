@@ -11,6 +11,7 @@ import Gallery from '../../screens/gallery';
 import {RootState, useAppSelector} from '../../store';
 import StatsBarberSelection from '../../screens/statsBarberSelection';
 import AdminBarberStats from '../../screens/AdminBarberStats';
+import AllStatsFromDates from '../../screens/AllStatsFromDates';
 
 type RootStackParamList = {
   Schedule: undefined;
@@ -18,6 +19,7 @@ type RootStackParamList = {
   Profile: undefined;
   Stats: undefined;
   BarberStats: undefined;
+  AllStatsFromDates: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootStackParamList>();
@@ -104,13 +106,16 @@ function BottomTabs(): JSX.Element {
         screenOptions={{
           headerShown: false,
         }}>
-        {user?.role === 'admin' && (
           <Tab.Screen
             name="BarberStats"
             component={BarberStatsScreens}
             options={{title: 'Estadisticas'}}
           />
-        )}
+          <Tab.Screen
+            name="AllStatsFromDates"
+            component={AllStatsFromDates}
+            options={{title: 'Estadisticas'}}
+          />
         <Tab.Screen
           name="Profile"
           component={ProfileScreens}

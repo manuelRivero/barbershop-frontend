@@ -63,6 +63,7 @@ export default function AdminBarberStats({ route }: any) {
   });
   const { data: barberDetail, isLoading: barberDetailLoading, isError: barberDetailError, refetch: refetchBarberDetail } = useGetBarberDetailQuery({ id })
 
+  const barberCommission = barberDetail?.barber[0].commission || 0
 
   const handlePrevWeek = () => {
 
@@ -152,9 +153,59 @@ export default function AdminBarberStats({ route }: any) {
           <ScrollView flex={1} mt="$10">
             {mappedData && (
               <Box p="$4">
-                <Box mb="$2" mt="$4">
+                <Box mb="$4" mt="$4">
                   <WeekPicker handlePrevWeek={handlePrevWeek} handleNextWeek={handleNextWeek} endOfWeek={endOfWeek.clone()} startOfWeek={startOfWeek.clone()} />
                 </Box>
+
+                <Box
+                  hardShadow={'1'}
+                  p="$4"
+                  mb="$6"
+                  borderRadius="$lg"
+                  bg="$white">
+                  <Heading color="$textDark500">
+                    Resumen semanal
+                  </Heading>
+                  <Text color="$textDark500">
+                    Total en cortes:{' '}
+                    <Text color="$textDark500" fontWeight="bold">
+                      {statsData && [...statsData.data].reduce((accumulator, object) => {
+                        return accumulator + object.dayTotalAmount
+                      }, 0)}
+                    </Text>
+                  </Text>
+                  <Text color="$textDark500">
+                    Cortes realizados:{' '}
+                    <Text color="$textDark500" fontWeight="bold">
+                      {statsData && [...statsData.data].reduce((accumulator, object) => {
+                        return accumulator + object.dayTotalServices
+                      }, 0)}
+                    </Text>
+                  </Text>
+                  <Text color="$textDark500">
+                    Total para el barbero:{' '}
+                    <Text color="$textDark500" fontWeight="bold">
+                      {statsData && [...statsData.data].reduce((accumulator, object) => {
+                        return accumulator + object.dayTotalAmount
+                      }, 0) * barberCommission / 100}
+                    </Text>
+                  </Text>
+                  <Text color="$textDark500">
+                    Total en ganancias:{' '}
+                    <Text color="$textDark500" fontWeight="bold">
+                      {statsData && [...statsData.data].reduce((accumulator, object) => {
+                        return accumulator + object.dayTotalAmount
+                      }, 0) * (100 - barberCommission) / 100}
+                    </Text>
+                  </Text>
+                  <Text color="$textDark500">
+                    Comisiòn del barbero:{' '}
+                    <Text color="$textDark500" fontWeight="bold">
+                      {barberDetail?.barber[0].commission} %
+                    </Text>
+                  </Text>
+                </Box>
+                
                 <Box
                   mt={'$4'}
                   position="relative"
@@ -170,7 +221,6 @@ export default function AdminBarberStats({ route }: any) {
                     verticalLabelRotation={30}
                     bezier
                     renderDotContent={({ x, y, index, indexData }) => {
-                      console.log('Index data', indexData);
                       return (
                         <Text
                           position="absolute"
@@ -216,13 +266,19 @@ export default function AdminBarberStats({ route }: any) {
                           <Text color="$textDark500">
                             Total para el barbero:{' '}
                             <Text color="$textDark500" fontWeight="bold">
-                              { barberDetail?.barber[0].commission && (item?.dayTotalAmount * barberDetail?.barber[0].commission ) / 100 }
+                              {barberDetail?.barber[0].commission && (item?.dayTotalAmount * barberDetail?.barber[0].commission) / 100}
+                            </Text>
+                          </Text>
+                          <Text color="$textDark500">
+                            Comisiòn del barbero:{' '}
+                            <Text color="$textDark500" fontWeight="bold">
+                              {barberDetail?.barber[0].commission} %
                             </Text>
                           </Text>
                           <Text color="$textDark500">
                             Total de ganancia:{' '}
                             <Text color="$textDark500" fontWeight="bold">
-                              { barberDetail?.barber[0].commission && item.dayTotalAmount - (item?.dayTotalAmount * barberDetail?.barber[0].commission ) / 100 }
+                              {barberDetail?.barber[0].commission && item.dayTotalAmount - (item?.dayTotalAmount * barberDetail?.barber[0].commission) / 100}
                             </Text>
                           </Text>
                         </Box>

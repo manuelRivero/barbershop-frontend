@@ -11,6 +11,10 @@ interface GetWeekStatsRequest {
   from: Date
   to: Date
 }
+interface GetStatsFromDatesRequest {
+  from: Date
+  to: Date
+}
 
 
 export const statApi = createApi({
@@ -31,7 +35,18 @@ export const statApi = createApi({
         }
       },
     }),
+    getAllStatsFromDates: builder.query<GetWeekStatsResponse, GetStatsFromDatesRequest>({
+      query(args) {
+        return {
+          url: `/stats/get-all-stats-from-dates`,
+          params:{
+            from: args.from,
+            to: args.to
+          }
+        }
+      },
+    }),
   })
 });
 
-export const {useGetWeekStatsQuery} = statApi;
+export const {useGetWeekStatsQuery, useGetAllStatsFromDatesQuery} = statApi;

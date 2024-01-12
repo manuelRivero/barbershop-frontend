@@ -11,6 +11,7 @@ interface Icons {
   Stats:LucideIcon
   BarberStats: LucideIcon;
   BarberStatsSelection: LucideIcon;
+  AllStatsFromDates: LucideIcon
 }
 const icons: Icons = {
   Schedule: CalendarPlus,
@@ -18,7 +19,8 @@ const icons: Icons = {
   Profile: User,
   Stats: LineChart,
   BarberStats: UsersIcon,
-  BarberStatsSelection: UsersIcon
+  BarberStatsSelection: UsersIcon,
+  AllStatsFromDates: UsersIcon
 };
 
 const getIcon = (name: string) => {

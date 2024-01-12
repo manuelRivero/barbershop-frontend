@@ -59,7 +59,6 @@ export default function Stats() {
     from: startOfWeek.toDate(),
     to: endOfWeek.toDate()
   }, { skip: !user ? true : false });
-  console.log("statsData", statsData)
 
   const handlePrevWeek = () => {
 
@@ -247,6 +246,12 @@ export default function Stats() {
                           </Text>
                           <Text color="$textDark500">
                             cortes realizados:{' '}
+                            <Text color="$textDark500" fontWeight="bold">
+                              {item?.dayTotalServices | 0}
+                            </Text>
+                          </Text>
+                          <Text color="$textDark500">
+                            Total para el barbero:{' '}
                             <Text color="$textDark500" fontWeight="bold">
                               {item?.dayTotalServices | 0}
                             </Text>
