@@ -17,9 +17,11 @@ const { width } = Dimensions.get('window');
 
 export default function UserWaitingRoom({ route }: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const { turnId } = route.params;
-  const { data, isLoading } = useGetTurnDetailsQuery({ id: turnId });
   const { userTurn } = useAppSelector((state: RootState) => state.turns);
+
+  const turnId = route.params?.turnId || userTurn?._id
+  console.log("turnId", userTurn)
+  const { data, isLoading } = useGetTurnDetailsQuery({ id: turnId });
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', function () {
@@ -28,6 +30,7 @@ export default function UserWaitingRoom({ route }: any) {
     const interval = setInterval(() => {
       if (moment().utc().utcOffset(3, true).isAfter(userTurn?.endDate)) {
         navigation.navigate('UserGreetings', { turnId });
+        clearInterval(interval)
       }
     }, 1000);
 

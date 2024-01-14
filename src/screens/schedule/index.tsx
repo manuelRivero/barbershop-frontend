@@ -222,12 +222,10 @@ export default function Schedule() {
         if (currentTime.isBefore(businessHoursStart)) {
           // const diff = currentTime.clone().diff(businessHoursStart, 'minutes');
           const diff = businessHoursStart.clone().diff(currentTime, 'minutes');
-          currentTime = currentTime.add('minutes', diff);
-          console.log('before', diff);
+          currentTime = currentTime.add(diff, 'minutes');
         }
 
         while (currentTime.clone().add(selectedService.duration, "minutes").isBefore(businessHoursEnd)) {
-          console.log("currentTime", currentTime)
           const endTime = currentTime.clone().add(
             selectedService.duration,
             'minutes',
@@ -368,6 +366,7 @@ export default function Schedule() {
 
   useEffect(() => {
     socket?.on('add-turn', ({ data }) => {
+      console.log("notification")
       dispatch(addTurn(data));
       PushNotification.localNotification({
         /* Android Only Properties */

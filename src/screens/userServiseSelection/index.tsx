@@ -91,13 +91,12 @@ export default function UserServiceSelection({route}: any) {
         const slots = [];
         let turnsList = [...turns];
         console.log("turnsList",turnsList)
-        let currentTime = moment().utc().utcOffset(3, true);
+        let currentTime = moment().utc().utcOffset(3, true).add(1, "hour");
 
-        if (currentTime.clone().add(selectedService.duration, "minutes").isBefore(businessHoursEnd)) {
+        if (currentTime.isBefore(businessHoursStart)) {
           // const diff = currentTime.clone().diff(businessHoursStart, 'minutes');
           const diff = businessHoursStart.clone().diff(currentTime, 'minutes');
-          currentTime = currentTime.add('minutes', diff);
-          console.log('before',diff);
+          currentTime = currentTime.add(diff, 'minutes');
         }
         while (currentTime.isBefore(businessHoursEnd)) {
           const endTime = currentTime
@@ -234,7 +233,13 @@ export default function UserServiceSelection({route}: any) {
                   cancelData: null,
                 }),
               ),
-                dispatch(addTurn(res.turn));
+
+              dispatch(
+                setUserTurn({...res.turn}),
+              );
+
+
+
               setSelectedService(null);
               setShowTurnModal(false);
               navigation.navigate('UserWaitingRoom', {turnId: res.turn._id});
@@ -279,23 +284,7 @@ export default function UserServiceSelection({route}: any) {
           },
         }),
       );
-      dispatch(
-        setUserTurn({
-          type: selectedService._id,
-          name: selectedService.name,
-          barber:
-            user?.role === 'barber' || user?.role === 'admin-barber'
-              ? user?._id
-              : id,
-          user: user?.role === 'user' ? user?._id : null,
-          status: 'INCOMPLETE',
-          price: selectedService.price,
-          startDate: moment(turn.startDate).toISOString(),
-          endDate: moment(turn.startDate)
-            .add(selectedService.duration, 'minutes')
-            .toISOString(),
-        }),
-      );
+   
     }
 
     // try {
