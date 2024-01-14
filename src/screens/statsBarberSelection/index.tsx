@@ -52,7 +52,7 @@ export default function StatsBarberSelection() {
           />
           <Box mt="$8">
             <Heading textAlign="center" color="$textDark500">
-              Selección de barbero
+              Resumen de barberos
             </Heading>
             <FlatList
               mt="$10"

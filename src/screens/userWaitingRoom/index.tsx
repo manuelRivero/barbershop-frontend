@@ -93,6 +93,9 @@ export default function UserWaitingRoom({ route }: any) {
                   {data.turn[0].name}
                 </Text>
               </Text>
+              <Text color="$textDark500">
+                Recuerda que tu asistencia debe ser 15 minutos antes de la hora de tu turno
+              </Text>
             </Box>
             <HStack justifyContent="center" mt="$4">
               <LottieView

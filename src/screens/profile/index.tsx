@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import ProfileCard from '../../components/profile/profileCard';
 import {
   Box,
@@ -12,45 +12,59 @@ import {
 import Clock from 'react-live-clock';
 import BaseButton from '../../components/shared/baseButton';
 import LinkButton from '../../components/shared/linkButton';
-import {RootState, useAppDispatch, useAppSelector} from '../../store';
-import {logout} from '../../store/features/authSlice';
+import { RootState, useAppDispatch, useAppSelector } from '../../store';
+import { logout } from '../../store/features/authSlice';
 import ProfileForm from '../../components/profile/profileForm';
-import {Dimensions} from 'react-native';
+import { Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import Carousel, {Pagination} from 'react-native-snap-carousel';
+import Carousel, { Pagination } from 'react-native-snap-carousel';
 import ReviewCard from '../../components/shared/reviewCard';
-import {useGetReviewsQuery} from '../../api/reviewsApi';
+import { useGetReviewsQuery } from '../../api/reviewsApi';
 import Loader from '../../components/shared/loader';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import { useGetImagesQuery } from '../../api/galleryApi';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function Profile() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const dispacth = useAppDispatch();
-  const {user} = useAppSelector((state: RootState) => state.auth);
+  const { user } = useAppSelector((state: RootState) => state.auth);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [activeSlideReview, setActiveSlideReview] = useState<number>(0);
   const [activeSlideGallery, setActiveSlideGallery] = useState<number>(0);
 
-  const {data, isLoading} = useGetReviewsQuery(
-    {barber: user ? user?._id : '', page: 1},
-    {skip: user?.role !== 'barber' ? true : false},
+  const { data, isLoading, refetch } = useGetReviewsQuery(
+    { barber: user ? user?._id : '', page: 1 },
+    { skip: user?.role === 'user' || user?.role === 'admin' ? true : false },
   );
+
+  const { data: galleryData, isLoading: isLoadingGallery, refetch: refecthGallery } = useGetImagesQuery({}, { skip: user?.role === 'user' || user?.role === 'admin' ? true : false },)
   const handleLogout = () => {
     dispacth(logout());
   };
-  const handleProfileEdition = () => {};
-  if (isLoading && user?.role === 'barber' && !data) {
+  console.log("galleryData", galleryData)
+  const handleProfileEdition = () => { };
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      refetch();
+      refecthGallery()
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  if (isLoading || isLoadingGallery) {
     return <Loader />;
   }
   return (
     <LinearGradient
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       colors={['#fff', '#f1e2ca']}
-      start={{x: 0, y: 0.6}}
-      end={{x: 0, y: 1}}>
+      start={{ x: 0, y: 0.6 }}
+      end={{ x: 0, y: 1 }}>
       <ScrollView position="relative" flex={1}>
         <Box
           borderRadius={9999}
@@ -72,7 +86,7 @@ export default function Profile() {
             format={'hh:mm:ss'}
             ticking={true}
             element={Text}
-            style={{fontSize: 22, color: '#1f3d56'}}
+            style={{ fontSize: 22, color: '#1f3d56' }}
           />
           <Heading color="$textDark500" textAlign="center">
             Perfil
@@ -81,7 +95,7 @@ export default function Profile() {
         <Box p="$4" mt="$10">
           <ProfileCard data={user} />
         </Box>
-          <HStack
+        <HStack
           mt="$4"
           space="2xl"
           justifyContent="center">
@@ -101,7 +115,6 @@ export default function Profile() {
             disabled={false}
           />
         </HStack>
-        {console.log("user role", user?.role === 'barber')}
         {(user?.role === 'barber' || user?.role === 'admin-barber') && (
           <Box mt="$4" p="$4">
             <Heading size="lg" color="$textDark500">
@@ -112,7 +125,7 @@ export default function Profile() {
               layout={'default'}
               loop={true}
               onSnapToItem={index => setActiveSlideReview(index)}
-              renderItem={({item}) => {
+              renderItem={({ item }) => {
                 return (
                   <Box mt="$6" mb="$6">
                     <ReviewCard item={item} />
@@ -129,6 +142,7 @@ export default function Profile() {
               dotsLength={data ? data?.data.length : [].length}
               activeDotIndex={activeSlideReview}
             />
+            {data?.data.length === 0 && <Text color="$textDark500">Aún no tienes ninguna calificación</Text>}
           </Box>
         )}
         {(user?.role === 'barber' || user?.role === 'admin-barber') && (
@@ -137,17 +151,18 @@ export default function Profile() {
               Galería{' '}
             </Heading>
             <Carousel
-              data={[1, 2, 3, 4, 5, 6]}
+              data={galleryData ? galleryData.data : []}
               layout={'default'}
               loop={true}
               onSnapToItem={index => setActiveSlideGallery(index)}
-              renderItem={({item}) => {
+              renderItem={({ item }) => {
                 return (
                   <Image
+                    borderRadius={16}
                     w={300}
                     h={300}
                     resizeMode="cover"
-                    source={require('./../../assets/images/image-placeholder.png')}
+                    source={{ uri: item.url }}
                     alt="imagen"
                   />
                 );
@@ -157,31 +172,34 @@ export default function Profile() {
             />
             <Box mb="$6">
 
-            <Pagination
-              dotStyle={{
-                backgroundColor: '#367187',
-              }}
-              dotsLength={data ? data?.data.length : [].length}
-              activeDotIndex={activeSlideGallery}
-            />
+              <Pagination
+                dotStyle={{
+                  backgroundColor: '#367187',
+                }}
+                dotsLength={data ? data?.data.length : [].length}
+                activeDotIndex={activeSlideGallery}
+              />
+
+              {galleryData?.data.length === 0 && <Text color="$textDark500">Aún no tienes imagenes en tu galería</Text>}
+
 
             </Box>
-              <HStack
-          mt="$4"
-          space="2xl"
-          justifyContent="center">
-          <BaseButton
-            title="Editar galería"
-            background={'$primary500'}
-            color={'$white'}
-            onPress={() => navigation.navigate("BarberGallery")}
-            isLoading={false}
-            disabled={false}
-          />
-        </HStack>
+            <HStack
+              mt="$4"
+              space="2xl"
+              justifyContent="center">
+              <BaseButton
+                title="Editar galería"
+                background={'$primary500'}
+                color={'$white'}
+                onPress={() => navigation.navigate("BarberGallery")}
+                isLoading={false}
+                disabled={false}
+              />
+            </HStack>
           </Box>
         )}
-      
+
         <ProfileForm show={showModal} onClose={() => setShowModal(false)} />
       </ScrollView>
     </LinearGradient>

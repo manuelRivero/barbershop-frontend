@@ -4,16 +4,15 @@ import {
     HStack,
     Heading,
     Icon,
+    Input,
+    InputField,
     ScrollView,
     Text,
     VStack,
 } from '@gluestack-ui/themed';
-import React, { useEffect, useState } from 'react';
-import { RootState, useAppSelector } from '../../store';
-import { Event } from '../../types/turns';
-import Clock from 'react-live-clock';
-import { LineChart } from 'react-native-chart-kit';
-import { useGetAllStatsFromDatesQuery, useGetWeekStatsQuery } from '../../api/statsApi';
+import React, { useEffect, useMemo, useState } from 'react';
+import { BarChart } from 'react-native-chart-kit';
+import { useGetAllStatsFromDatesQuery } from '../../api/statsApi';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import moment from 'moment';
@@ -24,7 +23,6 @@ import { ChevronLeftIcon } from 'lucide-react-native';
 import { Pressable } from '@gluestack-ui/themed';
 import "moment/locale/es"
 import WeekPicker from '../../components/shared/weekPicker';
-import { useGetBarberDetailQuery } from '../../api/barbersApi';
 moment.locale("es")
 
 const chartConfig = {
@@ -38,70 +36,62 @@ const chartConfig = {
     barPercentage: 0.5,
     useShadowColorFromDataset: false, // optional
 };
-const daysOfWeek = [
-    'lunes',
-    'martes',
-    'miércoles',
-    'jueves',
-    'viernes',
-    'sábado',
-];
 const { width } = Dimensions.get('window');
 
 export default function AllStatsFromDates({ route }: any) {
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
     const [mappedData, setMappedData] = useState<any>();
-    const [startOfWeek, setStartOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek'))
-    const [endOfWeek, setEndOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek').add(5, "days"))
+    const [selected, setSelected] = useState<string>('');
+    const [startDate, setStartDate] = useState<moment.Moment>(moment().startOf('month'))
+    const [endDate, setEndDate] = useState<moment.Moment>(moment().endOf('month'))
     const { data: statsData, isLoading, refetch } = useGetAllStatsFromDatesQuery({
-        from: startOfWeek.toDate(),
-        to: endOfWeek.toDate()
+        from: startDate.toDate(),
+        to: endDate.toDate()
     });
+    const totalStats = useMemo(() => {
+        return statsData && statsData.data.reduce((a: any, b: any) => {
+            return {
+                totalTurns: a.totalTurns + b.totalTurns,
+                totalForBarber: a.totalForBarber + b.totalForBarber,
+                total: a.total + b.total
+            }
+        }, {
+            totalTurns: 0,
+            totalForBarber: 0,
+            total: 0
+        })
+    }, [statsData])
 
     console.log("statsData", statsData)
 
 
-    const handlePrevWeek = () => {
+    const handleStartDate = () => {
 
-        setStartOfWeek(startOfWeek.clone().subtract(7, "days"))
-        setEndOfWeek(endOfWeek.clone().subtract(7, "days"))
+        setStartDate(startDate.clone().subtract(1, "month").startOf("month"))
+        setEndDate(endDate.clone().subtract(1, "month").endOf("month"))
     }
-    const handleNextWeek = () => {
-
-        setStartOfWeek(startOfWeek.clone().add(7, "days"))
-        setEndOfWeek(endOfWeek.clone().add(7, "days"))
+    const handleEndDate = () => {
+        setStartDate(startDate.clone().add(1, "month").startOf("month"))
+        setEndDate(endDate.clone().add(1, "month").endOf("month"))
     }
 
-    // useEffect(() => {
-    //     if (statsData) {
-    //         const dataWithDates = [...statsData.data].map(e => ({
-    //             ...e,
-    //             date: moment(e.date).utc().utcOffset(3, true)
-    //                 .format('dddd')
-    //         }));
-    //         console.log("dataWithDates", dataWithDates)
-    //         const data = {
-    //             labels: daysOfWeek,
-    //             datasets: [
-    //                 {
-    //                     data: daysOfWeek.map((dayOfWeek: string) => {
-    //                         const target = dataWithDates.find(e => e.date === dayOfWeek);
-    //                         if (target) {
-    //                             return target.dayTotalAmount;
-    //                         } else {
-    //                             return 0;
-    //                         }
-    //                     }),
-    //                     color: (opacity = 1) => `#367187`, // optional
-    //                     strokeWidth: 2, // optional
-    //                 },
-    //             ],
-    //         };
-    //         setMappedData(data);
-    //         console.log("dateset", data.datasets)
-    //     }
-    // }, [statsData]);
+
+
+    useEffect(() => {
+        if (statsData) {
+            const data = {
+                labels: statsData.data.map((item: any) => (item.name + " " + item.lastName)),
+                datasets: [
+                    {
+                        data: statsData.data.map((item: any) => item.total),
+                    },
+                ],
+            };
+            setMappedData(data);
+            console.log("dateset", data.datasets[0].data)
+        }
+    }, [statsData]);
 
     useEffect(() => {
         const unsubscribe = navigation.addListener('focus', async () => {
@@ -114,6 +104,8 @@ export default function AllStatsFromDates({ route }: any) {
         return <Loader />;
     }
 
+
+    console.log("totalStats", totalStats)
 
     return (
         <LinearGradient
@@ -132,27 +124,64 @@ export default function AllStatsFromDates({ route }: any) {
                     top={-width * 2.75}
                     left={-width}
                     opacity={0.5}
+                    px={5}
                 />
-
                 <HStack justifyContent="space-between" alignItems="center" mt="$6">
+
                     <Pressable onPress={() => navigation.goBack()} p={'$4'}>
                         <Icon as={ChevronLeftIcon} size={24} color="$textDark500" />
                     </Pressable>
                     <Heading textAlign="center" color="$textDark500">
-                        Estadisticas
+                        Resumen mensual general
                     </Heading>
-                    <Box p="$6"></Box>
+                    <Box p="$6">
+
+                    </Box>
                 </HStack>
                 <Box flex={1}>
-                    <ScrollView flex={1} mt="$10">
+
+                    <ScrollView flex={1} mt="$12">
+
+
                         {mappedData && (
                             <Box p="$4">
-                                <Box mb="$4" mt="$4">
-                                    <WeekPicker handlePrevWeek={handlePrevWeek} handleNextWeek={handleNextWeek} endOfWeek={endOfWeek.clone()} startOfWeek={startOfWeek.clone()} />
+                                <Box mb="$4">
+                                    <WeekPicker handlePrevWeek={handleStartDate} handleNextWeek={handleEndDate} endOfWeek={endDate.clone()} startOfWeek={startDate.clone()} />
                                 </Box>
 
+                                <Box
+                                    hardShadow={'1'}
+                                    p="$4"
+                                    mb="$6"
+                                    borderRadius="$lg"
+                                    bg="$white">
+                                    <Heading color='$textDark500'>Resumen</Heading>
+                                    <Text color="$textDark500">
+                                        Total de turnos:{' '}
+                                        <Text color="$textDark500" fontWeight="bold">
+                                            {totalStats.totalTurns}
+                                        </Text>
+                                    </Text>
+                                    <Text color="$textDark500">
+                                        Total:{' '}
+                                        <Text color="$textDark500" fontWeight="bold">
+                                            {totalStats.total}
+                                        </Text>
+                                    </Text>
+                                    <Text color="$textDark500">
+                                        Total en comisiones:{' '}
+                                        <Text color="$textDark500" fontWeight="bold">
+                                            {totalStats.totalForBarber}
+                                        </Text>
+                                    </Text>
+                                    <Text color="$textDark500">
+                                        Total en ganancias:{' '}
+                                        <Text color="$textDark500" fontWeight="bold">
+                                            {totalStats.total - totalStats.totalForBarber}
+                                        </Text>
+                                    </Text>
 
-
+                                </Box>
                                 <Box
                                     mt={'$4'}
                                     position="relative"
@@ -160,25 +189,15 @@ export default function AllStatsFromDates({ route }: any) {
                                     bg="$white"
                                     borderRadius="$lg"
                                     overflow="hidden">
-                                    <LineChart
+                                    <BarChart
                                         data={mappedData}
                                         width={350}
                                         height={350}
                                         chartConfig={chartConfig}
                                         verticalLabelRotation={30}
-                                        bezier
-                                        renderDotContent={({ x, y, index, indexData }) => {
-                                            return (
-                                                <Text
-                                                    position="absolute"
-                                                    color="$textDark500"
-                                                    top={y}
-                                                    left={x}>
-                                                    {indexData}
-                                                </Text>
-                                            );
-                                        }}
                                         fromZero
+                                        yAxisLabel=''
+                                        yAxisSuffix=''
                                     />
                                 </Box>
                             </Box>

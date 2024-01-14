@@ -145,7 +145,7 @@ export default function AdminBarberStats({ route }: any) {
             <Icon as={ChevronLeftIcon} size={24} color="$textDark500" />
           </Pressable>
           <Heading textAlign="center" color="$textDark500">
-            Estadisticas
+            Resumen semanal del barbero
           </Heading>
           <Box p="$6"></Box>
         </HStack>
@@ -164,14 +164,12 @@ export default function AdminBarberStats({ route }: any) {
                   borderRadius="$lg"
                   bg="$white">
                   <Heading color="$textDark500">
-                    Resumen semanal
+                    Resumen
                   </Heading>
                   <Text color="$textDark500">
-                    Total en cortes:{' '}
+                    Barbero:{' '}
                     <Text color="$textDark500" fontWeight="bold">
-                      {statsData && [...statsData.data].reduce((accumulator, object) => {
-                        return accumulator + object.dayTotalAmount
-                      }, 0)}
+                      {`${barberDetail?.barber[0].name} ${barberDetail?.barber[0].lastname}`}
                     </Text>
                   </Text>
                   <Text color="$textDark500">
@@ -182,6 +180,15 @@ export default function AdminBarberStats({ route }: any) {
                       }, 0)}
                     </Text>
                   </Text>
+                  <Text color="$textDark500">
+                    Total en cortes:{' '}
+                    <Text color="$textDark500" fontWeight="bold">
+                      {statsData && [...statsData.data].reduce((accumulator, object) => {
+                        return accumulator + object.dayTotalAmount
+                      }, 0)}
+                    </Text>
+                  </Text>
+
                   <Text color="$textDark500">
                     Total para el barbero:{' '}
                     <Text color="$textDark500" fontWeight="bold">
@@ -205,7 +212,7 @@ export default function AdminBarberStats({ route }: any) {
                     </Text>
                   </Text>
                 </Box>
-                
+
                 <Box
                   mt={'$4'}
                   position="relative"

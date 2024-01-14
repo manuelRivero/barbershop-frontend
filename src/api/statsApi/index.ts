@@ -4,7 +4,7 @@ import {Service} from '../../types/services';
 import moment from 'moment';
 
 interface GetWeekStatsResponse {
-  data: any[];
+  data: any;
 }
 interface GetWeekStatsRequest {
   id: string | null

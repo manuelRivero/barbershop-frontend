@@ -2,7 +2,7 @@ import {Box, HStack, Pressable, VStack} from '@gluestack-ui/themed';
 import React from 'react';
 import {BottomTabBarProps} from '@react-navigation/bottom-tabs/src/types';
 import {Icon} from '@gluestack-ui/themed';
-import {Briefcase, CalendarPlus, User, LineChart, UsersIcon, LucideIcon} from 'lucide-react-native';
+import {Briefcase, CalendarPlus, User, LineChart, UsersIcon, LucideIcon, CalendarClock} from 'lucide-react-native';
 
 interface Icons {
   Schedule: LucideIcon;
@@ -20,7 +20,7 @@ const icons: Icons = {
   Stats: LineChart,
   BarberStats: UsersIcon,
   BarberStatsSelection: UsersIcon,
-  AllStatsFromDates: UsersIcon
+  AllStatsFromDates: CalendarClock
 };
 
 const getIcon = (name: string) => {
