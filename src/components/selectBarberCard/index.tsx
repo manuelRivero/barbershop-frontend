@@ -47,7 +47,7 @@ export default function SelectBarberCard({data, selectBarber}: Props) {
           </Text>
           <HStack>
             <AirbnbRating
-              count={5}
+              count={Math.ceil(data.score || 0)}
               showRating={false}
               defaultRating={4}
               size={24}

@@ -24,8 +24,13 @@ import Loader from '../../components/shared/loader';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { useGetImagesQuery } from '../../api/galleryApi';
+import { resetAllturns, resetUserTurn } from '../../store/features/turnsSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { removeSocket } from '../../store/features/layoutSlice';
+import {io} from 'socket.io-client';
 
 const { width } = Dimensions.get('window');
+const socket = io('https://barbershop-backend-ozy5.onrender.com');
 
 export default function Profile() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -42,7 +47,16 @@ export default function Profile() {
 
   const { data: galleryData, isLoading: isLoadingGallery, refetch: refecthGallery } = useGetImagesQuery({}, { skip: user?.role === 'user' || user?.role === 'admin' ? true : false },)
   const handleLogout = () => {
+    dispacth(resetUserTurn())
+    dispacth(resetAllturns())
     dispacth(logout());
+    AsyncStorage.removeItem("persist:root");
+    if(user?.role === "barber" || user?.role === "admin-barber" ){
+      socket.emit('remove-online-barber', {user: {_id: user?._id}});
+    }
+    socket.close();
+    dispacth(removeSocket());
+
   };
   console.log("galleryData", galleryData)
   const handleProfileEdition = () => { };

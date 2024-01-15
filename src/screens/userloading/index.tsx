@@ -1,9 +1,8 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import Loader from '../../components/shared/loader';
-import {useAppDispatch} from '../../store';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {HStack, VStack} from '@gluestack-ui/themed';
+import { useAppDispatch } from '../../store';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   PERMISSIONS,
   check,
@@ -11,13 +10,16 @@ import {
   openSettings,
   RESULTS,
 } from 'react-native-permissions';
-import {showInfoModal} from '../../store/features/layoutSlice';
-import {Platform} from 'react-native';
+import { showInfoModal } from '../../store/features/layoutSlice';
+import { Platform } from 'react-native';
+import { useGetActiveTurnQuery } from '../../api/turnsApi';
+import { setUserTurn } from '../../store/features/turnsSlice';
 
 export default function UserLoading() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const dispatch = useAppDispatch();
 
+  const { data, isLoading } = useGetActiveTurnQuery()
   const requestNotificationPermission = async () => {
     const result = await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS);
     return result;
@@ -28,7 +30,11 @@ export default function UserLoading() {
     return result;
   };
 
-  useEffect(() => {}, []);
+  useEffect(() => { 
+    if(data && data.length > 0){
+      dispatch(setUserTurn({...data[0]}))
+    }
+  }, [data]);
 
   useEffect(() => {
     const chechForPermissions = async () => {
@@ -66,7 +72,9 @@ export default function UserLoading() {
                   );
                 } else {
                   dispatch(showInfoModal(null));
-                  navigation.navigate('UserRoutes');
+                  if (!isLoading) {
+                    navigation.navigate('UserRoutes');
+                  }
                 }
               },
               hideOnAnimationEnd: false,
@@ -78,15 +86,19 @@ export default function UserLoading() {
           );
         } else {
           dispatch(showInfoModal(null));
-          navigation.navigate('UserRoutes');
+          if (!isLoading) {
+            navigation.navigate('UserRoutes');
+          }
         }
       } else {
         dispatch(showInfoModal(null));
-        navigation.navigate('UserRoutes');
+        if (!isLoading) {
+          navigation.navigate('UserRoutes');
+        }
       }
     };
     chechForPermissions();
-  }, []);
+  }, [isLoading]);
 
   return (
     <Loader />

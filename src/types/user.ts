@@ -4,6 +4,7 @@ export interface User {
   image: string;
   email: string;
   _id: string;
-  role: string
-  commission?: number
+  role: string;
+  commission?: number;
+  score?:number
 }

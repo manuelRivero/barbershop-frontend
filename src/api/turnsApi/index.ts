@@ -38,6 +38,12 @@ export const turnsApi = createApi({
         url: '/turns/get/'+ args.id,
       })},
     }),
+    getActiveTurn: builder.query<any, void>({
+      query: () => {
+        return({
+        url: '/turns/get-active/',
+      })},
+    }),
     getTurnDetails: builder.query<any, GetTurnsDetailRequest>({
       query: args => {
         console.log("request")
@@ -48,4 +54,4 @@ export const turnsApi = createApi({
   }),
 });
 
-export const {useAddTurnMutation , useGetTurnsQuery, useGetTurnDetailsQuery } = turnsApi;
+export const {useAddTurnMutation , useGetTurnsQuery, useGetTurnDetailsQuery, useGetActiveTurnQuery } = turnsApi;
