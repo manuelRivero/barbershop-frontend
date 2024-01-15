@@ -64,7 +64,7 @@ export default function UserServiceSelection({route}: any) {
     refetch: refetchTurns,
     isLoading: isLoadingTurns,
     fulfilledTimeStamp: turnsFulfilledTimeStamp
-  } = useGetTurnsQuery({id});
+  } = useGetTurnsQuery({id}, { skip: moment().utc().utcOffset(3, true).isBefore(businessHoursStart) ? true : false });
   const [addTurnRequest, {isLoading: isLoadingAddTurn}] = useAddTurnMutation();
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);

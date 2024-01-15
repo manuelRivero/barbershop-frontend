@@ -39,7 +39,7 @@ export default function Schedule() {
     moment().set({hour: 9, minute: 0, second: 0}).utc().utcOffset(3, true),
   );
   const [businessHoursEnd, setBusinessHoursEnd] = useState<moment.Moment>(
-    moment().set({hour: 23, minute: 0, second: 0}).utc().utcOffset(3, true),
+    moment().set({hour: 20, minute: 0, second: 0}).utc().utcOffset(3, true),
   );
 
   console.log('businessHoursStart', businessHoursStart);
@@ -60,7 +60,7 @@ export default function Schedule() {
     refetch: refetchTurns,
     isLoading: isLoadingTurns,
     fulfilledTimeStamp,
-  } = useGetTurnsQuery({id: user?._id ?? ''});
+  } = useGetTurnsQuery({ id: user?._id ?? '' }, { skip: moment().utc().utcOffset(3, true).isBefore(businessHoursStart) ? true : false });
 
   const [addTurnRequest, {isLoading}] = useAddTurnMutation();
 

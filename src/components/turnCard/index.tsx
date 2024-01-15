@@ -80,7 +80,7 @@ export default function TurnCard({event}: Props) {
         <Text
           fontWeight="bold"
           color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
-          Nombre del usuario
+          {event.user === null ? "Ti" : `${event.user}`}
         </Text>
       </HStack>
       <HStack space="xs">
