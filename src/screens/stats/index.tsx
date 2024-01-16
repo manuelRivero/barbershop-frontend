@@ -172,7 +172,7 @@ export default function Stats() {
                         return object.status === 'COMPLETE'
                           ? accumulator + object.price
                           : accumulator;
-                      }, 0) * 50 / 100}
+                      }, 0) * user?.commission/ 100}
                       {" "}Pesos
                     </Text>
 

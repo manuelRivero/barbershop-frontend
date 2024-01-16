@@ -14,7 +14,7 @@ import {Event, TurnSelectItem} from '../../types/turns';
 import Clock from 'react-live-clock';
 import SelectServiceModal from '../../components/selectServiceModal';
 import {Service} from '../../types/services';
-import SelectTurnModal from '../../components/selectTurnModal';
+import SelectTurnModal from '../../components/shared/selectTurnModal';
 import TurnCard from '../../components/turnCard';
 import BaseButton from '../../components/shared/baseButton';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
@@ -390,7 +390,7 @@ export default function Schedule() {
 
   React.useEffect(() => {
     if (turnsData) {
-      dispatch(initTurns(turnsData.turns));
+      dispatch(initTurns(turnsData.turns.map((turn:Event) => ({...turn, status: moment(turn.endDate).isBefore(moment().utc().utcOffset(3, true)) ? "COMPLETE": "INCOMPLETE"}))));
     }
   }, [fulfilledTimeStamp]);
 
@@ -497,7 +497,7 @@ export default function Schedule() {
               w="auto">
               <Icon as={DollarSignIcon} color={'$textDark500'} />
               <Text color={'$textDark500'}>
-                {turns.filter((turn:Event) => turn.status === "COMPLETE").reduce((acc:number, obj:Event)=> acc + obj.price, 0)}
+                {turns.filter((turn:Event) => turn.status === "COMPLETE").reduce((acc:number, obj:Event)=> acc + obj.price, 0) * (user?.commission ? user?.commission : 0) / 100}
               </Text>
             </HStack>
           </HStack>
@@ -517,8 +517,9 @@ export default function Schedule() {
                 return moment(left.startDate).diff(moment(right.startDate));
               })
               .map(e => {
+                console.log("user data", user)
                 return (
-                  <TurnCard key={moment(e.startDate).toString()} event={e} />
+                  <TurnCard key={moment(e.startDate).toString()} event={e} user={user} />
                 );
               })}
             {turns.length === 0 && (
@@ -569,6 +570,7 @@ export default function Schedule() {
         onClose={() => setShowServiceModal(false)}
       />
       <SelectTurnModal
+      businessHoursEnd={businessHoursEnd}
         onSelect={handleAddTurn}
         turns={turnList}
         show={showTurnModal}

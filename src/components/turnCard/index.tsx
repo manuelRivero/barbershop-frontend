@@ -7,42 +7,45 @@ import {
   Text,
   Avatar,
 } from '@gluestack-ui/themed';
-import React, {useEffect, useState} from 'react';
-import {Event} from '../../types/turns';
+import React, { useEffect, useState } from 'react';
+import { Event } from '../../types/turns';
 import moment from 'moment';
-import {Briefcase, CircleDollarSign, Clock2, User} from 'lucide-react-native';
-import {useAppDispatch} from '../../store';
-import {setCompleteTurn} from '../../store/features/turnsSlice';
+import { Briefcase, CircleDollarSign, Clock2, PercentCircle, UserCircle } from 'lucide-react-native';
+import { useAppDispatch } from '../../store';
+import { setCompleteTurn } from '../../store/features/turnsSlice';
+import { User } from '../../types/user';
 interface Props {
   event: Event;
+  user: User | null
 }
-export default function TurnCard({event}: Props) {
+export default function TurnCard({ event, user }: Props) {
   const dispatch = useAppDispatch();
-  const [time, setTime] = useState<number | undefined>();
   const [status, setStatus] = useState<string>();
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime(
+      if (
         moment()
           .utc()
           .utcOffset(3, true)
-          .diff(moment(event.endDate), 'minutes'),
-      );
+          .isAfter(moment(event.endDate), 'minutes')
+      ) {
+        setStatus('COMPLETE');
+        clearInterval(interval)
+      }
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    if (time) {
-      if (time >= 0) {
-        setStatus('COMPLETE');
-        dispatch(setCompleteTurn(event));
-      } else {
-      }
+    if (status === "COMPLETE") {
+      dispatch(setCompleteTurn(event));
     }
-  }, [time]);
+
+  }, [status]);
+
+  console.log("user", user)
 
   return (
     <Box
@@ -62,16 +65,16 @@ export default function TurnCard({event}: Props) {
             color={
               status === 'COMPLETE' ? '$white' : '$textDark500'
             }>{`${moment(event.startDate).utc().format('hh:mm A')} - ${moment(
-            event.endDate,
-          )
-            .utc()
-            .format('hh:mm A')}`}</Text>
+              event.endDate,
+            )
+              .utc()
+              .format('hh:mm A')}`}</Text>
         </HStack>
-       
+
       </HStack>
-      <HStack space="xs">
-      <Icon
-          as={User}
+      <HStack mb="$1" space="xs" alignItems="center">
+        <Icon
+          as={UserCircle}
           color={status === 'COMPLETE' ? '$white' : '$textDark500'}
         />
         <Text color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
@@ -83,8 +86,8 @@ export default function TurnCard({event}: Props) {
           {event.user === null ? "Ti" : `${event.user}`}
         </Text>
       </HStack>
-      <HStack space="xs">
-      <Icon
+      <HStack mb="$1" space="xs" alignItems="center">
+        <Icon
           as={Briefcase}
           color={status === 'COMPLETE' ? '$white' : '$textDark500'}
         />
@@ -97,7 +100,8 @@ export default function TurnCard({event}: Props) {
             status === 'COMPLETE' ? '$white' : '$textDark500'
           }>{`${event.name}`}</Text>
       </HStack>
-      <HStack space="xs" alignItems="center">
+      <HStack  space="lg" alignItems="center">
+        <HStack space="xs" alignItems="center">
           <Icon
             as={CircleDollarSign}
             color={status === 'COMPLETE' ? '$white' : '$textDark500'}
@@ -108,6 +112,19 @@ export default function TurnCard({event}: Props) {
             {event.price}
           </Text>
         </HStack>
+        <HStack space="xs" alignItems="center">
+          <Icon
+            as={PercentCircle}
+            color={status === 'COMPLETE' ? '$white' : '$textDark500'}
+          />
+          <Text
+            fontWeight="bold"
+            color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
+
+            {event.price * (user?.commission ? user.commission : 0) / 100}
+          </Text>
+        </HStack>
+      </HStack>
     </Box>
   );
 }

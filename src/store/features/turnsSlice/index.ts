@@ -22,7 +22,8 @@ export const turnsSlice = createSlice({
   initialState,
   reducers: {
     setCompleteTurn : (state, action) => {
-      const targetTurn = state.turns.findIndex(e => action.payload._id)
+
+      const targetTurn = state.turns.findIndex(e => e._id === action.payload._id)
       state.turns[targetTurn].status = "COMPLETE"
     },
     addTurn : (state, action) =>{ 

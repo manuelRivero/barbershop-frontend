@@ -19,17 +19,18 @@ import {
   VStack,
   HStack,
 } from '@gluestack-ui/themed';
-import { TurnSelectItem } from '../../types/turns';
+import { TurnSelectItem } from '../../../types/turns';
 import { ListRenderItemInfo } from 'react-native';
 import moment from 'moment';
-import { useAppDispatch } from '../../store';
-import { showInfoModal } from '../../store/features/layoutSlice';
+import { useAppDispatch } from '../../../store';
+import { showInfoModal } from '../../../store/features/layoutSlice';
 
 interface Props {
   show: boolean;
   onClose: () => void;
   turns: TurnSelectItem[];
   onSelect: (e: TurnSelectItem) => Promise<any>;
+  businessHoursEnd: moment.Moment
 }
 
 export default function SelectTurnModal({
@@ -37,6 +38,7 @@ export default function SelectTurnModal({
   onClose,
   turns,
   onSelect,
+  businessHoursEnd,
 }: Props) {
   const dispatch = useAppDispatch();
   const ref = useRef();
@@ -54,11 +56,11 @@ export default function SelectTurnModal({
             <HStack justifyContent='space-between'>
               <Heading size="lg" color="$textDark500">Turnos disponibles</Heading>
               <ModalCloseButton>
-                <Icon as={CloseIcon} color="$textDark500"/>
+                <Icon as={CloseIcon} color="$textDark500" />
               </ModalCloseButton>
 
             </HStack>
-            <Text mt="$2" textAlign="center" fontSize="$xl" color="$textDark500">{moment().utc().utcOffset(3, true).format("DD-MM-yyyy")}</Text>
+            <Text mt="$2" textAlign="center" fontSize="$xl" color="$textDark500">{businessHoursEnd.format("DD-MM-yyyy")}</Text>
 
           </VStack>
         </ModalHeader>
@@ -67,6 +69,9 @@ export default function SelectTurnModal({
           <Box>
             <FlatList
               data={turns}
+              ListEmptyComponent={() => (<Box>
+                <Text color="$textDark500">No hay más turnos disponibles para hoy.</Text>
+              </Box>)}
               ItemSeparatorComponent={() => {
                 return (
                   <Box

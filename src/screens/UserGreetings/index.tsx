@@ -14,6 +14,7 @@ import PushNotification from 'react-native-push-notification';
 import BaseButton from '../../components/shared/baseButton';
 import LinearGradient from 'react-native-linear-gradient';
 import { resetUserTurn } from '../../store/features/turnsSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -24,6 +25,7 @@ export default function UserGreetings({ route }: any) {
 
   const turnId = route.params?.turnId || userTurn?._id
   const { data, isLoading } = useGetTurnDetailsQuery({ id: turnId });
+
   const [restartTime, setRestartTime] = useState<moment.Moment>(
     moment().set({ hour: 23, minutes: 0 }).utc().utcOffset(3, true),
   );
@@ -60,7 +62,8 @@ export default function UserGreetings({ route }: any) {
     });
     const interval = setInterval(() => {
       if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
-        const day = moment().get('date')
+        const day = moment().utc().utcOffset(3, true).get('date')
+        console.log("day", day)
         setRestartTime(
           moment()
             .set({ date: day + 1, hour: 23, minute: 0, second: 0 })
@@ -68,6 +71,7 @@ export default function UserGreetings({ route }: any) {
             .utcOffset(3, true),
         );
         dispatch(resetUserTurn())
+        AsyncStorage.removeItem("persist:turns")
         console.log("render")
         navigation.navigate('BarberSelection');
       }
@@ -75,6 +79,9 @@ export default function UserGreetings({ route }: any) {
 
     return () => clearInterval(interval);
   }, [restartTime]);
+
+  console.log("restar time", restartTime)
+  console.log("restar time", restartTime)
 
   if (isLoading) {
     return <Loader />;
