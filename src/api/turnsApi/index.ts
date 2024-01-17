@@ -40,6 +40,7 @@ export const turnsApi = createApi({
     }),
     getActiveTurn: builder.query<any, void>({
       query: () => {
+        console.log("User turn endpoint")
         return({
         url: '/turns/get-active/',
       })},

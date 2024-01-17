@@ -359,7 +359,8 @@ export default function UserServiceSelection({ route }: any) {
   if (isLoading || isLoadingTurns) {
     return <Loader />;
   }
-  console.log("start date", businessHoursStart)
+  console.log("end date", businessHoursStart)
+
   return (
     <>
       <Box bg="$primary100" flex={1}>

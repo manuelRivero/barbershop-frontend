@@ -36,6 +36,7 @@ export const turnsSlice = createSlice({
       state.turns = action.payload
     },
     setUserTurn : (state, action) => {
+      console.log("User turn", action.payload)
       state.userTurn = action.payload
     },
     resetUserTurn : (state) => {

@@ -34,6 +34,14 @@ export const galleryApi = createApi({
         };
       },
     }),
+    getImagesFromBarber: builder.query<GetImagesResponse, any>({
+      query(args) {
+        return {
+          url: `/gallery/images-from-barber`,
+          params:{barber:args.id}
+        };
+      },
+    }),
     createImage: builder.mutation<GetImagesResponse, any>({
       query(args) {
         return {
@@ -58,6 +66,7 @@ export const galleryApi = createApi({
 
 export const {
   useGetImagesQuery,
+  useGetImagesFromBarberQuery,
   useCreateImageMutation,
   useDeleteImageMutation,
 } = galleryApi;

@@ -13,7 +13,7 @@ import {
 import { showInfoModal } from '../../store/features/layoutSlice';
 import { Platform } from 'react-native';
 import { useGetActiveTurnQuery } from '../../api/turnsApi';
-import { setUserTurn } from '../../store/features/turnsSlice';
+import { resetUserTurn, setUserTurn } from '../../store/features/turnsSlice';
 
 export default function UserLoading() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -33,6 +33,8 @@ export default function UserLoading() {
   useEffect(() => { 
     if(data && data.length > 0){
       dispatch(setUserTurn({...data[0]}))
+    } else {
+      dispatch(resetUserTurn())
     }
   }, [data]);
 
