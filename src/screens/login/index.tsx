@@ -37,7 +37,7 @@ export default function Login() {
   const submit = async (values: Form): Promise<void> => {
     try {
       const response = await login(values).unwrap();
-      await dispatch(setToken(response.token));
+      await dispatch(setToken({token: response.token, refreshToken: response.refreshToken}));
       
     } catch (error) {
       console.log("error", error)
@@ -77,7 +77,7 @@ export default function Login() {
             const response = await facebookLogin({
               token: token?.accessToken,
             }).unwrap();
-            dispatch(setToken(response.token));
+            dispatch(setToken({token: response.token, refreshToken: response.refreshToken}));
             const {data, isError} = await dispatch(
               authApi.endpoints.getMe.initiate({},{ forceRefetch: true }),
             );

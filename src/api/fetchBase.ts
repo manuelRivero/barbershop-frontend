@@ -1,17 +1,20 @@
 import type {
   BaseQueryFn,
   FetchArgs,
-  FetchBaseQueryError
+  FetchBaseQueryError,
+  FetchBaseQueryMeta
 } from '@reduxjs/toolkit/query'
 
 import { fetchBaseQuery } from '@reduxjs/toolkit/query'
 import { type RootState } from '../store'
-import { logout } from '../store/features/authSlice'
+import { setToken, logout, selectRefreshToken } from '../store/features/authSlice'
+import { authApi } from './authApi'
 
-let baseUrl :string = `https://barbershop-backend-ozy5.onrender.com/api`
+let baseUrl: string = `https://barbershop-backend-ozy5.onrender.com/api`
 // let baseUrl : string = "http://192.168.100.3:4000/api"
 // let baseUrl : string = "http://192.168.100.48:4000/api"
 const baseQuery = fetchBaseQuery({
+
   baseUrl,
   credentials: 'same-origin',
   prepareHeaders: (headers, { getState }) => {
@@ -28,14 +31,22 @@ const fetchBase: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  const result = await baseQuery(args, api, extraOptions)
+  let result = await baseQuery(args, api, extraOptions)
   console.log(result)
-  if (
-    result.error != null &&
-    (result.error.status === 401 || result.error.status === 500)
-  ) {
-    api.dispatch(logout())
-  }
+
+  if (result.error != null && result.error.status === 401) {
+    const response: any = await baseQuery({ url: '/auth/token', method: 'post', body: { token: selectRefreshToken(api.getState() as RootState) } }, api, extraOptions)
+    console.log("response", response)
+    if (response.error) {
+      api.dispatch(logout())
+    } else {
+      api.dispatch(setToken({ token: response.data.token, refreshToken: response.data.refreshToken }))
+      result = await baseQuery(args, api, extraOptions)
+    }
+
+
+  };
+
   return result
 }
 export default fetchBase

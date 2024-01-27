@@ -17,6 +17,7 @@ export interface User {
 
 export interface UserResponse {
   token: string
+  refreshToken: string
 }
 
 export interface LoginRequest {
@@ -62,6 +63,13 @@ export const authApi = createApi({
           url: `/auth/me`
         }
       }
+    }),
+    refreshToken: builder.mutation<any, {}>({
+      query: (args) => ({
+          url: `/auth/token`,
+          method: 'POST',
+          body: args
+      })
     })
     // updateUserProfile: builder.mutation<GenericResponse, UpdateProfilerRequest>(
     //   {
@@ -78,4 +86,4 @@ export const authApi = createApi({
   })
 })
 
-export const { useLoginMutation, useGetMeQuery} = authApi
+export const { useLoginMutation, useGetMeQuery } = authApi
