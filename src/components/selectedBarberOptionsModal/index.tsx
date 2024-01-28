@@ -57,7 +57,7 @@ export default function SelectBarberOptionsModal({
       finalFocusRef={ref}
       >
       <ModalBackdrop />
-      <ModalContent bg={'$white'}>
+      <ModalContent>
         <ModalHeader>
           <Heading size="lg"></Heading>
           <ModalCloseButton>
@@ -69,9 +69,6 @@ export default function SelectBarberOptionsModal({
             <Box
               softShadow={'2'}
               mb="$3"
-              borderColor="$primary100"
-              borderWidth={2}
-              borderStyle="solid"
               p="$4"
               borderRadius="$lg"
               bg="$white">
@@ -82,9 +79,6 @@ export default function SelectBarberOptionsModal({
             <Box
               softShadow={'2'}
               mb="$3"
-              borderColor="$primary100"
-              borderWidth={2}
-              borderStyle="solid"
               p="$4"
               borderRadius="$lg"
               bg="$white">
@@ -95,9 +89,6 @@ export default function SelectBarberOptionsModal({
             <Box
               softShadow={'2'}
               mb="$3"
-              borderColor="$primary100"
-              borderWidth={2}
-              borderStyle="solid"
               p="$4"
               borderRadius="$lg"
               bg="$white">

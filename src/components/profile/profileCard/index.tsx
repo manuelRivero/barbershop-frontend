@@ -3,37 +3,54 @@ import {
   Box,
   Image,
   VStack,
+  Pressable,
+  Icon,
+  HStack,
 } from '@gluestack-ui/themed';
-import React from 'react';
-import {User} from '../../../types/user';
+import React, { useState } from 'react';
+import { User } from '../../../types/user';
+import { Settings } from 'lucide-react-native';
+import SettingsModal from '../settingsModal';
 
 interface Props {
   data: User | null;
 }
 
-export default function ProfileCard({data}: Props) {
+export default function ProfileCard({ data }: Props) {
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
+
   if (!data) return null;
   return (
-    <Box p="$4" hardShadow="1" borderRadius={10} bg="$white">
-      <VStack space="md" alignItems="center">
-        <Box
-          hardShadow="1"
-          bg="$white"
-          borderRadius={9999}
-          style={{width: 100, height: 100}}>
-          <Image
+    <>
+      <Box p="$4" hardShadow="1" borderRadius={10} bg="$white">
+        <VStack space="md" alignItems="center">
+          <HStack justifyContent='flex-end' flexGrow={1} w="$full">
+            <Pressable onPress={()=> setShowSettingsModal(true)}>
+              <Icon as={Settings} color={"$textDark500"} />
+            </Pressable>
+          </HStack>
+          <Box
+            hardShadow="1"
+            bg="$white"
             borderRadius={9999}
-            style={{width: 100, height: 100}}
-            source={{uri: data.image}}
-          />
-        </Box>
-        <Box>
-          <Text
-            color="$textDark500"
-            textAlign="center">{`${data.name} ${data.lastname}`}</Text>
-          <Text color="$textDark500" textAlign="center">{`${data.email}`}</Text>
-        </Box>
-      </VStack>
-    </Box>
+            style={{ width: 100, height: 100 }}>
+
+            <Image
+              borderRadius={9999}
+              style={{ width: 100, height: 100 }}
+              source={{ uri: data.image }}
+            />
+          </Box>
+          <Box>
+            <Text
+              color="$textDark500"
+              textAlign="center">{`${data.name} ${data.lastname}`}</Text>
+            <Text color="$textDark500" textAlign="center">{`${data.email}`}</Text>
+          </Box>
+        </VStack>
+      </Box>
+      <SettingsModal show={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+
+    </>
   );
 }

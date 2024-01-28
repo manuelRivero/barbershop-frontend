@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import moment from 'moment-timezone';
 import {
   ScrollView,
@@ -10,36 +10,36 @@ import {
   Text,
   VStack,
 } from '@gluestack-ui/themed';
-import {Event, TurnSelectItem} from '../../types/turns';
+import { Event, TurnSelectItem } from '../../types/turns';
 import Clock from 'react-live-clock';
 import SelectServiceModal from '../../components/selectServiceModal';
-import {Service} from '../../types/services';
+import { Service } from '../../types/services';
 import SelectTurnModal from '../../components/shared/selectTurnModal';
 import TurnCard from '../../components/turnCard';
 import BaseButton from '../../components/shared/baseButton';
-import {RootState, useAppDispatch, useAppSelector} from '../../store';
+import { RootState, useAppDispatch, useAppSelector } from '../../store';
 import {
   addTurn,
   initTurns,
   resetAllturns,
 } from '../../store/features/turnsSlice';
-import {useAddTurnMutation, useGetTurnsQuery} from '../../api/turnsApi';
-import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
+import { useAddTurnMutation, useGetTurnsQuery } from '../../api/turnsApi';
+import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import PushNotification from 'react-native-push-notification';
-import {Dimensions} from 'react-native';
-import {DollarSignIcon} from 'lucide-react-native';
-import {Icon} from '@gluestack-ui/themed';
+import { Dimensions } from 'react-native';
+import { DollarSignIcon } from 'lucide-react-native';
+import { Icon } from '@gluestack-ui/themed';
 
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 export default function Schedule() {
   const [businessHoursStart, setBusinessHoursStart] = useState<moment.Moment>(
-    moment().set({hour: 9, minute: 0, second: 0}).utc().utcOffset(3, true),
+    moment().set({ hour: 9, minute: 0, second: 0 }).utc().utcOffset(3, true),
   );
   const [businessHoursEnd, setBusinessHoursEnd] = useState<moment.Moment>(
-    moment().set({hour: 20, minute: 0, second: 0}).utc().utcOffset(3, true),
+    moment().set({ hour: 20, minute: 0, second: 0 }).utc().utcOffset(3, true),
   );
 
   console.log('businessHoursStart', businessHoursStart);
@@ -48,11 +48,11 @@ export default function Schedule() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const dispatch = useAppDispatch();
-  const {turns} = useAppSelector((state: RootState) => state.turns);
-  const {user} = useAppSelector((state: RootState) => state.auth);
-  const {socket} = useAppSelector((state: RootState) => state.layout);
+  const { turns } = useAppSelector((state: RootState) => state.turns);
+  const { user } = useAppSelector((state: RootState) => state.auth);
+  const { socket } = useAppSelector((state: RootState) => state.layout);
   const [restartTime, setRestartTime] = useState<moment.Moment>(
-    moment().set({hour: 23, minutes: 0}).utc().utcOffset(3, true),
+    moment().set({ hour: 23, minutes: 0 }).utc().utcOffset(3, true),
   );
 
   const {
@@ -62,14 +62,14 @@ export default function Schedule() {
     fulfilledTimeStamp,
   } = useGetTurnsQuery({ id: user?._id ?? '' }, { skip: moment().utc().utcOffset(3, true).isBefore(businessHoursStart) ? true : false });
 
-  const [addTurnRequest, {isLoading}] = useAddTurnMutation();
+  const [addTurnRequest, { isLoading }] = useAddTurnMutation();
 
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
-
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
-
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [isSunday, setIsSunday] = useState<boolean>(false)
+
 
   const handleAddTurn = async (turn: TurnSelectItem) => {
     if (selectedService && user) {
@@ -98,7 +98,7 @@ export default function Schedule() {
             .format('hh:mm')}?`,
           type: 'info',
           hasCancel: true,
-          cancelCb: () => {},
+          cancelCb: () => { },
           hasSubmit: true,
           submitCb: () => {
             handleRequest()
@@ -323,23 +323,32 @@ export default function Schedule() {
 
   useEffect(() => {
     const interval = setInterval(() => {
+
+      const sunday = moment().get('day') === 0
+
+      if (sunday && !isSunday) {
+        setIsSunday(true)
+      } else if (!sunday && !isSunday) {
+        setIsSunday(false)
+      }
+
       if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
         const day = moment().get('date');
         setRestartTime(
           moment()
-            .set({date: day + 1, hour: 0, minute: 0, second: 0})
+            .set({ date: day + 1, hour: 0, minute: 0, second: 0 })
             .utc()
             .utcOffset(3, true),
         );
         setBusinessHoursStart(
           moment()
-            .set({date: day + 1, hour: 9, minute: 0})
+            .set({ date: day + 1, hour: 9, minute: 0 })
             .utc()
             .utcOffset(3, true),
         );
         setBusinessHoursEnd(
           moment()
-            .set({date: day + 1, hour: 11, minute: 0})
+            .set({ date: day + 1, hour: 11, minute: 0 })
             .utc()
             .utcOffset(3, true),
         );
@@ -348,7 +357,7 @@ export default function Schedule() {
         }
       }
     }, 1000);
-    console.log('restart time', restartTime);
+
     return () => clearInterval(interval);
   }, [restartTime]);
 
@@ -357,40 +366,10 @@ export default function Schedule() {
     setShowServiceModal(false);
   };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
-        const day = moment().get('date');
-        setRestartTime(
-          moment()
-            .set({date: day + 1, hour: 0, minute: 0, second: 0})
-            .utc()
-            .utcOffset(3, true),
-        );
-        setBusinessHoursStart(
-          moment()
-            .set({date: day + 1, hour: 9, minute: 0})
-            .utc()
-            .utcOffset(3, true),
-        );
-        setBusinessHoursEnd(
-          moment()
-            .set({date: day + 1, hour: 11, minute: 0})
-            .utc()
-            .utcOffset(3, true),
-        );
-        if (turns.length > 0) {
-          dispatch(resetAllturns());
-        }
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [restartTime]);
 
   React.useEffect(() => {
     if (turnsData) {
-      dispatch(initTurns(turnsData.turns.map((turn:Event) => ({...turn, status: moment(turn.endDate).isBefore(moment().utc().utcOffset(3, true)) ? "COMPLETE": "INCOMPLETE"}))));
+      dispatch(initTurns(turnsData.turns.map((turn: Event) => ({ ...turn, status: moment(turn.endDate).isBefore(moment().utc().utcOffset(3, true)) ? "COMPLETE" : "INCOMPLETE" }))));
     }
   }, [fulfilledTimeStamp]);
 
@@ -404,7 +383,7 @@ export default function Schedule() {
   }, [navigation]);
 
   useEffect(() => {
-    socket?.on('add-turn', ({data}) => {
+    socket?.on('add-turn', ({ data }) => {
       console.log('notification');
       dispatch(addTurn(data));
       PushNotification.localNotification({
@@ -433,13 +412,13 @@ export default function Schedule() {
       socket?.off('add-turn');
     };
   }, []);
-
+  console.log("is sunday", isSunday)
   return (
     <LinearGradient
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       colors={['#fff', '#f1e2ca']}
-      start={{x: 0, y: 0.6}}
-      end={{x: 0, y: 1}}>
+      start={{ x: 0, y: 0.6 }}
+      end={{ x: 0, y: 1 }}>
       <Box flex={1} position="relative">
         <Box
           borderRadius={9999}
@@ -462,7 +441,7 @@ export default function Schedule() {
               format={'hh:mm:ss'}
               ticking={true}
               element={Text}
-              style={{fontSize: 22, color: '#1f3d56'}}
+              style={{ fontSize: 22, color: '#1f3d56' }}
             />
             <Heading textAlign="center" color="$textDark500">
               Turnos agendados
@@ -497,7 +476,7 @@ export default function Schedule() {
               w="auto">
               <Icon as={DollarSignIcon} color={'$textDark500'} />
               <Text color={'$textDark500'}>
-                {turns.filter((turn:Event) => turn.status === "COMPLETE").reduce((acc:number, obj:Event)=> acc + obj.price, 0) * (user?.commission ? user?.commission : 0) / 100}
+                {turns.filter((turn: Event) => turn.status === "COMPLETE").reduce((acc: number, obj: Event) => acc + obj.price, 0) * (user?.commission ? user?.commission : 0) / 100}
               </Text>
             </HStack>
           </HStack>
@@ -509,7 +488,7 @@ export default function Schedule() {
                 mt={'$10'}
                 mb={'$4'}>
                 Los turnos agendados para el día de hoy serán visibles en tu
-                agenda hasta las 8pm.
+                agenda hasta las {restartTime.format("mm A")}.
               </Text>
             )}
             {[...turns]
@@ -525,29 +504,32 @@ export default function Schedule() {
             {turns.length === 0 && (
               <>
                 <Text textAlign="center" mt={'$10'} color="$textDark500">
-                  Aún no has agendado ningún turno para hoy.
+                  {isSunday ? " Hoy es domingo y la barberìa se encuentra cerrada" : "Aún no has agendado ningún turno para hoy"}
                 </Text>
-                <Text textAlign="center" mt={'$4'} color="$textDark500">
-                  Agenda abierta para{' '}
-                  <Text color="$textDark500" fontWeight="bold">
-                    {businessHoursStart.format('DD-MM-yyyy')}
-                  </Text>
-                </Text>
-                <HStack justifyContent="center">
-                  <Image
-                    mt={'$10'}
-                    maxWidth={'$32'}
-                    maxHeight={'$32'}
-                    resizeMode="contain"
-                    source={require('../../assets/images/schedule-placeholder.png')}
-                    alt="agenda-vacia"
-                  />
-                </HStack>
+                {!isSunday &&
+                  <>
+                    <Text textAlign="center" mt={'$4'} color="$textDark500">
+                      Agenda abierta para{' '}
+                      <Text color="$textDark500" fontWeight="bold">
+                        {businessHoursStart.format('DD-MM-yyyy')}
+                      </Text>
+                    </Text>
+                    <HStack justifyContent="center">
+                      <Image
+                        mt={'$10'}
+                        maxWidth={'$32'}
+                        maxHeight={'$32'}
+                        resizeMode="contain"
+                        source={require('../../assets/images/schedule-placeholder.png')}
+                        alt="agenda-vacia"
+                      />
+                    </HStack>
+                  </>}
               </>
             )}
           </Box>
         </ScrollView>
-        <HStack
+        {!isSunday && <HStack
           position="absolute"
           bottom={10}
           width={'100%'}
@@ -562,7 +544,7 @@ export default function Schedule() {
             hasIcon={true}
             icon={AddIcon}
           />
-        </HStack>
+        </HStack>}
       </Box>
       <SelectServiceModal
         show={showServiceModal}
@@ -570,7 +552,7 @@ export default function Schedule() {
         onClose={() => setShowServiceModal(false)}
       />
       <SelectTurnModal
-      businessHoursEnd={businessHoursEnd}
+        businessHoursEnd={businessHoursEnd}
         onSelect={handleAddTurn}
         turns={turnList}
         show={showTurnModal}

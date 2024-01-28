@@ -27,7 +27,7 @@ import { useGetImagesQuery } from '../../api/galleryApi';
 import { resetAllturns, resetUserTurn } from '../../store/features/turnsSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { removeSocket } from '../../store/features/layoutSlice';
-import {io} from 'socket.io-client';
+import { io } from 'socket.io-client';
 
 const { width } = Dimensions.get('window');
 const socket = io('https://barbershop-backend-ozy5.onrender.com');
@@ -37,6 +37,7 @@ export default function Profile() {
   const dispacth = useAppDispatch();
   const { user } = useAppSelector((state: RootState) => state.auth);
   const [showModal, setShowModal] = useState<boolean>(false);
+
   const [activeSlideReview, setActiveSlideReview] = useState<number>(0);
   const [activeSlideGallery, setActiveSlideGallery] = useState<number>(0);
 
@@ -51,8 +52,8 @@ export default function Profile() {
     dispacth(resetAllturns())
     dispacth(logout());
     AsyncStorage.removeItem("persist:root");
-    if(user?.role === "barber" || user?.role === "admin-barber" ){
-      socket.emit('remove-online-barber', {user: {_id: user?._id}});
+    if (user?.role === "barber" || user?.role === "admin-barber") {
+      socket.emit('remove-online-barber', { user: { _id: user?._id } });
     }
     socket.close();
     dispacth(removeSocket());

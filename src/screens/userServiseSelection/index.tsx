@@ -9,11 +9,13 @@ import {
   Text,
   FlatList,
   Pressable,
+  VStack,
+  Icon,
 } from '@gluestack-ui/themed';
 import Clock from 'react-live-clock';
 import { RootState, useAppDispatch, useAppSelector } from '../../store';
 import { Service } from '../../types/services';
-import { ListRenderItemInfo } from 'react-native';
+import { Dimensions, ListRenderItemInfo } from 'react-native';
 import { addAllServices } from '../../store/features/servicesSlice';
 import { useGetBarberServicesQuery } from '../../api/servicesApi';
 import Loader from '../../components/shared/loader';
@@ -33,8 +35,12 @@ import { useNavigation } from '@react-navigation/native';
 
 import moment from 'moment-timezone';
 import { getDateByTimeZone } from '../../helpers';
+import LinearGradient from 'react-native-linear-gradient';
+import { ChevronLeftIcon } from 'lucide-react-native';
 
 moment.tz.setDefault(moment.tz.guess());
+const { width } = Dimensions.get('window');
+
 
 export default function UserServiceSelection({ route }: any) {
   const [businessHoursStart, setBusinessHoursStart] = useState<moment.Moment>(moment()
@@ -70,6 +76,7 @@ export default function UserServiceSelection({ route }: any) {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
+  const [isSunday, setIsSunday] = useState<boolean>(false)
   const [restartTime, setRestartTime] = useState<moment.Moment>(
     moment().set({ hour: 23, minutes: 0 }).utc().utcOffset(3, true),
   );
@@ -309,11 +316,16 @@ export default function UserServiceSelection({ route }: any) {
 
   useEffect(() => {
     const interval = setInterval(() => {
+      const sunday = moment().get('day') === 0
+
+      if (sunday && !isSunday) {
+        setIsSunday(true)
+      } else if (!sunday && !isSunday) {
+        setIsSunday(false)
+      }
 
       if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
         const day = moment().get('date')
-
-        console.log("day", day)
         setRestartTime(
           moment()
             .set({ date: day + 1, hour: 0, minute: 0, second: 0 })
@@ -337,7 +349,6 @@ export default function UserServiceSelection({ route }: any) {
         }
       }
     }, 1000);
-    console.log("restart time", restartTime)
     return () => clearInterval(interval);
   }, [restartTime]);
 
@@ -359,68 +370,82 @@ export default function UserServiceSelection({ route }: any) {
   if (isLoading || isLoadingTurns) {
     return <Loader />;
   }
-  console.log("end date", businessHoursStart)
 
+  console.log("restart time", restartTime.clone().get('day'))
   return (
-    <>
-      <Box bg="$primary100" flex={1}>
-        <HStack
-          sx={{
-            _text: {
-              color: '$amber100',
-            },
-          }}
-          mt={'$4'}
-          width={'100%'}
-          justifyContent="center">
-          <Clock
-            format={'hh:mm:ss'}
-            ticking={true}
-            element={Text}
-            style={{ fontSize: 22, color: '#1f3d56' }}
-            onChange={e => (timeRef.current = e)}
-          />
-        </HStack>
+    <LinearGradient
+      style={{ flex: 1 }}
+      colors={['#fff', '#f1e2ca']}
+      start={{ x: 0, y: 0.6 }}
+      end={{ x: 0, y: 1 }}>
 
-        <ScrollView flex={1}>
+
+
+      <Box flex={1} position='relative'>
+        <Box
+          borderRadius={9999}
+          w={width * 3}
+          h={width * 3}
+          position="absolute"
+          bg="#f1e2ca"
+          overflow="hidden"
+          top={-width * 2.75}
+          left={-width}
+          opacity={0.5}
+        />
+        <HStack justifyContent="space-between" alignItems="center" p={'$4'}>
+          <Pressable onPress={() => navigation.goBack()} p={'$4'}>
+            <Icon as={ChevronLeftIcon} size={24} color="$textDark500" />
+          </Pressable>
           <Heading textAlign="center" color="$textDark500">
             Servicios disponibles
           </Heading>
-          <FlatList
-            contentContainerStyle={{ paddingBottom: 50 }}
-            p="$4"
-            data={services}
-            renderItem={(props: ListRenderItemInfo<any>) => {
-              const { item } = props;
-              return (
-                <Pressable onPress={() => handleServiceSelect(item)}>
-                  <UserServiceCard data={item} />
-                </Pressable>
-              );
+          <Box p="$6"></Box>
+        </HStack>
+
+        {isSunday ? <Box flex={1} mt={'$20'}>
+          <Heading textAlign="center" color="$textDark500">
+            Hoy es domingo y la barberìa se encuentra cerrada
+          </Heading>
+        </Box> : (<>
+          <ScrollView flex={1}>
+
+            <FlatList
+              contentContainerStyle={{ paddingBottom: 50 }}
+              p="$4"
+              data={services}
+              renderItem={(props: ListRenderItemInfo<any>) => {
+                const { item } = props;
+                return (
+                  <Pressable onPress={() => handleServiceSelect(item)}>
+                    <UserServiceCard data={item} />
+                  </Pressable>
+                );
+              }}
+              ItemSeparatorComponent={() => {
+                return (
+                  <Box
+                    style={{
+                      height: 15,
+                      width: '100%',
+                    }}
+                  />
+                );
+              }}
+            />
+          </ScrollView>
+          <SelectTurnModal
+            businessHoursEnd={businessHoursEnd}
+            onSelect={handleAddTurn}
+            turns={turnList}
+            show={showTurnModal}
+            onClose={() => {
+              setShowTurnModal(false);
+              setSelectedService(null);
             }}
-            ItemSeparatorComponent={() => {
-              return (
-                <Box
-                  style={{
-                    height: 15,
-                    width: '100%',
-                  }}
-                />
-              );
-            }}
-          />
-        </ScrollView>
-        <SelectTurnModal
-        businessHoursEnd={businessHoursEnd}
-          onSelect={handleAddTurn}
-          turns={turnList}
-          show={showTurnModal}
-          onClose={() => {
-            setShowTurnModal(false);
-            setSelectedService(null);
-          }}
-        />
+          /></>)}
+
       </Box>
-    </>
+    </LinearGradient>
   );
 }

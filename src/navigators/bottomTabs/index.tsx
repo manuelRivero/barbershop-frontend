@@ -12,6 +12,7 @@ import { RootState, useAppSelector } from '../../store';
 import StatsBarberSelection from '../../screens/statsBarberSelection';
 import AdminBarberStats from '../../screens/AdminBarberStats';
 import AllStatsFromDates from '../../screens/AllStatsFromDates';
+import ScheduleSettings from '../../screens/ScheduleSettings';
 
 type RootStackParamList = {
   Schedule: undefined;
@@ -149,6 +150,11 @@ const ProfileScreens = () => {
         name="BarberGallery"
         component={Gallery}
         options={{ title: 'Perfil' }}
+      />
+      <Stack.Screen
+        name="BarberScheduleSettings"
+        component={ScheduleSettings}
+        options={{ title: 'Configuración' }}
       />
     </Stack.Navigator>
   );
