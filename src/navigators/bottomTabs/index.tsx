@@ -151,11 +151,7 @@ const ProfileScreens = () => {
         component={Gallery}
         options={{ title: 'Perfil' }}
       />
-      <Stack.Screen
-        name="BarberScheduleSettings"
-        component={ScheduleSettings}
-        options={{ title: 'Configuración' }}
-      />
+      
     </Stack.Navigator>
   );
 };
@@ -174,6 +170,11 @@ const BarberStatsScreens = () => {
         name="BarberStatsReview"
         component={AdminBarberStats}
         options={{ title: 'estadisticas del barbero' }}
+      />
+      <Stack.Screen
+        name="BarberScheduleSettings"
+        component={ScheduleSettings}
+        options={{ title: 'Configuración' }}
       />
     </Stack.Navigator>
   );

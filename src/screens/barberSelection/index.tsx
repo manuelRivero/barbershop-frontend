@@ -16,7 +16,7 @@ const { width } = Dimensions.get('window');
 
 export default function BarberSelection() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const { data: barbersData, isLoading, isError, refetch } = useGetBarbersQuery();
+  const { data: barbersData, isLoading, isError, refetch } = useGetBarbersQuery({});
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
   useEffect(() => {

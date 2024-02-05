@@ -19,7 +19,7 @@ const { width } = Dimensions.get('window');
 export default function StatsBarberSelection() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
-  const { data: barbersData, isLoading, isError, refetch } = useGetBarbersQuery();
+  const { data: barbersData, isLoading, isError, refetch } = useGetBarbersQuery({isAdmin: true});
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {

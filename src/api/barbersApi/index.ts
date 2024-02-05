@@ -2,6 +2,10 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import fetchBase from '../fetchBase';
 import { User } from '../../types/user';
 
+interface GetBarberRequest {
+    isAdmin?: boolean
+}
+
 interface GetBarbersResponse {
     barbers: User[];
 }
@@ -14,12 +18,18 @@ interface GetBarberDetailRequest {
     id: string
 }
 
+interface DisableRequest {
+    barber: string,
+    from: string,
+    to: string,
+}
+
 export const barbersApi = createApi({
     baseQuery: fetchBase,
     reducerPath: 'barbersApi',
     endpoints: builder => ({
-        getBarbers: builder.query<GetBarbersResponse, void>({
-            query() {
+        getBarbers: builder.query<GetBarbersResponse, GetBarberRequest>({
+            query(args) {
                 return {
                     url: `/barbers`,
                 };
@@ -33,6 +43,19 @@ export const barbersApi = createApi({
                 };
             },
         }),
+        barberDisable: builder.mutation<any, DisableRequest>({
+            query(args) {
+                return {
+                    url: `barbers/disable`,
+                    method: "post",
+                    body: {
+                        barber: args.barber,
+                        from: args.from,
+                        to: args.to
+                    }
+                };
+            },
+        }),
     }),
 
 
@@ -40,5 +63,6 @@ export const barbersApi = createApi({
 
 export const {
     useGetBarbersQuery,
-    useGetBarberDetailQuery
+    useGetBarberDetailQuery,
+    useBarberDisableMutation
 } = barbersApi;

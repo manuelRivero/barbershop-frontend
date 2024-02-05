@@ -147,6 +147,9 @@ export default function Stats() {
         <Box flex={1}>
           <ScrollView flex={1} mt="$10">
 
+          <Heading textAlign="center" color="$textDark500">
+            Resumen del día de hoy
+          </Heading>
             {mappedData && (
               <Box p="$4">
                 <Box
@@ -172,7 +175,7 @@ export default function Stats() {
                         return object.status === 'COMPLETE'
                           ? accumulator + object.price
                           : accumulator;
-                      }, 0) * user?.commission/ 100}
+                      }, 0) * (user?.commission ? user?.commission/ 100 : 1)}
                       {" "}Pesos
                     </Text>
 
@@ -214,7 +217,7 @@ export default function Stats() {
                           color="$textDark500"
                           top={y}
                           left={x}>
-                          {indexData}
+                          {user?.commission ? indexData * user?.commission/ 100 : indexData}
                         </Text>
                       );
                     }}
@@ -241,7 +244,7 @@ export default function Stats() {
                           <Text color="$textDark500">
                             {`Total para el día ${item.date}: `}
                             <Text color="$textDark500" fontWeight="bold">
-                              {item?.dayTotalAmount | 0}
+                              {user?.commission && item?.dayTotalAmount * user?.commission/ 100 | 0}
                             </Text>
                           </Text>
                           <Text color="$textDark500">

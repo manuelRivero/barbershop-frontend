@@ -1,22 +1,25 @@
 import {Icon, Image, VStack} from '@gluestack-ui/themed';
 import {Text} from '@gluestack-ui/themed';
 import {Box, HStack} from '@gluestack-ui/themed';
-import React from 'react';
+import React, { useState } from 'react';
 import {User} from '../../../types/user';
 import {Rating, AirbnbRating} from 'react-native-ratings';
 import {Pressable} from '@gluestack-ui/themed';
-import {MoreVertical} from 'lucide-react-native';
+import {MoreVertical, Settings} from 'lucide-react-native';
 import BaseButton from '../../shared/baseButton';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
+import SettingsModal from '../settingsModal';
 interface Props {
   data: User;
 }
 
 export default function BarberstatsCard({data}: Props) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false)
 
   return (
+    <>
     <Box
       hardShadow={'1'}
       p="$4"
@@ -24,6 +27,11 @@ export default function BarberstatsCard({data}: Props) {
       bg="$white"
       w="$full"
       maxWidth={400}>
+      <HStack justifyContent='flex-end' flexGrow={1} w="$full">
+            <Pressable onPress={()=> setShowSettingsModal(true)}>
+              <Icon as={Settings} color={"$textDark500"} />
+            </Pressable>
+          </HStack>
       <HStack space="lg">
         <Image
           softShadow="3"
@@ -82,5 +90,8 @@ export default function BarberstatsCard({data}: Props) {
         </VStack>
       </HStack>
     </Box>
+    <SettingsModal barberId={data._id} show={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+
+    </>
   );
 }

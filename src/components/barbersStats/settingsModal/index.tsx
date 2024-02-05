@@ -13,13 +13,14 @@ import { useNavigation } from '@react-navigation/native';
 
 interface Props {
     show: boolean;
+    barberId: string;
     onClose: () => void
 }
 
-export default function SettingsModal({ show, onClose }: Props) {
+export default function SettingsModal({ show, barberId, onClose }: Props) {
     const navigation = useNavigation<NativeStackNavigationProp<any>>();
     const handleScheduleSettings = () => {
-        navigation.navigate("BarberScheduleSettings")
+        navigation.navigate("BarberScheduleSettings", { barberId: barberId })
         onClose()
     }
     return (

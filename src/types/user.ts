@@ -6,5 +6,6 @@ export interface User {
   _id: string;
   role: string;
   commission?: number;
-  score?:number
+  score?:number;
+  isActive: boolean
 }
