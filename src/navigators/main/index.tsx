@@ -8,6 +8,7 @@ import UserNavigator from '../userNavigator';
 import UserLoading from '../../screens/userloading';
 import {io} from 'socket.io-client';
 import {removeSocket, setSocket} from '../../store/features/layoutSlice';
+import WelcomeOnboarding from '../../screens/Onboarding';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +42,7 @@ export default function MainNavigator(): JSX.Element {
           ) : (
             <>
               <Stack.Screen name="UserLoading" component={UserLoading} />
+              <Stack.Screen name="WelcomeOnboarding" component={WelcomeOnboarding}/>
               <Stack.Screen name="UserRoutes" component={UserNavigator} />
             </>
           )

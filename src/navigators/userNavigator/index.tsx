@@ -32,7 +32,8 @@ export default function UserNavigator(): JSX.Element {
       tabBar={props => <UserTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-      }}>
+      }}
+      initialRouteName='Schedule'>
       <>
         <Tab.Screen name="Schedule" component={Schedule}/>
         <Tab.Screen name="UserProfile" component={Profile}/>

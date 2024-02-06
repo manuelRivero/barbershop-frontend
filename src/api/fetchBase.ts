@@ -32,7 +32,6 @@ const fetchBase: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions)
-  console.log(result)
 
   if (result.error != null && result.error.status === 401) {
     const response: any = await baseQuery({ url: '/auth/token', method: 'post', body: { token: selectRefreshToken(api.getState() as RootState) } }, api, extraOptions)
@@ -46,6 +45,7 @@ const fetchBase: BaseQueryFn<
 
 
   };
+  console.log("result",result)
 
   return result
 }

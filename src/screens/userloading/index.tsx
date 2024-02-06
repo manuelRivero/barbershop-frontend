@@ -75,7 +75,7 @@ export default function UserLoading() {
                 } else {
                   dispatch(showInfoModal(null));
                   if (!isLoading) {
-                    navigation.navigate('UserRoutes');
+                    navigation.navigate('WelcomeOnboarding');
                   }
                 }
               },
@@ -89,13 +89,13 @@ export default function UserLoading() {
         } else {
           dispatch(showInfoModal(null));
           if (!isLoading) {
-            navigation.navigate('UserRoutes');
+            navigation.navigate('WelcomeOnboarding');
           }
         }
       } else {
         dispatch(showInfoModal(null));
         if (!isLoading) {
-          navigation.navigate('UserRoutes');
+          navigation.navigate('WelcomeOnboarding');
         }
       }
     };
