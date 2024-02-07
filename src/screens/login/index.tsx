@@ -35,6 +35,8 @@ export default function Login() {
     watch,
   } = useForm<Form>();
   const submit = async (values: Form): Promise<void> => {
+    console.log("Login values", values);
+    
     try {
       const response = await login(values).unwrap();
       await dispatch(setToken({token: response.token, refreshToken: response.refreshToken}));
@@ -138,7 +140,7 @@ export default function Login() {
                     keyboard="default"
                     label="Correo"
                     value={field.value}
-                    onChange={e => field.onChange(e.nativeEvent.text)}
+                    onChange={e => field.onChange(e.nativeEvent.text.replace(/\s+/g, ''))}
                     invalid={fieldState.error ? true : false}
                     errorMessage={
                       fieldState.error ? fieldState.error.message : undefined
