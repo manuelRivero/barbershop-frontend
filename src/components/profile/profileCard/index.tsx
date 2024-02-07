@@ -25,9 +25,6 @@ export default function ProfileCard({ data }: Props) {
       <Box p="$4" hardShadow="1" borderRadius={10} bg="$white">
         <VStack space="md" alignItems="center">
           <HStack justifyContent='flex-end' flexGrow={1} w="$full">
-            <Pressable onPress={()=> setShowSettingsModal(true)}>
-              <Icon as={Settings} color={"$textDark500"} />
-            </Pressable>
           </HStack>
           <Box
             hardShadow="1"
