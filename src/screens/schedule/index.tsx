@@ -401,6 +401,8 @@ export default function Schedule() {
         visibility: 'private', // (optional) set notification visibility, default: private
         ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
         title: '¡Nueva notificación!', // (optional)
+        smallIcon: "ic_notification",
+        largeIcon: "ic_launcher",
 
         /* iOS only properties */
 
@@ -412,6 +414,7 @@ export default function Schedule() {
       socket?.off('add-turn');
     };
   }, []);
+
   console.log("is sunday", isSunday)
   return (
     <LinearGradient
