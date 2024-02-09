@@ -228,7 +228,7 @@ export default function Schedule() {
     const checkTurnForServiceTime = async () => {
       if (selectedService) {
         const slots = [];
-        let turnsList = [...turns];
+        let turnsList = [...turns.filter(turn => turn.status !== 'CANCELED')];
         let currentTime = moment().utc().utcOffset(3, true);
         if (currentTime.isBefore(businessHoursStart)) {
           // const diff = currentTime.clone().diff(businessHoursStart, 'minutes');
@@ -369,7 +369,7 @@ export default function Schedule() {
 
   React.useEffect(() => {
     if (turnsData) {
-      dispatch(initTurns(turnsData.turns.map((turn: Event) => ({ ...turn, status: moment(turn.endDate).isBefore(moment().utc().utcOffset(3, true)) ? "COMPLETE" : "INCOMPLETE" }))));
+      dispatch(initTurns(turnsData.turns.map((turn: Event) => ({ ...turn }))));
     }
   }, [fulfilledTimeStamp]);
 
@@ -484,7 +484,7 @@ export default function Schedule() {
             </HStack>
           </HStack>
           <Box padding={'$4'}>
-            {turns.length > 0 && (
+            {turns.filter(turn => turn.status !== 'CANCELED').length > 0 && (
               <Text
                 color="$textDark500"
                 textAlign="center"
@@ -494,17 +494,17 @@ export default function Schedule() {
                 agenda hasta las {restartTime.format("mm A")}.
               </Text>
             )}
-            {[...turns]
+            {[...turns.filter(turn => turn.status !== 'CANCELED')]
               .sort(function (left, right) {
                 return moment(left.startDate).diff(moment(right.startDate));
               })
               .map(e => {
                 console.log("user data", user)
                 return (
-                  <TurnCard key={moment(e.startDate).toString()} event={e} user={user} />
+                  <TurnCard key={moment(e.startDate).toString()} event={e} />
                 );
               })}
-            {turns.length === 0 && (
+            {turns.filter(turn => turn.status !== 'CANCELED').length === 0 && (
               <>
                 <Text textAlign="center" mt={'$10'} color="$textDark500">
                   {isSunday ? " Hoy es domingo y la barberìa se encuentra cerrada" : "Aún no has agendado ningún turno para hoy"}

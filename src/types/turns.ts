@@ -1,3 +1,5 @@
+import { User } from "./user";
+
 export interface Event {
   type:string;
   name?: string;
@@ -6,8 +8,8 @@ export interface Event {
   startDate: string;
   endDate: string;
   price: number;
-  status: 'COMPLETE' | 'INCOMPLETE';
-  user: string | null;
+  status: 'COMPLETE' | 'INCOMPLETE' | "CANCELED";
+  user: User[] | null | User;
 }
 
 export interface TurnSelectItem {

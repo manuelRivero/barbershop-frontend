@@ -36,15 +36,18 @@ export const turnsSlice = createSlice({
       state.turns = action.payload
     },
     setUserTurn : (state, action) => {
-      console.log("User turn", action.payload)
       state.userTurn = action.payload
     },
     resetUserTurn : (state) => {
       state.userTurn = null
+    },
+    deleteTurn : (state, action) => {
+      const targetTurn = state.turns.findIndex(e => e._id === action.payload._id)
+      state.turns[targetTurn].status = "CANCELED"
     }
   },
 });
 
-export const {setCompleteTurn, addTurn, resetAllturns, initTurns, setUserTurn, resetUserTurn} = turnsSlice.actions;
+export const {setCompleteTurn, addTurn, resetAllturns, initTurns, setUserTurn, resetUserTurn, deleteTurn} = turnsSlice.actions;
 
 export default turnsSlice.reducer;
