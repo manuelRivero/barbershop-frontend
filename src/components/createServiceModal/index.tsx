@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Button,
   Heading,
@@ -22,22 +22,23 @@ import {
   HStack,
   AddIcon,
   Image,
+  ScrollView,
 } from '@gluestack-ui/themed';
 import BaseInput from '../shared/baseInput';
 import BaseTextArea from '../shared/baseTextArea';
 import BaseButton from '../shared/baseButton';
 import LinkButton from '../shared/linkButton';
-import {useForm, Controller} from 'react-hook-form';
-import {Asset, launchImageLibrary} from 'react-native-image-picker';
-import {RootState, useAppDispatch, useAppSelector} from '../../store';
+import { useForm, Controller } from 'react-hook-form';
+import { Asset, launchImageLibrary } from 'react-native-image-picker';
+import { RootState, useAppDispatch, useAppSelector } from '../../store';
 import {
   addService,
   setServiceForEdition,
   editService,
 } from '../../store/features/servicesSlice';
-import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
-import {useAddServiceMutation} from '../../api/servicesApi';
-import {Platform} from 'react-native';
+import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
+import { useAddServiceMutation, useEditServicesMutation } from '../../api/servicesApi';
+import { Platform } from 'react-native';
 
 interface Props {
   show: boolean;
@@ -51,22 +52,23 @@ interface Form {
   description: string;
 }
 
-export default function CreateServiceModal({show, onClose}: Props) {
+export default function CreateServiceModal({ show, onClose }: Props) {
   const imageRef = useRef(null);
   const ref = useRef();
   const dispatch = useAppDispatch();
-  const {serviceForEdition} = useAppSelector(
+  const { serviceForEdition } = useAppSelector(
     (state: RootState) => state.services,
   );
-  const [addServiceRequest, {isLoading}] = useAddServiceMutation();
+  const [EditServiceRequest, { isLoading: isLoadingEditService }] = useEditServicesMutation()
+  const [addServiceRequest, { isLoading: isLoadingAddService }] = useAddServiceMutation();
   const {
-    formState: {errors},
+    formState: { errors },
     handleSubmit,
     control,
     reset,
     watch,
   } = useForm<Form>();
-  const [image, setImage] = useState<null | {uri: string | undefined}>(null);
+  const [image, setImage] = useState<null | { uri: string | undefined }>(null);
   const [imageBlob, setImageBlob] = useState<Asset | null>(null);
   const [imageAlert, setImageAlert] = useState<string | null>(null);
   const submit = async (values: Form) => {
@@ -76,50 +78,69 @@ export default function CreateServiceModal({show, onClose}: Props) {
     form.append('price', values.price);
     form.append('description', values.description);
     form.append('duration', values.duration);
-    form.append('image', {
-      uri: Platform.select({
-        ios: imageBlob?.uri?.replace('file://', ''),
-        android: imageBlob?.uri,
-      }),
-      type: imageBlob?.type,
-      name: imageBlob?.fileName,
-    });
+
     setImageAlert(null);
-    if (!image) {
+    if (!imageBlob && !serviceForEdition) {
       setImageAlert('La imagen del servicio es requerida');
       return;
     }
+
     if (serviceForEdition) {
-      console.log('if case');
-      dispatch(
-        editService({...values, image: image.uri, _id: serviceForEdition._id}),
-      );
-      dispatch(
-        showInfoModal({
-          title: '¡Servicio guardado!',
-          type: 'success',
-          hasCancel: false,
-          cancelCb: null,
-          hasSubmit: false,
-          submitCb: null,
-          hideOnAnimationEnd: true,
-        }),
-      );
-      dispatch(setServiceForEdition(null));
-      reset({
-        name: '',
-        price: '',
-        duration: '',
-        description: '',
-      });
-      setImage(null);
-      onClose();
+      form.append('id', serviceForEdition._id);
+      try {
+        if(imageBlob){
+          form.append('image', {
+            uri: Platform.select({
+              ios: imageBlob?.uri?.replace('file://', ''),
+              android: imageBlob?.uri,
+            }),
+            type: imageBlob?.type,
+            name: imageBlob?.fileName,
+          })
+        }
+
+        const response = await EditServiceRequest(form).unwrap()
+        console.log("response", response)
+        dispatch(
+          editService({ ...values, image: image?.uri, _id: serviceForEdition._id }),
+        );
+        dispatch(
+          showInfoModal({
+            title: '¡Servicio guardado!',
+            type: 'success',
+            hasCancel: false,
+            cancelCb: null,
+            hasSubmit: false,
+            submitCb: null,
+            hideOnAnimationEnd: true,
+          }),
+        );
+        dispatch(setServiceForEdition(null));
+        reset({
+          name: '',
+          price: '',
+          duration: '',
+          description: '',
+        });
+        setImage(null);
+        onClose();
+      } catch (error) {
+        console.log("error al editar el servicio", error)
+      }
     } else {
       console.log('else case');
+      form.append('image', {
+        uri: Platform.select({
+          ios: imageBlob?.uri?.replace('file://', ''),
+          android: imageBlob?.uri,
+        }),
+        type: imageBlob?.type,
+        name: imageBlob?.fileName,
+      });
       try {
-        const response = await addServiceRequest(form).unwrap();
+        const response = await addServiceRequest(form).unwrap()
         console.log('response', response);
-        dispatch(addService({...response.service}));
+        dispatch(addService({ ...response.service }));
         dispatch(
           showInfoModal({
             title: '¡Servicio guardado!',
@@ -152,7 +173,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
     console.log('result', result);
     if (result.assets) {
       console.log('result.assets[0].uri', result.assets[0].uri);
-      setImage({uri: result.assets[0].uri});
+      setImage({ uri: result.assets[0].uri });
       setImageBlob(result.assets[0]);
     }
   };
@@ -165,7 +186,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
         duration: serviceForEdition.duration.toString(),
         description: serviceForEdition.description,
       });
-      setImage({uri: serviceForEdition.image});
+      setImage({ uri: serviceForEdition.image });
     } else {
       reset({
         name: '',
@@ -176,23 +197,19 @@ export default function CreateServiceModal({show, onClose}: Props) {
       setImage(null);
     }
   }, [serviceForEdition]);
-  console.log('image', image);
+
   return (
     <Modal
+
       isOpen={show}
       onClose={() => {
         onClose();
-        reset({
-          name: '',
-          price: '',
-          duration: '',
-          description: '',
-        });
+        dispatch(setServiceForEdition(null));
       }}
       finalFocusRef={ref}
       bg="$primary100">
       <ModalBackdrop />
-      <ModalContent bg="$white">
+      <ModalContent bg="$white" maxHeight={'$3/4'}>
         <ModalHeader>
           <Heading size="lg" color="$textDark900">
             Crear servicio
@@ -201,12 +218,15 @@ export default function CreateServiceModal({show, onClose}: Props) {
             <Icon as={CloseIcon} />
           </ModalCloseButton>
         </ModalHeader>
-        <ModalBody>
+        <ModalBody >
+
+
+
           <Box mb={'$2'}>
             <Controller
               name="name"
               control={control}
-              render={({field, fieldState}) => {
+              render={({ field, fieldState }) => {
                 return (
                   <BaseInput
                     errorMessage={
@@ -225,7 +245,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
               }}
               rules={{
                 required: 'Campo requerido',
-                maxLength: {value: 80, message: 'Máximo 80 caracteres'},
+                maxLength: { value: 80, message: 'Máximo 80 caracteres' },
               }}
             />
           </Box>
@@ -233,7 +253,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
             <Controller
               name="price"
               control={control}
-              render={({field, fieldState}) => {
+              render={({ field, fieldState }) => {
                 console.log('field state', fieldState);
                 console.log('value', field.value);
                 return (
@@ -254,7 +274,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
               }}
               rules={{
                 required: 'Campo requerido',
-                maxLength: {value: 10, message: 'Máximo 10 caracteres'},
+                maxLength: { value: 10, message: 'Máximo 10 caracteres' },
                 pattern: {
                   value: /^(0|[1-9]\d*)(\.\d+)?$/,
                   message: 'Solo se permiten numeros',
@@ -266,7 +286,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
             <Controller
               name="duration"
               control={control}
-              render={({field, fieldState}) => (
+              render={({ field, fieldState }) => (
                 <BaseInput
                   errorMessage={
                     fieldState.error ? fieldState.error.message : undefined
@@ -283,7 +303,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
               )}
               rules={{
                 required: 'Campo requerido',
-                maxLength: {value: 10, message: 'Máximo 10 caracteres'},
+                maxLength: { value: 10, message: 'Máximo 10 caracteres' },
                 pattern: {
                   value: /^(0|[1-9]\d*)(\.\d+)?$/,
                   message: 'Solo se permiten numeros',
@@ -295,7 +315,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
             <Controller
               name="description"
               control={control}
-              render={({field, fieldState}) => (
+              render={({ field, fieldState }) => (
                 <BaseTextArea
                   errorMessage={
                     fieldState.error ? fieldState.error.message : undefined
@@ -311,7 +331,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
               )}
               rules={{
                 required: 'Campo requerido',
-                maxLength: {value: 160, message: 'Máximo 160 caracteres'},
+                maxLength: { value: 160, message: 'Máximo 160 caracteres' },
               }}
             />
           </Box>
@@ -320,7 +340,7 @@ export default function CreateServiceModal({show, onClose}: Props) {
               <Image
                 ref={imageRef}
                 borderRadius={8}
-                style={{width: 200, height: 200}}
+                style={{ width: 200, height: 200 }}
                 resizeMode="cover"
                 source={
                   image
@@ -348,19 +368,20 @@ export default function CreateServiceModal({show, onClose}: Props) {
           </HStack>
         </ModalBody>
         <ModalFooter>
-          <HStack mt={'$2'} width={'100%'} justifyContent="center">
+          <HStack width={'100%'} justifyContent="center">
             <BaseButton
               title={serviceForEdition ? 'Guardar' : 'Crear servicio'}
               background={'$primary500'}
               color={'$white'}
               onPress={handleSubmit(submit)}
-              isLoading={false}
-              disabled={false}
+              isLoading={isLoadingEditService || isLoadingAddService}
+              disabled={isLoadingEditService || isLoadingAddService}
               hasIcon={false}
             />
           </HStack>
         </ModalFooter>
+
       </ModalContent>
-    </Modal>
+    </Modal >
   );
 }
