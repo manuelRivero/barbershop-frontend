@@ -35,16 +35,15 @@ export default function WeekPicker({ handlePrevWeek, handleNextWeek, startOfWeek
         <Box>
             <HStack justifyContent='space-around'>
                 <Box>
-                    <Pressable onPress={handlePrevWeek}>
+                    <Pressable borderWidth={2} p={2} borderRadius={"$full"} borderColor='$textDark500' onPress={handlePrevWeek}>
                         <Icon color='$textDark500' as={ArrowLeft} />
-
                     </Pressable>
                 </Box>
                 <Box>
                     <Text color='$textDark500' fontWeight='bold' fontSize={"$lg"}> {startOfWeek.format("DD/MM/yyyy")} - {endOfWeek.format("DD/MM/yyyy")}</Text>
                 </Box>
                 <Box>
-                    {showNextArrow && <Pressable onPress={handleNextWeek}>
+                    {showNextArrow && <Pressable borderWidth={2} p={2} borderRadius={"$full"} borderColor='$textDark500' onPress={handleNextWeek}>
                         <Icon color='$textDark500' as={ArrowRight} />
 
                     </Pressable>}

@@ -43,8 +43,8 @@ export default function AllStatsFromDates({ route }: any) {
 
     const [mappedData, setMappedData] = useState<any>();
     const [selected, setSelected] = useState<string>('');
-    const [startDate, setStartDate] = useState<moment.Moment>(moment().startOf('month'))
-    const [endDate, setEndDate] = useState<moment.Moment>(moment().endOf('month'))
+    const [startDate, setStartDate] = useState<moment.Moment>(moment().startOf('month').set("hour", 0).set("minutes", 0).utc().utcOffset(3, true))
+    const [endDate, setEndDate] = useState<moment.Moment>(moment().endOf('month').set("hour", 23).set("minutes", 59).utc().utcOffset(3, true))
     const { data: statsData, isLoading, refetch } = useGetAllStatsFromDatesQuery({
         from: startDate.toDate(),
         to: endDate.toDate()
@@ -52,12 +52,14 @@ export default function AllStatsFromDates({ route }: any) {
     const totalStats = useMemo(() => {
         return statsData && statsData.data.reduce((a: any, b: any) => {
             return {
-                totalTurns: a.totalTurns + b.totalTurns,
+                completeTurns: a.completeTurns + b.completeTurns,
+                canceledTurns: a.canceledTurns + b.canceledTurns,
                 totalForBarber: a.totalForBarber + b.totalForBarber,
                 total: a.total + b.total
             }
         }, {
-            totalTurns: 0,
+            canceledTurns: 0,
+            completeTurns: 0,
             totalForBarber: 0,
             total: 0
         })
@@ -155,11 +157,17 @@ export default function AllStatsFromDates({ route }: any) {
                                     mb="$6"
                                     borderRadius="$lg"
                                     bg="$white">
-                                    <Heading color='$textDark500'>Resumen</Heading>
+                                    <Heading color='$textDark500' textTransform='capitalize'>Resumen - {moment(startDate).format("MMMM/yyyy")}</Heading>
                                     <Text color="$textDark500">
-                                        Total de turnos:{' '}
+                                        Cortes realizados:{' '}
                                         <Text color="$textDark500" fontWeight="bold">
-                                            {totalStats.totalTurns}
+                                            {totalStats.completeTurns}
+                                        </Text>
+                                    </Text>
+                                    <Text color="$textDark500">
+                                        Cortes cancelados:{' '}
+                                        <Text color="$textDark500" fontWeight="bold">
+                                            {totalStats.canceledTurns}
                                         </Text>
                                     </Text>
                                     <Text color="$textDark500">

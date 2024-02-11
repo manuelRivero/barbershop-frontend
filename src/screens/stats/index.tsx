@@ -240,7 +240,8 @@ export default function Stats() {
                     .map(e => {
                       const item = {
                         ...e,
-                        date: moment(e.date).utc().utcOffset(3, true)
+                        date: moment(e.date).format("DD/MM/yyyy"),
+                        day: moment(e.date).utc().utcOffset(3, true)
                           .format('dddd')
                       }
                       console.log("ITEM", item)
@@ -252,8 +253,11 @@ export default function Stats() {
                           mb="$6"
                           borderRadius="$lg"
                           bg="$white">
+                            <Heading color='$textDark500' textTransform='capitalize'>
+                              {item.day} - {item.date} 
+                            </Heading>
                           <Text color="$textDark500">
-                            {`Total para el día ${item.date}: `}
+                            {`Total: `}
                             <Text color="$textDark500" fontWeight="bold">
                               {user?.commission && item?.dayTotalAmount * user?.commission / 100 | 0}
                             </Text>

@@ -54,8 +54,9 @@ export default function AdminBarberStats({ route }: any) {
 
   const { turns } = useAppSelector((state: RootState) => state.turns);
   const [mappedData, setMappedData] = useState<any>();
-  const [startOfWeek, setStartOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek'))
-  const [endOfWeek, setEndOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek').add(5, "days"))
+  const [startOfWeek, setStartOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek').set("hour", 0).set("minutes", 0).utc().utcOffset(3, true))
+  const [endOfWeek, setEndOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek').add(5, "days").set("hour", 23).set("minutes", 59).utc().utcOffset(3, true))
+  
   const { data: statsData, isLoading, refetch } = useGetWeekStatsQuery({
     id: id || null,
     from: startOfWeek.toDate(),
@@ -176,7 +177,15 @@ export default function AdminBarberStats({ route }: any) {
                     Cortes realizados:{' '}
                     <Text color="$textDark500" fontWeight="bold">
                       {statsData && [...statsData.data].reduce((accumulator, object) => {
-                        return accumulator + object.dayTotalServices
+                        return accumulator + object.dayCompleteServices
+                      }, 0)}
+                    </Text>
+                  </Text>
+                  <Text color="$textDark500">
+                    Cortes cancelados:{' '}
+                    <Text color="$textDark500" fontWeight="bold">
+                      {statsData && [...statsData.data].reduce((accumulator, object) => {
+                        return accumulator + object.dayCanceledServices
                       }, 0)}
                     </Text>
                   </Text>
@@ -246,7 +255,8 @@ export default function AdminBarberStats({ route }: any) {
                     .map(e => {
                       const item = {
                         ...e,
-                        date: moment(e.date).utc().utcOffset(3, true)
+                        date: moment(e.date).format("DD/MM/yyyy"),
+                        day: moment(e.date).utc().utcOffset(3, true)
                           .format('dddd')
                       }
                       console.log("ITEM", item)
@@ -258,16 +268,25 @@ export default function AdminBarberStats({ route }: any) {
                           mb="$6"
                           borderRadius="$lg"
                           bg="$white">
+                            <Heading color='$textDark500' textTransform='capitalize'>
+                              {item.day} - {item.date} 
+                            </Heading>
                           <Text color="$textDark500">
-                            {`Total para el día ${item.date}: `}
+                            {`Total: `}
                             <Text color="$textDark500" fontWeight="bold">
                               {item?.dayTotalAmount | 0}
                             </Text>
                           </Text>
                           <Text color="$textDark500">
-                            cortes realizados:{' '}
+                            Cortes realizados:{' '}
                             <Text color="$textDark500" fontWeight="bold">
-                              {item?.dayTotalServices | 0}
+                              {item?.dayCompleteServices | 0}
+                            </Text>
+                          </Text>
+                          <Text color="$textDark500">
+                            Cortes cancelados:{' '}
+                            <Text color="$textDark500" fontWeight="bold">
+                              {item?.dayCanceledServices | 0}
                             </Text>
                           </Text>
                           <Text color="$textDark500">
