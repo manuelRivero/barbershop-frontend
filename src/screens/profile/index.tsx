@@ -53,7 +53,7 @@ export default function Profile() {
     dispacth(logout());
     AsyncStorage.removeItem("persist:root");
     if (user?.role === "barber" || user?.role === "admin-barber") {
-      socket.emit('remove-online-barber', { user: { _id: user?._id } });
+      socket.emit('remove-online-user', { user: { _id: user?._id } });
     }
     socket.close();
     dispacth(removeSocket());

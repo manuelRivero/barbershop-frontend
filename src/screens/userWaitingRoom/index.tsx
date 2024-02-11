@@ -11,13 +11,15 @@ import { useNavigation } from '@react-navigation/native';
 import { BackHandler, Dimensions } from 'react-native';
 import { RootState, useAppSelector } from '../../store';
 import LinearGradient from 'react-native-linear-gradient';
+import PushNotification from 'react-native-push-notification';
 
 const { width } = Dimensions.get('window');
 
-
+let interval: NodeJS.Timeout
 export default function UserWaitingRoom({ route }: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { userTurn } = useAppSelector((state: RootState) => state.turns);
+  const { socket } = useAppSelector((state: RootState) => state.layout);
 
   const turnId = route.params?.turnId || userTurn?._id
   console.log("turnId", userTurn)
@@ -27,7 +29,7 @@ export default function UserWaitingRoom({ route }: any) {
     BackHandler.addEventListener('hardwareBackPress', function () {
       return true;
     });
-    const interval = setInterval(() => {
+    interval = setInterval(() => {
       if (moment().utc().utcOffset(3, true).isAfter(userTurn?.endDate)) {
         navigation.navigate('UserGreetings', { turnId });
         clearInterval(interval)
@@ -36,6 +38,36 @@ export default function UserWaitingRoom({ route }: any) {
 
     return () => clearInterval(interval);
   }, [userTurn]);
+
+  useEffect(() => {
+    socket?.on('canceled-turn', ({ data }) => {
+      clearInterval(interval)
+      navigation.navigate('BarberSelection');
+      PushNotification.localNotification({
+        /* Android Only Properties */
+        channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
+        bigText: 'Turno cancelado', // (optional) default: "message" prop
+        vibrate: true, // (optional) default: true
+        vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
+        groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
+        ongoing: false, // (optional) set whether this is an "ongoing" notification
+        priority: 'high', // (optional) set notification priority, default: high
+        visibility: 'private', // (optional) set notification visibility, default: private
+        ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
+        title: '¡Nueva notificación!', // (optional)
+        smallIcon: "ic_notification",
+        largeIcon: "ic_launcher",
+
+        /* iOS only properties */
+
+        message: 'Tu turno ha sido cancelado por inasistencia', // (required)
+      });
+    });
+
+    return () => {
+      socket?.off('add-turn');
+    };
+  }, []);
 
   if (isLoading) {
     return <Loader />;

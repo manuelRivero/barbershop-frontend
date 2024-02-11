@@ -21,7 +21,7 @@ export default function MainNavigator(): JSX.Element {
     dispatch(setSocket(socket));
     return () => {
       if(user?.role === "barber" || user?.role === "admin-barber" ){
-        socket.emit('remove-online-barber', {user: {_id: user?._id}});
+        socket.emit('remove-online-user', {user: {_id: user?._id}});
       }
       socket.close();
       dispatch(removeSocket());

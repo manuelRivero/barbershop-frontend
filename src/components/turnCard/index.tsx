@@ -23,6 +23,7 @@ interface Props {
 export default function TurnCard({ event }: Props) {
   const dispatch = useAppDispatch();
   const {user} = useAppSelector((state: RootState) => state.auth);
+  const { socket } = useAppSelector((state: RootState) => state.layout);
 
   const [completeTurnRequest, { isLoading }] = useCompleteTurnMutation()
   const [cancelTurnRequest, { isLoading: isLoadingCancelTurn }] = useCancelTurnMutation()
@@ -82,13 +83,16 @@ export default function TurnCard({ event }: Props) {
     const completeTurn = async () => {
       try {
         await completeTurnRequest({ id: event._id }).unwrap()
+        if(event.user !== null){
+          socket?.emit('cancel-turn', {turn: event._id});
+        }
+        dispatch(setCompleteTurn(event));
 
       } catch (error) {
         console.log("error al cambiar el estatus del turno")
       }
     }
     if (status === "COMPLETE") {
-      dispatch(setCompleteTurn(event));
       completeTurn()
     }
 
