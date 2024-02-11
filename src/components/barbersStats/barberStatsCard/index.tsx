@@ -58,6 +58,7 @@ export default function BarberstatsCard({data}: Props) {
               showRating={false}
               defaultRating={4}
               size={24}
+              isDisabled={true}
             />
           </HStack>
           <VStack

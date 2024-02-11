@@ -51,6 +51,7 @@ export default function SelectBarberCard({data, selectBarber}: Props) {
               showRating={false}
               defaultRating={Math.ceil(data.score || 0)}
               size={24}
+              isDisabled={true}
             />
           </HStack>
           <VStack

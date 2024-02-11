@@ -12,6 +12,7 @@ import BarberstatsCard from '../../components/barbersStats/barberStatsCard';
 import LinearGradient from 'react-native-linear-gradient';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
+import { Text } from '@gluestack-ui/themed';
 
 const { width } = Dimensions.get('window');
 
@@ -54,8 +55,10 @@ export default function StatsBarberSelection() {
             <Heading textAlign="center" color="$textDark500">
               Resumen de barberos
             </Heading>
+            <Text textAlign='center' color="textDark500" mt="$16" p="$4">
+              Selecciona a uno de los barberos para ver su resumen semanal.
+            </Text>
             <FlatList
-              mt="$10"
               contentContainerStyle={{ paddingBottom: 50 }}
               p="$4"
               data={barbersData.barbers}
