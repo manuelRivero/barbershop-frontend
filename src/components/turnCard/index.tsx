@@ -139,7 +139,7 @@ console.log("event user", event.user)
         <Text
           fontWeight="bold"
           color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
-          {event.user === null ? "Ti" : `${event.user[0].name} ${event.user[0].lastname}`}
+          {event.user === null ? "Ti" : `${event.user.name} ${event.user.lastname}`}
         </Text>
       </HStack>
       <HStack mb="$1" space="xs" alignItems="center">

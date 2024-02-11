@@ -9,7 +9,7 @@ export interface Event {
   endDate: string;
   price: number;
   status: 'COMPLETE' | 'INCOMPLETE' | "CANCELED";
-  user: User[] | null | User;
+  user: null | User;
 }
 
 export interface TurnSelectItem {

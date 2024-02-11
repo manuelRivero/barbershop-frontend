@@ -1,9 +1,16 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import fetchBase from '../fetchBase';
 import { Event } from '../../types/turns';
+import { User } from '../../types/user';
 
 interface GetServicesRequest {
   services: any;
+}
+interface GetTurnsResponse extends Event {
+  turns: OverridedEvent[]
+}
+interface OverridedEvent extends Omit<Event, 'user'> {
+  user: User[]
 }
 interface AddTurnResponse {
   ok: boolean;
@@ -50,7 +57,7 @@ export const turnsApi = createApi({
         return ({
           url: '/turns/complete',
           method: 'PUT',
-          body: {id:args.id},
+          body: { id: args.id },
         })
       },
     }),
@@ -60,15 +67,18 @@ export const turnsApi = createApi({
         return ({
           url: '/turns/canceled',
           method: 'PUT',
-          body: {id:args.id},
+          body: { id: args.id },
         })
       },
     }),
 
-    getTurns: builder.query<any, GetTurnsRequest>({
+    getTurns: builder.query<GetTurnsResponse, GetTurnsRequest>({
       query: args => {
         return ({
           url: '/turns/get/' + args.id,
+          transformResponse: (response: GetTurnsResponse) => {
+            return response.turns.map(e => ({ ...e, user: e.user[0] }))
+          },
         })
       },
     }),
