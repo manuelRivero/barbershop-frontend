@@ -16,8 +16,11 @@ interface AddTurnResponse {
   ok: boolean;
   turn: Event;
 }
+export interface setEvent extends Omit<Event, 'user'> {
+  user: string | null
+}
 interface AddTurnRequest {
-  data: Event;
+  data: setEvent;
 }
 interface GetTurnsRequest {
   id: number | string;
