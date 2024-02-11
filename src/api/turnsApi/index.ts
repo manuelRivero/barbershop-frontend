@@ -9,7 +9,7 @@ interface GetServicesRequest {
 interface GetTurnsResponse extends Event {
   turns: OverridedEvent[]
 }
-interface OverridedEvent extends Omit<Event, 'user'> {
+export interface OverridedEvent extends Omit<Event, 'user'> {
   user: User[]
 }
 interface AddTurnResponse {
@@ -40,6 +40,7 @@ interface CancelTurnResponse {
 export const turnsApi = createApi({
   baseQuery: fetchBase,
   reducerPath: 'turnsApi',
+  tagTypes: ['TURNS'],
   endpoints: builder => ({
     addTurn: builder.mutation<AddTurnResponse, AddTurnRequest>({
       query: args => {
@@ -73,10 +74,12 @@ export const turnsApi = createApi({
     }),
 
     getTurns: builder.query<GetTurnsResponse, GetTurnsRequest>({
+      providesTags:["TURNS"],
       query: args => {
         return ({
           url: '/turns/get/' + args.id,
           transformResponse: (response: GetTurnsResponse) => {
+            console.log("response api", response)
             return response.turns.map(e => ({ ...e, user: e.user[0] }))
           },
         })

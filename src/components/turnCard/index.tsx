@@ -94,7 +94,7 @@ export default function TurnCard({ event }: Props) {
 
   }, [status]);
 
-console.log("event user", event.user)
+
   return (
     <Box
       padding={'$4'}

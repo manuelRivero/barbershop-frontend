@@ -52,8 +52,9 @@ export default function Stats() {
   const { user } = useAppSelector((state: RootState) => state.auth);
 
   const [mappedData, setMappedData] = useState<any>();
-  const [startOfWeek, setStartOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek'))
-  const [endOfWeek, setEndOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek').add(5, "days"))
+  const [startOfWeek, setStartOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek').set("hour", 0).set("minutes", 0).utc().utcOffset(3, true))
+  const [endOfWeek, setEndOfWeek] = useState<moment.Moment>(moment().startOf('isoWeek').add(5, "days").set("hour", 23).set("minutes", 59).utc().utcOffset(3, true))
+  console.log("endOfWeek", endOfWeek)
   const { data: statsData, isLoading, refetch } = useGetWeekStatsQuery({
     id: user ? user._id : null,
     from: startOfWeek.toDate(),
@@ -78,7 +79,6 @@ export default function Stats() {
         date: moment(e.date).utc().utcOffset(3, true)
           .format('dddd')
       }));
-      console.log("dataWithDates", dataWithDates)
       const data = {
         labels: daysOfWeek,
         datasets: [
@@ -86,7 +86,7 @@ export default function Stats() {
             data: daysOfWeek.map((dayOfWeek: string) => {
               const target = dataWithDates.find(e => e.date === dayOfWeek);
               if (target) {
-                return target.dayTotalAmount;
+                return user?.commission ? target.dayTotalAmount * user.commission / 100 : target.dayTotalAmount;
               } else {
                 return 0;
               }
@@ -113,7 +113,7 @@ export default function Stats() {
     return <Loader />;
   }
 
-
+  console.log("data", statsData?.data)
   return (
     <LinearGradient
       style={{ flex: 1 }}
@@ -147,9 +147,9 @@ export default function Stats() {
         <Box flex={1}>
           <ScrollView flex={1} mt="$10">
 
-          <Heading textAlign="center" color="$textDark500">
-            Resumen del día de hoy
-          </Heading>
+            <Heading textAlign="center" color="$textDark500">
+              Resumen del día de hoy
+            </Heading>
             {mappedData && (
               <Box p="$4">
                 <Box
@@ -175,7 +175,7 @@ export default function Stats() {
                         return object.status === 'COMPLETE'
                           ? accumulator + object.price
                           : accumulator;
-                      }, 0) * (user?.commission ? user?.commission/ 100 : 1)}
+                      }, 0) * (user?.commission ? user?.commission / 100 : 1)}
                       {" "}Pesos
                     </Text>
 
@@ -183,7 +183,7 @@ export default function Stats() {
                   <HStack>
                     <Text color="$textDark500">Comisión: </Text>
                     <Text color="$textDark500" fontWeight="bold">
-                      {user?.commission}
+                      {user?.commission} %
                     </Text>
                   </HStack>
                   <Text color="$textDark500">
@@ -196,6 +196,17 @@ export default function Stats() {
                       }
                     </Text>
                   </Text>
+                  <HStack alignItems="center">
+                    <Text color="$textDark500">Cortes cancelados el día de hoy: </Text>
+                    <Text color="$textDark500" fontWeight="bold">
+                      {[...turns].reduce((accumulator, object) => {
+                        return object.status === 'CANCELED'
+                          ? accumulator + 1 : accumulator
+                      }, 0)}
+                    </Text>
+
+                  </HStack>
+
                 </Box>
                 <Box mb="$2" mt="$4">
                   <WeekPicker handlePrevWeek={handlePrevWeek} handleNextWeek={handleNextWeek} endOfWeek={endOfWeek.clone()} startOfWeek={startOfWeek.clone()} />
@@ -217,7 +228,7 @@ export default function Stats() {
                           color="$textDark500"
                           top={y}
                           left={x}>
-                          {user?.commission ? indexData * user?.commission/ 100 : indexData}
+                          {indexData}
                         </Text>
                       );
                     }}
@@ -244,21 +255,27 @@ export default function Stats() {
                           <Text color="$textDark500">
                             {`Total para el día ${item.date}: `}
                             <Text color="$textDark500" fontWeight="bold">
-                              {user?.commission && item?.dayTotalAmount * user?.commission/ 100 | 0}
+                              {user?.commission && item?.dayTotalAmount * user?.commission / 100 | 0}
                             </Text>
                           </Text>
                           <Text color="$textDark500">
-                            cortes realizados:{' '}
+                            Cortes realizados:{' '}
                             <Text color="$textDark500" fontWeight="bold">
-                              {item?.dayTotalServices | 0}
+                              {item?.dayCompleteServices | 0}
                             </Text>
                           </Text>
                           <Text color="$textDark500">
-                            Total para el barbero:{' '}
+                            Cortes cancelados:{' '}
                             <Text color="$textDark500" fontWeight="bold">
-                              {item?.dayTotalServices | 0}
+                              {item?.dayCanceledServices}
                             </Text>
                           </Text>
+                          <HStack>
+                            <Text color="$textDark500">Comisión: </Text>
+                            <Text color="$textDark500" fontWeight="bold">
+                              {user?.commission} %
+                            </Text>
+                          </HStack>
                         </Box>
                       );
                     })}

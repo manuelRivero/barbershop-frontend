@@ -23,7 +23,7 @@ import {
   initTurns,
   resetAllturns,
 } from '../../store/features/turnsSlice';
-import { useAddTurnMutation, useGetTurnsQuery } from '../../api/turnsApi';
+import { OverridedEvent, useAddTurnMutation, useGetTurnsQuery } from '../../api/turnsApi';
 import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
@@ -369,14 +369,14 @@ export default function Schedule() {
 
   React.useEffect(() => {
     if (turnsData) {
-      dispatch(initTurns(turnsData.turns.map((turn: Event) => ({ ...turn }))));
+      dispatch(initTurns(turnsData.turns.map((turn: OverridedEvent) => ({ ...turn }))));
     }
   }, [fulfilledTimeStamp]);
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       console.log('focus');
-      refetchTurns();
+        refetchTurns();
     });
 
     return unsubscribe;
