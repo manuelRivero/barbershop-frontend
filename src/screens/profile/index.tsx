@@ -101,7 +101,7 @@ export default function Profile() {
             format={'hh:mm:ss'}
             ticking={true}
             element={Text}
-            style={{ fontSize: 22, color: '#1f3d56' }}
+            style={{ fontSize: 16, color: '#1f3d56' }}
           />
           <Heading color="$textDark500" textAlign="center">
             Perfil

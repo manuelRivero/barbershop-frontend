@@ -16,19 +16,19 @@ export default function WelcomeOnboarding() {
             pages={[
                 {
                     backgroundColor: '#f1e2ca',
-                    image: <Image w={200} h={200} resizeMode='contain' source={require('../../assets/images/logo_round.png')} />,
+                    image: <Image w={200} h={200} resizeMode='contain' source={require('../../assets/images/logo-round.png')} />,
                     title: <Heading color="$textDark500">Encuentra a tu barbero</Heading>,
                     subtitle: <Text color="$textDark500">Selecciona a tu barbero de preferencia.</Text>,
                 },
                 {
                     backgroundColor: '#f1e2ca',
-                    image: <Image w={200} h={200} resizeMode='contain' source={require('../../assets/images/logo_round.png')} />,
+                    image: <Image w={200} h={200} resizeMode='contain' source={require('../../assets/images/logo-round.png')} />,
                     title: <Heading color="$textDark500">Explora los servicios</Heading>,
                     subtitle: <Text color="$textDark500">Elige el tipo de servicio que deseas.</Text>,
                 },
                 {
                     backgroundColor: '#f1e2ca',
-                    image: <Image w={200} h={200} resizeMode='contain' source={require('../../assets/images/logo_round.png')} />,
+                    image: <Image w={200} h={200} resizeMode='contain' source={require('../../assets/images/logo-round.png')} />,
                     title: <Heading color="$textDark500">Agenda tu turno</Heading>,
                     subtitle: <Text color="$textDark500">Escoge el horario para tu turno y listo.</Text>,
                 },

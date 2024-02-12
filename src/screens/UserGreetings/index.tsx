@@ -32,29 +32,31 @@ export default function UserGreetings({ route }: any) {
 
 
   useEffect(() => {
-    PushNotification.localNotification({
-      /* Android Only Properties */
-      channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
-      bigText: `¡Genial! Tu corte ya fue realizado`, // (optional) default: "message" prop
-      vibrate: true, // (optional) default: true
-      vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
-      groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
-      ongoing: false, // (optional) set whether this is an "ongoing" notification
-      priority: 'high', // (optional) set notification priority, default: high
-      visibility: 'private', // (optional) set notification visibility, default: private
-      ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
-      title: '¡Nueva notificación!', // (optional)
-      // @ts-ignore
-      data: {
-        barberId: data.turn[0].barberData[0]._id,
-        path: "UserBarberReview"
-      },
+    if (data) {
+      PushNotification.localNotification({
+        /* Android Only Properties */
+        channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
+        bigText: `¡Genial! Tu corte ya fue realizado`, // (optional) default: "message" prop
+        vibrate: true, // (optional) default: true
+        vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
+        groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
+        ongoing: false, // (optional) set whether this is an "ongoing" notification
+        priority: 'high', // (optional) set notification priority, default: high
+        visibility: 'private', // (optional) set notification visibility, default: private
+        ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
+        title: '¡Nueva notificación!', // (optional)
+        // @ts-ignore
+        data: {
+          barberId: data.turn[0].barberData[0]._id,
+          path: "UserBarberReview"
+        },
 
-      /* iOS only properties */
+        /* iOS only properties */
 
-      message: `Gracias por elegir nuestro servicio. ¿Deseas calificar a ${data.turn[0].barberData[0].name} ${data.turn[0].barberData[0].lastname}?`, // (required)
-    });
-  }, []);
+        message: `Gracias por elegir nuestro servicio. ¿Deseas calificar a ${data.turn[0].barberData[0].name} ${data.turn[0].barberData[0].lastname}?`, // (required)
+      });
+    }
+  }, [data]);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', function () {
@@ -117,7 +119,7 @@ export default function UserGreetings({ route }: any) {
             format={'hh:mm:ss'}
             ticking={true}
             element={Text}
-            style={{ fontSize: 22, color: '#1f3d56' }}
+            style={{ fontSize: 16, color: '#1f3d56' }}
           />
         </HStack>
         <Heading textAlign="center" color="$textDark500">

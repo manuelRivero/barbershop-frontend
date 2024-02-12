@@ -88,7 +88,7 @@ export default function Services() {
             format={'hh:mm:ss'}
             ticking={true}
             element={Text}
-            style={{fontSize: 22, color: '#1f3d56'}}
+            style={{fontSize: 16, color: '#1f3d56'}}
           />
           <Heading textAlign="center" color="$textDark500">
             Servicios disponibles
