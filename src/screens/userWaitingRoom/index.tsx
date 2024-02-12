@@ -40,7 +40,10 @@ export default function UserWaitingRoom({ route }: any) {
   }, [userTurn]);
 
   useEffect(() => {
+    console.log("canceled turn notification")
+
     socket?.on('canceled-turn', ({ data }) => {
+      console.log("canceled turn notification")
       clearInterval(interval)
       navigation.navigate('BarberSelection');
       PushNotification.localNotification({
@@ -65,7 +68,7 @@ export default function UserWaitingRoom({ route }: any) {
     });
 
     return () => {
-      socket?.off('add-turn');
+      socket?.off('canceled-turn');
     };
   }, []);
 
@@ -98,7 +101,7 @@ export default function UserWaitingRoom({ route }: any) {
             format={'hh:mm:ss'}
             ticking={true}
             element={Text}
-            style={{ fontSize: 22, color: '#1f3d56' }}
+            style={{ fontSize: 16, color: '#1f3d56' }}
           />
         </HStack>
         <Heading textAlign="center" color="$textDark500">

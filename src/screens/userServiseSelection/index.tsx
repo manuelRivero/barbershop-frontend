@@ -78,7 +78,7 @@ export default function UserServiceSelection({ route }: any) {
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [isSunday, setIsSunday] = useState<boolean>(false)
   const [restartTime, setRestartTime] = useState<moment.Moment>(
-    moment().set({ hour: 23, minutes: 0 }).utc().utcOffset(3, true),
+    moment().set({ hour: 23, minutes: 59, seconds:59 }).utc().utcOffset(3, true),
   );
 
   useEffect(() => {
@@ -328,7 +328,7 @@ export default function UserServiceSelection({ route }: any) {
         const day = moment().get('date')
         setRestartTime(
           moment()
-            .set({ date: day + 1, hour: 0, minute: 0, second: 0 })
+            .set({ date: day + 1, hour: 23, minute: 59, second: 59 })
             .utc()
             .utcOffset(3, true),
         );
@@ -351,7 +351,6 @@ export default function UserServiceSelection({ route }: any) {
     }, 1000);
     return () => clearInterval(interval);
   }, [restartTime]);
-
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       console.log('focus');
@@ -360,12 +359,12 @@ export default function UserServiceSelection({ route }: any) {
 
     return unsubscribe;
   }, [navigation]);
+ 
   React.useEffect(() => {
     if (turnsData) {
-      console.log('turns data', turnsData.turns);
-      dispatch(initTurns(turnsData.turns));
+      dispatch(initTurns(turnsData));
     }
-  }, [turnsFulfilledTimeStamp]);
+  }, [fulfilledTimeStamp]);
 
   if (isLoading || isLoadingTurns) {
     return <Loader />;

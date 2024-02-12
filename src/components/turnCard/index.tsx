@@ -10,7 +10,7 @@ import {
 } from '@gluestack-ui/themed';
 import React, { useEffect, useState } from 'react';
 import { Event } from '../../types/turns';
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 import { Briefcase, CircleDollarSign, Clock2, PercentCircle, Trash, UserCircle } from 'lucide-react-native';
 import { RootState, useAppDispatch, useAppSelector } from '../../store';
 import { deleteTurn, setCompleteTurn } from '../../store/features/turnsSlice';
@@ -22,7 +22,7 @@ interface Props {
 }
 export default function TurnCard({ event }: Props) {
   const dispatch = useAppDispatch();
-  const {user} = useAppSelector((state: RootState) => state.auth);
+  const { user } = useAppSelector((state: RootState) => state.auth);
   const { socket } = useAppSelector((state: RootState) => state.layout);
 
   const [completeTurnRequest, { isLoading }] = useCompleteTurnMutation()
@@ -45,10 +45,13 @@ export default function TurnCard({ event }: Props) {
         submitCb: async () => {
           try {
             await cancelTurnRequest({ id: event._id }).unwrap()
+            if (event.user !== null) {
+              socket?.emit('cancel-turn', { id: event.user?._id });
+            }
             dispatch(deleteTurn(event._id))
             dispatch(hideInfoModal())
           } catch (error) {
-            console.log("error al cancelar el turno")
+            console.log("error al cancelar el turno", error)
           }
         },
         submitData: {
@@ -62,8 +65,9 @@ export default function TurnCard({ event }: Props) {
     );
 
   }
-
+  console.log("cancel turn user EVENT", event)
   useEffect(() => {
+    
     const interval = setInterval(() => {
       if (
         moment()
@@ -78,14 +82,12 @@ export default function TurnCard({ event }: Props) {
 
     return () => clearInterval(interval);
   }, []);
-
+  console.log("event socket", socket)
   useEffect(() => {
     const completeTurn = async () => {
       try {
         await completeTurnRequest({ id: event._id }).unwrap()
-        if(event.user !== null){
-          socket?.emit('cancel-turn', {turn: event._id});
-        }
+
         dispatch(setCompleteTurn(event));
 
       } catch (error) {
@@ -139,11 +141,11 @@ export default function TurnCard({ event }: Props) {
         />
         <Text color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
           Agendado por:{' '}
-        </Text>
-        <Text
-          fontWeight="bold"
-          color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
-          {event.user === null ? "Ti" : `${event.user.name} ${event.user.lastname}`}
+          <Text
+            fontWeight="bold"
+            color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
+            {event.user === null ? "Ti" : `${event.user.name} ${event.user.lastname}`}
+          </Text>
         </Text>
       </HStack>
       <HStack mb="$1" space="xs" alignItems="center">
@@ -153,12 +155,12 @@ export default function TurnCard({ event }: Props) {
         />
         <Text color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
           Servicio:{' '}
+          <Text
+            fontWeight="bold"
+            color={
+              status === 'COMPLETE' ? '$white' : '$textDark500'
+            }>{`${event.name}`}</Text>
         </Text>
-        <Text
-          fontWeight="bold"
-          color={
-            status === 'COMPLETE' ? '$white' : '$textDark500'
-          }>{`${event.name}`}</Text>
       </HStack>
       <HStack space="lg" alignItems="center">
         <HStack space="xs" alignItems="center">

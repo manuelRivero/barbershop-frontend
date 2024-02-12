@@ -52,7 +52,7 @@ export default function Schedule() {
   const { user } = useAppSelector((state: RootState) => state.auth);
   const { socket } = useAppSelector((state: RootState) => state.layout);
   const [restartTime, setRestartTime] = useState<moment.Moment>(
-    moment().set({ hour: 23, minutes: 0 }).utc().utcOffset(3, true),
+    moment().set({ hour: 23, minutes: 59, second: 59 }).utc().utcOffset(3, true),
   );
 
   const {
@@ -336,7 +336,7 @@ export default function Schedule() {
         const day = moment().get('date');
         setRestartTime(
           moment()
-            .set({ date: day + 1, hour: 0, minute: 0, second: 0 })
+            .set({ date: day + 1, hour: 23, minute: 59, second: 59 })
             .utc()
             .utcOffset(3, true),
         );
@@ -369,14 +369,14 @@ export default function Schedule() {
 
   React.useEffect(() => {
     if (turnsData) {
-      dispatch(initTurns(turnsData.turns.map((turn: OverridedEvent) => ({ ...turn }))));
+      dispatch(initTurns(turnsData));
     }
   }, [fulfilledTimeStamp]);
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       console.log('focus');
-        refetchTurns();
+       refetchTurns();
     });
 
     return unsubscribe;
@@ -415,7 +415,6 @@ export default function Schedule() {
     };
   }, []);
 
-  console.log("is sunday", isSunday)
   return (
     <LinearGradient
       style={{ flex: 1 }}
@@ -444,7 +443,7 @@ export default function Schedule() {
               format={'hh:mm:ss'}
               ticking={true}
               element={Text}
-              style={{ fontSize: 22, color: '#1f3d56' }}
+              style={{ fontSize: 16, color: '#1f3d56' }}
             />
             <Heading textAlign="center" color="$textDark500">
               Turnos agendados
@@ -491,7 +490,7 @@ export default function Schedule() {
                 mt={'$10'}
                 mb={'$4'}>
                 Los turnos agendados para el día de hoy serán visibles en tu
-                agenda hasta las {restartTime.format("mm A")}.
+                agenda hasta las {restartTime.format("hh:mm A")}.
               </Text>
             )}
             {[...turns.filter(turn => turn.status !== 'CANCELED')]
