@@ -6,6 +6,7 @@ import { User } from '../../types/user';
 interface GetServicesRequest {
   services: any;
 }
+
 interface GetTurnsResponse extends Event {
   turns: OverridedEvent[]
 }
@@ -76,16 +77,15 @@ export const turnsApi = createApi({
       },
     }),
 
-    getTurns: builder.query<GetTurnsResponse, GetTurnsRequest>({
+    getTurns: builder.query<Event[], GetTurnsRequest>({
       providesTags:["TURNS"],
       query: args => {
         return ({
           url: '/turns/get/' + args.id,
-          transformResponse: (response: GetTurnsResponse) => {
-            console.log("response api", response)
-            return response.turns.map(e => ({ ...e, user: e.user[0] }))
-          },
         })
+      },
+      transformResponse: (response: GetTurnsResponse) => {
+        return response.turns.map(e => ({ ...e, user: e.user[0] }))
       },
     }),
     getActiveTurn: builder.query<any, void>({
