@@ -42,7 +42,7 @@ export const turnsSlice = createSlice({
       state.userTurn = null
     },
     deleteTurn : (state, action) => {
-      const targetTurn = state.turns.findIndex(e => e._id === action.payload._id)
+      const targetTurn = state.turns.findIndex(e => e._id === action.payload)
       state.turns[targetTurn].status = "CANCELED"
     }
   },
