@@ -366,7 +366,7 @@ export default function Schedule() {
     setShowServiceModal(false);
   };
 
-
+console.log("restart time", restartTime)
   React.useEffect(() => {
     if (turnsData) {
       dispatch(initTurns(turnsData));
@@ -414,7 +414,7 @@ export default function Schedule() {
       socket?.off('add-turn');
     };
   }, []);
-
+console.log("socket", socket)
   return (
     <LinearGradient
       style={{ flex: 1 }}

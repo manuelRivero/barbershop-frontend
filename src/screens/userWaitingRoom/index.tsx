@@ -40,12 +40,9 @@ export default function UserWaitingRoom({ route }: any) {
   }, [userTurn]);
 
   useEffect(() => {
-    console.log("canceled turn notification")
-
     socket?.on('canceled-turn', ({ data }) => {
       console.log("canceled turn notification")
-      clearInterval(interval)
-      navigation.navigate('BarberSelection');
+      
       PushNotification.localNotification({
         /* Android Only Properties */
         channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
@@ -65,12 +62,17 @@ export default function UserWaitingRoom({ route }: any) {
 
         message: 'Tu turno ha sido cancelado por inasistencia', // (required)
       });
+      navigation.navigate('BarberSelection');
+      clearInterval(interval)
+
     });
 
     return () => {
       socket?.off('canceled-turn');
     };
   }, []);
+
+  console.log("socket", socket)
 
   if (isLoading) {
     return <Loader />;

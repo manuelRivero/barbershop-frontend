@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import Loader from '../../components/shared/loader';
-import { useAppDispatch } from '../../store';
+import { RootState, useAppDispatch, useAppSelector } from '../../store';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
@@ -19,7 +19,9 @@ export default function UserLoading() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const dispatch = useAppDispatch();
 
-  const { data, isLoading } = useGetActiveTurnQuery()
+
+
+  const { data, isLoading, refetch, fulfilledTimeStamp } = useGetActiveTurnQuery()
   const requestNotificationPermission = async () => {
     const result = await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS);
     return result;
@@ -36,7 +38,15 @@ export default function UserLoading() {
     } else {
       dispatch(resetUserTurn())
     }
-  }, [data]);
+  }, [fulfilledTimeStamp]);
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      refetch();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
 
   useEffect(() => {
     const chechForPermissions = async () => {

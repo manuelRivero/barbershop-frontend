@@ -23,7 +23,6 @@ import { Platform } from 'react-native';
 export default function Loading() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {user} = useAppSelector((state: RootState) => state.auth);
-  const {socket} = useAppSelector((state: RootState) => state.layout);
 
   const dispatch = useAppDispatch();
   const {data, isLoading} = useGetServicesQuery();
@@ -102,13 +101,7 @@ export default function Loading() {
     chechForPermissions()
   }, []);
 
-  useEffect(()=>{
-    socket?.emit('log-in', {
-      user: {
-        _id: user?._id,
-      },
-    });
-  },[])
+ 
 
   return (
       <Loader />

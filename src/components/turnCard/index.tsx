@@ -46,6 +46,7 @@ export default function TurnCard({ event }: Props) {
           try {
             await cancelTurnRequest({ id: event._id }).unwrap()
             if (event.user !== null) {
+              console.log("entro al if")
               socket?.emit('cancel-turn', { id: event.user?._id });
             }
             dispatch(deleteTurn(event._id))
@@ -65,7 +66,6 @@ export default function TurnCard({ event }: Props) {
     );
 
   }
-  console.log("cancel turn user EVENT", event)
   useEffect(() => {
     
     const interval = setInterval(() => {
@@ -73,7 +73,8 @@ export default function TurnCard({ event }: Props) {
         moment()
           .utc()
           .utcOffset(3, true)
-          .isAfter(moment(event.endDate), 'minutes')
+          .isAfter(moment(event.endDate).utc()
+          .utcOffset(3, true), 'minutes')
       ) {
         setStatus('COMPLETE');
         clearInterval(interval)
@@ -82,7 +83,7 @@ export default function TurnCard({ event }: Props) {
 
     return () => clearInterval(interval);
   }, []);
-  console.log("event socket", socket)
+
   useEffect(() => {
     const completeTurn = async () => {
       try {
@@ -99,6 +100,7 @@ export default function TurnCard({ event }: Props) {
     }
 
   }, [status]);
+  console.log("event date ", moment(event.endDate))
 
 
   return (

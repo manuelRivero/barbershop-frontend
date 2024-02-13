@@ -1,16 +1,16 @@
-import React, {useEffect, useState} from 'react';
-import {Heading, Box, HStack, VStack} from '@gluestack-ui/themed';
+import React, { useEffect, useState } from 'react';
+import { Heading, Box, HStack, VStack } from '@gluestack-ui/themed';
 
 import BaseInput from '../../components/shared/baseInput';
 import BaseButton from '../../components/shared/baseButton';
-import {useForm, Controller} from 'react-hook-form';
-import {RootState, useAppDispatch, useAppSelector} from '../../store';
-import {setToken, setUser} from '../../store/features/authSlice';
-import {authApi, useLoginMutation} from '../../api/authApi';
-import {LoginManager, Settings, AccessToken} from 'react-native-fbsdk-next';
-import {Divider} from '@gluestack-ui/themed';
-import {useFacebookLoginMutation} from '../../api/facebookApi';
-import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
+import { useForm, Controller } from 'react-hook-form';
+import { RootState, useAppDispatch, useAppSelector } from '../../store';
+import { setToken, setUser } from '../../store/features/authSlice';
+import { authApi, useLoginMutation } from '../../api/authApi';
+import { LoginManager, Settings, AccessToken } from 'react-native-fbsdk-next';
+import { Divider } from '@gluestack-ui/themed';
+import { useFacebookLoginMutation } from '../../api/facebookApi';
+import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
 
 Settings.setAppID('315996248039279');
 
@@ -21,26 +21,26 @@ interface Form {
 
 export default function Login() {
   const dispatch = useAppDispatch();
-  const {user, token} = useAppSelector((state: RootState) => state.auth);
+  const { user, token } = useAppSelector((state: RootState) => state.auth);
+  const { socket } = useAppSelector((state: RootState) => state.layout);
 
-  const [login, {isLoading, isError, data}] = useLoginMutation();
+  const [login, { isLoading, isError, data }] = useLoginMutation();
   console.log('is error', isError);
-  const [facebookLogin, {isLoading: isLoadingFacebook}] =
+  const [facebookLogin, { isLoading: isLoadingFacebook }] =
     useFacebookLoginMutation();
 
   const {
-    formState: {errors},
+    formState: { errors },
     handleSubmit,
     control,
     watch,
   } = useForm<Form>();
   const submit = async (values: Form): Promise<void> => {
     console.log("Login values", values);
-    
+
     try {
       const response = await login(values).unwrap();
-      await dispatch(setToken({token: response.token, refreshToken: response.refreshToken}));
-      
+      await dispatch(setToken({ token: response.token, refreshToken: response.refreshToken }));
     } catch (error) {
       console.log("error", error)
 
@@ -79,9 +79,9 @@ export default function Login() {
             const response = await facebookLogin({
               token: token?.accessToken,
             }).unwrap();
-            dispatch(setToken({token: response.token, refreshToken: response.refreshToken}));
-            const {data, isError} = await dispatch(
-              authApi.endpoints.getMe.initiate({},{ forceRefetch: true }),
+            dispatch(setToken({ token: response.token, refreshToken: response.refreshToken }));
+            const { data, isError } = await dispatch(
+              authApi.endpoints.getMe.initiate({}, { forceRefetch: true }),
             );
             if (isError) {
               throw new Error();
@@ -101,13 +101,19 @@ export default function Login() {
       },
     );
   };
-  useEffect(()=>{
-    const getMe = async ()=>{
-      const {data, isError} = await dispatch(
-        authApi.endpoints.getMe.initiate({},{ forceRefetch: true }),
+  useEffect(() => {
+    const getMe = async () => {
+      const { data, isError } = await dispatch(
+        authApi.endpoints.getMe.initiate({}, { forceRefetch: true }),
       );
-      console.log('data', data);
-      console.log('isError', isError);
+      if (data?.data.role !== "admin") {
+        socket?.emit('log-in', {
+          user: {
+            _id: data?.data?._id,
+          },
+        });
+
+      }
       if (isError) {
         throw new Error();
       }
@@ -117,10 +123,10 @@ export default function Login() {
         }),
       );
     }
-    if(data){
+    if (data) {
       getMe()
     }
-  },[data])
+  }, [data])
   console.log("user", user)
   console.log("token", token)
   return (
@@ -134,7 +140,7 @@ export default function Login() {
             <Controller
               name="email"
               control={control}
-              render={({field, fieldState}) => {
+              render={({ field, fieldState }) => {
                 return (
                   <BaseInput
                     keyboard="default"
@@ -163,7 +169,7 @@ export default function Login() {
             <Controller
               name="password"
               control={control}
-              render={({field, fieldState}) => {
+              render={({ field, fieldState }) => {
                 return (
                   <BaseInput
                     type="password"
