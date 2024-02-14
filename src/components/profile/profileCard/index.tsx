@@ -16,7 +16,7 @@ interface Props {
   data: User | null;
 }
 
-export default function ProfileCard({ data }: Props) {
+export default function rofiProfileCard({ data }: Props) {
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
 
   if (!data) return null;
@@ -35,7 +35,7 @@ export default function ProfileCard({ data }: Props) {
             <Image
               borderRadius={9999}
               style={{ width: 100, height: 100 }}
-              source={{ uri: data.image }}
+              source={data.avatar ? { uri: data.avatar } : require("./../../../assets/images/avatar-placeholder.jpeg")}
             />
           </Box>
           <Box>
@@ -43,6 +43,7 @@ export default function ProfileCard({ data }: Props) {
               color="$textDark500"
               textAlign="center">{`${data.name} ${data.lastname}`}</Text>
             <Text color="$textDark500" textAlign="center">{`${data.email}`}</Text>
+            {data.phone && <Text color="$textDark500" textAlign="center">{`Teléfono: ${data.phone}`}</Text>}
           </Box>
         </VStack>
       </Box>

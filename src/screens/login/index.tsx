@@ -12,6 +12,8 @@ import { Divider } from '@gluestack-ui/themed';
 import { useFacebookLoginMutation } from '../../api/facebookApi';
 import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
 import socket from '../../socket';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
 
 Settings.setAppID('315996248039279');
 
@@ -21,6 +23,8 @@ interface Form {
 }
 
 export default function Login() {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
   const dispatch = useAppDispatch();
   const { user, token } = useAppSelector((state: RootState) => state.auth);
 
@@ -129,6 +133,13 @@ export default function Login() {
       getMe()
     }
   }, [data])
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      socket.connect()
+    });
+
+    return unsubscribe;
+  }, [navigation]);
   console.log("user", user)
   console.log("token", token)
   return (

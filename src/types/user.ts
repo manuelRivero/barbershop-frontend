@@ -1,11 +1,13 @@
 export interface User {
   name: string;
   lastname: string;
-  image: string;
+  avatar?: string;
+  avatarId?: string;
   email: string;
   _id: string;
   role: string;
   commission?: number;
   score?:number;
-  isActive: boolean
+  isActive: boolean;
+  phone?:string
 }

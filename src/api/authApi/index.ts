@@ -7,12 +7,18 @@ export interface User {
   name: string
   lastname: string
   email: string
+  phone?: string
   password: string
   resetToken: string
   resetTokenExpiresAt: string
-  avatar: string
+  avatar?: string
+  avatarId?: string
   role: string
   createdAt: string
+}
+
+interface UpdateProfilerResponse {
+  targetUser: User
 }
 
 export interface UserResponse {
@@ -38,7 +44,6 @@ export interface RegisterRequest {
 }
 
 export interface UpdateProfilerRequest {
-  id: string
   data: FormData
 }
 interface MeRequest{
@@ -70,20 +75,20 @@ export const authApi = createApi({
           method: 'POST',
           body: args
       })
-    })
-    // updateUserProfile: builder.mutation<GenericResponse, UpdateProfilerRequest>(
-    //   {
-    //     query(args) {
-    //       return {
-    //         url: `user/${args.id}`,
-    //         method: 'PACHT',
-    //         body: args.data,
-    //         formData:true,
-    //       }
-    //     }
-    //   }
-    // )
+    }),
+    updateUserProfile: builder.mutation<UpdateProfilerResponse, UpdateProfilerRequest>(
+      {
+        query(args) {
+          return {
+            url: `/auth/edit-profile`,
+            method: 'PUT',
+            body: args.data,
+            formData:true,
+          }
+        }
+      }
+    )
   })
 })
 
-export const { useLoginMutation, useGetMeQuery } = authApi
+export const { useLoginMutation, useGetMeQuery, useUpdateUserProfileMutation } = authApi

@@ -30,7 +30,6 @@ interface Props {
   data: Service;
 }
 export default function ServiceCard({data}: Props) {
-  const myImage = cld.image("/services"+data.imageName);
   const dispatch = useAppDispatch();
   const handleEdit = () => {
     dispatch(setServiceForEdition(data));

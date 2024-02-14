@@ -9,15 +9,18 @@ import LottieView from 'lottie-react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { BackHandler, Dimensions } from 'react-native';
-import { RootState, useAppSelector } from '../../store';
+import { RootState, useAppDispatch, useAppSelector } from '../../store';
 import LinearGradient from 'react-native-linear-gradient';
 import PushNotification from 'react-native-push-notification';
 import socket from '../../socket';
+import { resetUserTurn } from '../../store/features/turnsSlice';
 
 const { width } = Dimensions.get('window');
 
 let interval: NodeJS.Timeout
 export default function UserWaitingRoom({ route }: any) {
+  const dispacth = useAppDispatch();
+
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { userTurn } = useAppSelector((state: RootState) => state.turns);
 
@@ -62,7 +65,8 @@ export default function UserWaitingRoom({ route }: any) {
 
         message: 'Tu turno ha sido cancelado por inasistencia', // (required)
       });
-      navigation.navigate('BarberSelection');
+      dispacth(resetUserTurn())
+      navigation.navigate('CanceledTurn');
       clearInterval(interval)
 
     });

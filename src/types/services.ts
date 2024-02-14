@@ -5,5 +5,4 @@ export interface Service {
   duration: number;
   price: number;
   image: string;
-  imageName: string;
 }
