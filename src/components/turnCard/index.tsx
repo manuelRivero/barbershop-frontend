@@ -17,13 +17,13 @@ import { deleteTurn, setCompleteTurn } from '../../store/features/turnsSlice';
 import { User } from '../../types/user';
 import { useCancelTurnMutation, useCompleteTurnMutation } from '../../api/turnsApi';
 import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
+import socket from '../../socket';
 interface Props {
   event: Event;
 }
 export default function TurnCard({ event }: Props) {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state: RootState) => state.auth);
-  const { socket } = useAppSelector((state: RootState) => state.layout);
 
   const [completeTurnRequest, { isLoading }] = useCompleteTurnMutation()
   const [cancelTurnRequest, { isLoading: isLoadingCancelTurn }] = useCancelTurnMutation()
@@ -73,8 +73,7 @@ export default function TurnCard({ event }: Props) {
         moment()
           .utc()
           .utcOffset(3, true)
-          .isAfter(moment(event.endDate).utc()
-          .utcOffset(3, true), 'minutes')
+          .isAfter(moment(event.endDate))
       ) {
         setStatus('COMPLETE');
         clearInterval(interval)

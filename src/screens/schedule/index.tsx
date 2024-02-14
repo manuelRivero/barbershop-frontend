@@ -32,6 +32,7 @@ import PushNotification from 'react-native-push-notification';
 import { Dimensions } from 'react-native';
 import { DollarSignIcon } from 'lucide-react-native';
 import { Icon } from '@gluestack-ui/themed';
+import socket from '../../socket';
 
 const { width } = Dimensions.get('window');
 export default function Schedule() {
@@ -50,7 +51,6 @@ export default function Schedule() {
   const dispatch = useAppDispatch();
   const { turns } = useAppSelector((state: RootState) => state.turns);
   const { user } = useAppSelector((state: RootState) => state.auth);
-  const { socket } = useAppSelector((state: RootState) => state.layout);
   const [restartTime, setRestartTime] = useState<moment.Moment>(
     moment().set({ hour: 23, minutes: 59, second: 59 }).utc().utcOffset(3, true),
   );
@@ -383,7 +383,7 @@ console.log("restart time", restartTime)
   }, [navigation]);
 
   useEffect(() => {
-    socket?.on('add-turn', ({ data }) => {
+    socket.on('add-turn', ({ data }) => {
       console.log('notification');
       dispatch(addTurn(data));
       PushNotification.localNotification({

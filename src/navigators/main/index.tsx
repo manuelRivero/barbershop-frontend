@@ -6,21 +6,12 @@ import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import Loading from '../../screens/loading';
 import UserNavigator from '../userNavigator';
 import UserLoading from '../../screens/userloading';
-import {io} from 'socket.io-client';
-import {removeSocket, setSocket} from '../../store/features/layoutSlice';
 import WelcomeOnboarding from '../../screens/Onboarding';
 
 const Stack = createNativeStackNavigator();
 
 export default function MainNavigator(): JSX.Element {
   const {user} = useAppSelector((state: RootState) => state.auth);
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    const socket = io('https://barbershop-backend-ozy5.onrender.com');
-    dispatch(setSocket(socket));
-    
-  }, [user]);
 
   return (
     <Stack.Navigator

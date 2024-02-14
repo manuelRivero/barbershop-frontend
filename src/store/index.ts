@@ -20,7 +20,7 @@ import { persistReducer, persistStore } from 'redux-persist'
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-    whitelist: ['auth', 'turns', 'layout'] // only navigation will be persisted
+    whitelist: ['auth', 'turns'] // only navigation will be persisted
 
 }
 

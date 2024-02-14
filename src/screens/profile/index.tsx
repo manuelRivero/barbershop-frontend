@@ -26,11 +26,10 @@ import { useNavigation } from '@react-navigation/native';
 import { useGetImagesQuery } from '../../api/galleryApi';
 import { resetAllturns, resetUserTurn } from '../../store/features/turnsSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { removeSocket } from '../../store/features/layoutSlice';
-import { io } from 'socket.io-client';
+import socket from '../../socket';
+
 
 const { width } = Dimensions.get('window');
-const socket = io('https://barbershop-backend-ozy5.onrender.com');
 
 export default function Profile() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -56,7 +55,7 @@ export default function Profile() {
       socket.emit('remove-online-user', { user: { _id: user?._id } });
     }
     socket.close();
-    dispacth(removeSocket());
+    socket.disconnect()
 
   };
   console.log("galleryData", galleryData)

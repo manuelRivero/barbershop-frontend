@@ -1,7 +1,6 @@
 import {createSlice} from '@reduxjs/toolkit';
 import {Service} from '../../../types/services';
 import {services} from '../../../dummy-data/services';
-import { Socket } from 'socket.io-client';
 
 interface InfoModal {
   title:string;
@@ -25,13 +24,11 @@ interface InfoModal {
 // Define a type for the slice state
 interface State {
   infoModal: InfoModal | null;
-  socket: Socket | null
 }
 
 // Define the initial state using that type
 const initialState: State = {
   infoModal:null,
-  socket:null
 };
 
 export const layoutSlice = createSlice({
@@ -45,15 +42,9 @@ export const layoutSlice = createSlice({
     hideInfoModal : (state) => {
       state.infoModal = null
     },
-    setSocket : (state, action) => {
-      state.socket = action.payload
-    },
-    removeSocket: (state) => {
-      state.socket = null
-    }
   },
 });
 
-export const {showInfoModal, hideInfoModal, setSocket, removeSocket} = layoutSlice.actions;
+export const {showInfoModal, hideInfoModal, } = layoutSlice.actions;
 
 export default layoutSlice.reducer;

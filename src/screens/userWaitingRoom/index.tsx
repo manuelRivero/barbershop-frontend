@@ -12,6 +12,7 @@ import { BackHandler, Dimensions } from 'react-native';
 import { RootState, useAppSelector } from '../../store';
 import LinearGradient from 'react-native-linear-gradient';
 import PushNotification from 'react-native-push-notification';
+import socket from '../../socket';
 
 const { width } = Dimensions.get('window');
 
@@ -19,7 +20,6 @@ let interval: NodeJS.Timeout
 export default function UserWaitingRoom({ route }: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { userTurn } = useAppSelector((state: RootState) => state.turns);
-  const { socket } = useAppSelector((state: RootState) => state.layout);
 
   const turnId = route.params?.turnId || userTurn?._id
   console.log("turnId", userTurn)

@@ -37,6 +37,7 @@ import moment from 'moment-timezone';
 import { getDateByTimeZone } from '../../helpers';
 import LinearGradient from 'react-native-linear-gradient';
 import { ChevronLeftIcon } from 'lucide-react-native';
+import socket from '../../socket';
 
 moment.tz.setDefault(moment.tz.guess());
 const { width } = Dimensions.get('window');
@@ -61,7 +62,6 @@ export default function UserServiceSelection({ route }: any) {
   );
   const { turns } = useAppSelector((state: RootState) => state.turns);
   const { user } = useAppSelector((state: RootState) => state.auth);
-  const { socket } = useAppSelector((state: RootState) => state.layout);
 
   const { data, isLoading, refetch, fulfilledTimeStamp } =
     useGetBarberServicesQuery({ id });

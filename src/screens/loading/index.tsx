@@ -17,13 +17,13 @@ import {
 import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 
 export default function Loading() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {user} = useAppSelector((state: RootState) => state.auth);
-
   const dispatch = useAppDispatch();
   const {data, isLoading} = useGetServicesQuery();
 

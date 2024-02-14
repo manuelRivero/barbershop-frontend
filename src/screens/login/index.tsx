@@ -11,6 +11,7 @@ import { LoginManager, Settings, AccessToken } from 'react-native-fbsdk-next';
 import { Divider } from '@gluestack-ui/themed';
 import { useFacebookLoginMutation } from '../../api/facebookApi';
 import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
+import socket from '../../socket';
 
 Settings.setAppID('315996248039279');
 
@@ -22,7 +23,6 @@ interface Form {
 export default function Login() {
   const dispatch = useAppDispatch();
   const { user, token } = useAppSelector((state: RootState) => state.auth);
-  const { socket } = useAppSelector((state: RootState) => state.layout);
 
   const [login, { isLoading, isError, data }] = useLoginMutation();
   console.log('is error', isError);
@@ -107,7 +107,9 @@ export default function Login() {
         authApi.endpoints.getMe.initiate({}, { forceRefetch: true }),
       );
       if (data?.data.role !== "admin") {
-        socket?.emit('log-in', {
+
+        console.log("login socket", socket)
+        socket.emit('log-in', {
           user: {
             _id: data?.data?._id,
           },
