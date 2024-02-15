@@ -28,7 +28,7 @@ export default function ScheduleSettings() {
     console.log();
     const [barberDisable, { isLoading: isLoadingDisable }] =
         useBarberDisableMutation();
-    const { data: barberDetail, isLoading: loadingBarberDetail } = useGetBarberDetailQuery({ id: barberId });
+    const { data: barberDetail, isLoading: loadingBarberDetail, fulfilledTimeStamp, refetch } = useGetBarberDetailQuery({ id: barberId });
     const [startDate, setStartDate] = useState<Date>(moment().utc().utcOffset(3, true).add("day", 1).toDate())
     const [endDate, setEndDate] = useState<Date>(moment().utc().utcOffset(3, true).add("day", 2).toDate())
     const [showStartDateModal, setShowStartDateModal] = useState<boolean>(false)
@@ -46,7 +46,7 @@ export default function ScheduleSettings() {
 
             dispatch(
                 showInfoModal({
-                    title: '¡Usuario deshabilitado!',
+                    title: '¡Estado actualizado!',
                     type: 'success',
                     hasCancel: false,
                     cancelCb: null,
@@ -60,7 +60,7 @@ export default function ScheduleSettings() {
         } catch (error) {
 
             showInfoModal({
-                title: '¡No se pudo deshabilitar el usuario!',
+                title: '¡No se pudo actualizar el estado!',
                 type: 'error',
                 hasCancel: false,
                 cancelCb: null,
@@ -78,7 +78,15 @@ export default function ScheduleSettings() {
         if(barberDetail){
             setIsActive(barberDetail.barber[0].isActive)
         }
-    },[barberDetail])
+    },[fulfilledTimeStamp])
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', async () => {
+          refetch();
+        });
+    
+        return unsubscribe;
+      }, [navigation]);
+
     return loadingBarberDetail ? (
         <Loader />
       ) : (
@@ -107,13 +115,13 @@ export default function ScheduleSettings() {
                                     <Icon as={ChevronLeftIcon} size={24} color="$textDark500" />
                                 </Pressable>
                                 <Heading textAlign="center" color="$textDark500">
-                                    Deshabilitar barbero
+                                    Estado del barbero
                                 </Heading>
                                 <Box p="$6"></Box>
                             </HStack>
-                            <Box mt={"$4"} p={"$4"} >
-                                <HStack space="md">
-                                    <Text>Usuario habilitado</Text>
+                            <Box mt={"$10"} p={"$4"} >
+                                <HStack space="md" justifyContent='space-between'>
+                                    <Text color="$textDark500">Barbero habilitado</Text>
                                     <Switch disabled={isLoadingDisable} value={isActive} onChange={handleSubmit} />
                                 </HStack>
                             </Box>

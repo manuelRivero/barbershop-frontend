@@ -47,7 +47,7 @@ export default function SettingsModal({ show, barberId, onClose }: Props) {
                             p="$4"
                             borderRadius="$lg"
                             bg="$white">
-                            <Text color="$textDark900">Deshabilitar barbero</Text>
+                            <Text color="$textDark900">Configurar estado</Text>
                         </Box>
                     </Pressable>
                 </ModalBody>
