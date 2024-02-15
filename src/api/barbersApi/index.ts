@@ -32,6 +32,9 @@ export const barbersApi = createApi({
             query(args) {
                 return {
                     url: `/barbers`,
+                    params: {
+                        isAdmin: args.isAdmin || false
+                    }
                 };
             },
         }),
@@ -50,8 +53,6 @@ export const barbersApi = createApi({
                     method: "post",
                     body: {
                         barber: args.barber,
-                        from: args.from,
-                        to: args.to
                     }
                 };
             },

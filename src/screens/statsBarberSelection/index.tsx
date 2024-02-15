@@ -59,14 +59,13 @@ export default function StatsBarberSelection() {
               Selecciona a uno de los barberos para ver su resumen semanal.
             </Text>
             <FlatList
-              contentContainerStyle={{ paddingBottom: 50 }}
+              contentContainerStyle={{ paddingBottom: 200 }}
               p="$4"
               data={barbersData.barbers}
               renderItem={(props: ListRenderItemInfo<any>) => {
                 const { item } = props;
                 return (
                   <Center p="$4">
-
                     <BarberstatsCard data={item} />
                   </Center>
                 );

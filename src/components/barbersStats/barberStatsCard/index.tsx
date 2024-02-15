@@ -38,12 +38,7 @@ export default function BarberstatsCard({data}: Props) {
           style={{width: 100, height: 100}}
           borderRadius={10}
           resizeMode={'cover'}
-          source={{
-            uri: data.image,
-            headers: {
-              Pragma: 'no-cache',
-            },
-          }}
+          source={data.avatar ? { uri: data.avatar } : require("./../../../assets/images/avatar-placeholder.jpeg")}
           alt="foto-del-servicio"
           onError={({nativeEvent: {error}}) => console.log(error)}
         />
