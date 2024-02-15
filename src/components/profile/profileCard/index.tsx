@@ -43,7 +43,13 @@ export default function rofiProfileCard({ data }: Props) {
               color="$textDark500"
               textAlign="center">{`${data.name} ${data.lastname}`}</Text>
             <Text color="$textDark500" textAlign="center">{`${data.email}`}</Text>
-            {data.phone && <Text color="$textDark500" textAlign="center">{`Teléfono: ${data.phone}`}</Text>}
+            {data.phone?.length && data.phone?.length > 0 ? <Text color="$textDark500" textAlign="center">{`Teléfono: ${data.phone}`}</Text>
+              : (<Box position='relative'>
+                <Text
+                color="$textDark500"
+                textAlign="center">Edita tu perfil y agrega tu número de WhatsApp</Text>
+                <Box position='absolute' width={10} height={10} bg='red' right={-5} top={-5} borderRadius={9999} />
+              </Box>)}
           </Box>
         </VStack>
       </Box>

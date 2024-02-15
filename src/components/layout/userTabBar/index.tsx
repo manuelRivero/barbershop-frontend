@@ -1,8 +1,10 @@
-import {Box, HStack, Pressable, VStack} from '@gluestack-ui/themed';
+import { Box, HStack, Pressable, Text, VStack } from '@gluestack-ui/themed';
 import React from 'react';
-import {BottomTabBarProps} from '@react-navigation/bottom-tabs/src/types';
-import {Icon} from '@gluestack-ui/themed';
-import {CalendarPlus, User, LucideIcon} from 'lucide-react-native';
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs/src/types';
+import { Icon } from '@gluestack-ui/themed';
+import { CalendarPlus, User, LucideIcon } from 'lucide-react-native';
+import { userInfo } from 'os';
+import { RootState, useAppSelector } from '../../../store';
 
 interface Icons {
   Schedule: LucideIcon
@@ -23,6 +25,7 @@ export default function UserTabBar({
   navigation,
 }: BottomTabBarProps): JSX.Element {
   // console.log('props state', state);
+  const { user } = useAppSelector((state: RootState) => state.auth);
   return (
     <Box p={'$4'} backgroundColor="$primary100">
       <Box h={60} borderRadius={'$xl'} bg={'$white'} overflow={'hidden'}>
@@ -31,7 +34,7 @@ export default function UserTabBar({
           alignItems="center"
           flex={1}>
           {state.routes.map((route, index) => {
-            const {options} = descriptors[route.key];
+            const { options } = descriptors[route.key];
             console.log('route options', state.routes);
             const label = options.title;
 
@@ -43,6 +46,9 @@ export default function UserTabBar({
                 target: route.key,
                 canPreventDefault: true,
               });
+
+              console.log("Phone", user?.phone);
+              
 
               if (!isFocused && !event.defaultPrevented) {
                 // The `merge: true` option makes sure that the params inside the tab screen are preserved
@@ -57,19 +63,22 @@ export default function UserTabBar({
             return (
               <Pressable
                 accessibilityRole="button"
-                accessibilityState={isFocused ? {selected: true} : {}}
+                accessibilityState={isFocused ? { selected: true } : {}}
                 accessibilityLabel={options.tabBarAccessibilityLabel}
                 testID={options.tabBarTestID}
                 onPress={onPress}
-                style={{flex: 1}}>
+                style={{ flex: 1 }}>
                 <VStack
                   justifyContent="center"
                   alignItems="center">
-                  <Icon
-                    as={getIcon(route.name)}
-                    size={24}
-                    color={isFocused ? '$primary500' : '$textDark900'}
-                  />
+                  <Box position='relative'>
+                    <Icon
+                      as={getIcon(route.name)}
+                      size={24}
+                      color={isFocused ? '$primary500' : '$textDark900'}
+                    />
+                    {!user?.phone && route.name === "UserProfile" && <Box position='absolute' width={10} height={10} bg='red' left={20} bottom={20} borderRadius={9999} />}
+                  </Box>
                 </VStack>
               </Pressable>
             );
