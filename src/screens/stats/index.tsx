@@ -133,7 +133,7 @@ export default function Stats() {
           opacity={0.5}
         />
 
-        <VStack mt={'$4'} width={'100%'} justifyContent="center" alignItems='center'>
+        <VStack mt={'$1'} width={'100%'} justifyContent="center" alignItems='center'>
           <Clock
             format={'hh:mm:ss'}
             ticking={true}

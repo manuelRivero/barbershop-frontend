@@ -92,7 +92,7 @@ export default function Profile() {
           opacity={0.5}
         />
         <VStack
-          mt={'$4'}
+          mt={'$1'}
           width={'100%'}
           alignItems="center"
           justifyContent="center">

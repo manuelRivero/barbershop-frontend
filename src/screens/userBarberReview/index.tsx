@@ -87,7 +87,7 @@ export default function UserBarberReview({route}: any) {
                     <Image
                       borderRadius={9999}
                       style={{width: 45, height: 45}}
-                      source={{uri: item.userData[0].image}}
+                      source={{uri: item.userData[0].avatar}}
                     />
                     <Box>
                       <VStack alignItems="flex-start">

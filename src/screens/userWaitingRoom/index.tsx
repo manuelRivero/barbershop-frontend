@@ -100,7 +100,7 @@ export default function UserWaitingRoom({ route }: any) {
           opacity={0.5}
         />
         <HStack
-          mt={'$4'}
+          mt={'$1'}
           width={'100%'}
           justifyContent="center">
           <Clock

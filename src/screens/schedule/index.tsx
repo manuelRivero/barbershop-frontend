@@ -467,8 +467,8 @@ export default function Schedule() {
         />
         <HStack paddingHorizontal={'$3'}>
           <VStack
+          pt={"$1"}
             alignItems="center"
-            p={'$4'}
             width={'100%'}
             justifyContent="flex-end">
             <Clock

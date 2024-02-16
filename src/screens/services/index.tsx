@@ -81,7 +81,7 @@ export default function Services() {
         />
         <VStack
         alignItems='center'
-          mt={'$4'}
+          mt={'$1'}
           width={'100%'}
           justifyContent="center">
           <Clock
