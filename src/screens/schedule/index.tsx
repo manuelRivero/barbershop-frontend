@@ -33,6 +33,7 @@ import { Dimensions } from 'react-native';
 import { DollarSignIcon } from 'lucide-react-native';
 import { Icon } from '@gluestack-ui/themed';
 import socket from '../../socket';
+import { setUser } from '../../store/features/authSlice';
 
 const { width } = Dimensions.get('window');
 export default function Schedule() {
@@ -366,7 +367,7 @@ export default function Schedule() {
     setShowServiceModal(false);
   };
 
-console.log("restart time", restartTime)
+  console.log("restart time", restartTime)
   React.useEffect(() => {
     if (turnsData) {
       dispatch(initTurns(turnsData));
@@ -376,7 +377,7 @@ console.log("restart time", restartTime)
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       console.log('focus');
-       refetchTurns();
+      refetchTurns();
     });
 
     return unsubscribe;
@@ -414,7 +415,38 @@ console.log("restart time", restartTime)
       socket?.off('add-turn');
     };
   }, []);
-console.log("socket", socket)
+
+  useEffect(() => {
+    socket.on('status-change', ({ data }) => {
+      dispatch(setUser({isActive: data.status}))
+      console.log('notification');
+      dispatch(addTurn(data));
+      PushNotification.localNotification({
+        /* Android Only Properties */
+        channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
+        bigText: `¡Tu estado ha sido cambiado!`, // (optional) default: "message" prop
+        vibrate: true, // (optional) default: true
+        vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
+        groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
+        ongoing: false, // (optional) set whether this is an "ongoing" notification
+        priority: 'high', // (optional) set notification priority, default: high
+        visibility: 'private', // (optional) set notification visibility, default: private
+        ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
+        title: '¡Nueva notificación!', // (optional)
+        smallIcon: "ic_notification",
+        largeIcon: "ic_launcher",
+
+        /* iOS only properties */
+
+        message: 'Tu estado actual es:' + data.status ? "Activo" : "Inactivo", // (required)
+      });
+    });
+
+    return () => {
+      socket?.off('status-change');
+    };
+  }, []);
+  console.log("socket", socket)
   return (
     <LinearGradient
       style={{ flex: 1 }}
@@ -505,10 +537,17 @@ console.log("socket", socket)
               })}
             {turns.filter(turn => turn.status !== 'CANCELED').length === 0 && (
               <>
-                <Text textAlign="center" mt={'$10'} color="$textDark500">
-                  {isSunday ? " Hoy es domingo y la barberìa se encuentra cerrada" : "Aún no has agendado ningún turno para hoy"}
-                </Text>
-                {!isSunday &&
+                {isSunday && <Text textAlign="center" mt={'$10'} color="$textDark500">
+                  Hoy es domingo y la barberìa se encuentra cerrada
+                </Text>}
+                {!isSunday && user?.isActive && <Text textAlign="center" mt={'$10'} color="$textDark500">
+                  Aún no has agendado ningún turno para hoy
+                </Text>}
+                {!isSunday && !user?.isActive && <Text textAlign="center" mt={'$10'} color="$textDark500">
+                 Actualmente te encuentras deshabilitado para agendar turnos.
+                </Text>}
+
+                {!isSunday && user?.isActive &&
                   <>
                     <Text textAlign="center" mt={'$4'} color="$textDark500">
                       Agenda abierta para{' '}
@@ -531,7 +570,7 @@ console.log("socket", socket)
             )}
           </Box>
         </ScrollView>
-        {!isSunday && <HStack
+        {!isSunday || user?.isActive && <HStack
           position="absolute"
           bottom={10}
           width={'100%'}

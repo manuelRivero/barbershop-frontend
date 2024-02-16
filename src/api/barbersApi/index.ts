@@ -20,8 +20,6 @@ interface GetBarberDetailRequest {
 
 interface DisableRequest {
     barber: string,
-    from: string,
-    to: string,
 }
 
 export const barbersApi = createApi({
