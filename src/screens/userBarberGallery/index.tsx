@@ -14,6 +14,7 @@ import Carousel from 'react-native-snap-carousel';
 import { Dimensions, Text } from 'react-native';
 import { useGetImagesFromBarberQuery, useGetImagesQuery } from '../../api/galleryApi';
 import LinearGradient from 'react-native-linear-gradient';
+import Loader from '../../components/shared/loader';
 
 const width = Dimensions.get('window').width;
 export default function UserBarberGallery({route}: any) {
@@ -21,15 +22,19 @@ export default function UserBarberGallery({route}: any) {
   const {id} = route.params;
   const { data, isLoading, refetch } = useGetImagesFromBarberQuery({id: id})
 
-  console.log("images data", data)
-
+  
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       refetch();
     });
-
+    
     return unsubscribe;
   }, [navigation]);
+  
+  if (!isLoading) console.log("images data", data, id)
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <LinearGradient

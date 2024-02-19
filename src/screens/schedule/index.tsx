@@ -417,10 +417,9 @@ export default function Schedule() {
   }, []);
 
   useEffect(() => {
-    socket.on('status-change', ({ data }) => {
-      dispatch(setUser({isActive: data.status}))
+    socket.on('status-change', ({ status }) => {
+      dispatch(setUser({isActive: status}))
       console.log('notification');
-      dispatch(addTurn(data));
       PushNotification.localNotification({
         /* Android Only Properties */
         channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
@@ -438,7 +437,7 @@ export default function Schedule() {
 
         /* iOS only properties */
 
-        message: 'Tu estado actual es:' + data.status ? "Activo" : "Inactivo", // (required)
+        message: `Tu estado actual es: ${status ? "Activo" : "Inactivo"}` , // (required)
       });
     });
 

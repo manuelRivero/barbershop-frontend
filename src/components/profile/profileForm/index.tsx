@@ -252,7 +252,7 @@ console.log("is error", isError)
             <LinkButton
               color="$primary500"
               title="Cancelar"
-              onPress={() => { }}
+              onPress={() => onClose()}
               isLoading={false}
               disabled={isLoading}
             />

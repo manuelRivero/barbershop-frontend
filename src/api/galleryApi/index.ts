@@ -37,8 +37,7 @@ export const galleryApi = createApi({
     getImagesFromBarber: builder.query<GetImagesResponse, any>({
       query(args) {
         return {
-          url: `/gallery/images-from-barber`,
-          params:{barber:args.id}
+          url: `/gallery/images-from-barber/${args.id}`,
         };
       },
     }),

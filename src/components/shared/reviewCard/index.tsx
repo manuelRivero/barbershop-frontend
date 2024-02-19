@@ -20,7 +20,8 @@ export default function ReviewCard({item}:Props) {
       <Image
         borderRadius={9999}
         style={{width: 45, height: 45}}
-        source={{uri: item.userData[0].avatar}}
+        source={item.userData[0].avatar ? { uri: item.userData[0].avatar } : require("./../../../assets/images/avatar-placeholder.jpeg")}
+
       />
       <Box>
         <VStack alignItems="flex-start">

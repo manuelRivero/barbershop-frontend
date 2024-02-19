@@ -54,13 +54,13 @@ export default function Gallery() {
   const [imageBlob, setImageBlob] = useState<Asset | null>(null);
   const [image, setImage] = useState<null | {uri: string | undefined}>(null);
 
-  console.log('data', data);
-
+  
   const handleGallery = async () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
     });
-    console.log('result', result);
+    console.log('resultado', result);
+    
     if (result.assets) {
       console.log('result.assets[0].uri', result.assets[0].uri);
       setImage({uri: result.assets[0].uri});

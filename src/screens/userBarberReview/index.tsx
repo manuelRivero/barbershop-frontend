@@ -1,18 +1,18 @@
-import {FlatList, Image, Text, VStack} from '@gluestack-ui/themed';
-import {Box, HStack, Heading, Icon, Pressable} from '@gluestack-ui/themed';
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {ChevronLeftIcon} from 'lucide-react-native';
-import React, {useEffect, useState} from 'react';
-import {ListRenderItemInfo} from 'react-native';
-import {AirbnbRating} from 'react-native-ratings';
+import { FlatList, Image, Text, VStack } from '@gluestack-ui/themed';
+import { Box, HStack, Heading, Icon, Pressable } from '@gluestack-ui/themed';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ChevronLeftIcon } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { ListRenderItemInfo } from 'react-native';
+import { AirbnbRating } from 'react-native-ratings';
 import BaseButton from '../../components/shared/baseButton';
 import ReviewModal from '../../components/userBarberReview/reviewModal';
-import {useGetReviewsQuery} from '../../api/reviewsApi';
+import { useGetReviewsQuery } from '../../api/reviewsApi';
 import Loader from '../../components/shared/loader';
-import {User} from '../../types/user';
+import { User } from '../../types/user';
 import LinearGradient from 'react-native-linear-gradient';
-import {Dimensions} from 'react-native';
+import { Dimensions } from 'react-native';
 
 interface Review {
   comment: string;
@@ -21,16 +21,14 @@ interface Review {
   barber: User;
   createdAt: string;
 }
-const {width} = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-export default function UserBarberReview({route}: any) {
+export default function UserBarberReview({ route }: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const {id} = route.params;
+  const { id } = route.params;
   const [page, setPage] = useState<number>(1);
-  const {data, isLoading, refetch} = useGetReviewsQuery({barber: id, page});
+  const { data, isLoading, refetch } = useGetReviewsQuery({ barber: id, page });
   const [open, setOpen] = useState<boolean>(false);
-
-  console.log('data', data);
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
@@ -45,10 +43,10 @@ export default function UserBarberReview({route}: any) {
   }
   return (
     <LinearGradient
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       colors={['#fff', '#f1e2ca']}
-      start={{x: 0, y: 0.6}}
-      end={{x: 0, y: 1}}>
+      start={{ x: 0, y: 0.6 }}
+      end={{ x: 0, y: 1 }}>
       <Box flex={1} position="relative">
         <Box
           borderRadius={9999}
@@ -70,9 +68,9 @@ export default function UserBarberReview({route}: any) {
           </Heading>
           <Box p="$6"></Box>
         </HStack>
-        <Box mt="$10">
+        <Box mt="$10" position='relative'>
           <FlatList
-            contentContainerStyle={{padding: 16, paddingBottom: 24}}
+            contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
             data={data?.data}
             onEndReached={() => {
               if (data && data?.metadata.totalPages > page) {
@@ -80,14 +78,16 @@ export default function UserBarberReview({route}: any) {
               }
             }}
             renderItem={(props: ListRenderItemInfo<any>) => {
-              const {item} = props;
+              const { item } = props;
+
               return (
                 <Box softShadow={'2'} p="$4" borderRadius="$lg" bg="$white">
                   <HStack space="md" alignItems="flex-start">
                     <Image
                       borderRadius={9999}
-                      style={{width: 45, height: 45}}
-                      source={{uri: item.userData[0].avatar}}
+                      style={{ width: 45, height: 45 }}
+                      source={item.userData[0].avatar ? { uri: item.userData[0].avatar } : require("./../../assets/images/avatar-placeholder.jpeg")}
+                      alt='User review image'
                     />
                     <Box>
                       <VStack alignItems="flex-start">
@@ -98,6 +98,7 @@ export default function UserBarberReview({route}: any) {
                           size={24}
                           isDisabled={true}
                         />
+                        <Text color="$textDark500">{item.userData[0].name}</Text>
                         <Text color="$textDark500">{item.comment}</Text>
                       </VStack>
                     </Box>
@@ -116,7 +117,7 @@ export default function UserBarberReview({route}: any) {
               );
             }}
           />
-          <HStack justifyContent="center">
+          <HStack justifyContent="center" position='absolute' bottom={0} w={"$full"}>
             <BaseButton
               background="$primary500"
               isLoading={false}
