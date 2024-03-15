@@ -1,4 +1,4 @@
-import {Text, Textarea, TextareaInput, VStack} from '@gluestack-ui/themed';
+import { Text, Textarea, TextareaInput, VStack } from '@gluestack-ui/themed';
 import React from 'react';
 import { NativeSyntheticEvent, TextInputChangeEventData } from 'react-native';
 interface Props {
@@ -23,13 +23,14 @@ export default function BaseTextArea({
 }: Props) {
   return (
     <VStack space="xs">
-      <Text color="$textDark500">{label}</Text>
+      <Text color="$textDark500" fontSize={12}>{label}</Text>
       <Textarea
+        
         size="md"
         isDisabled={disabled}
         isInvalid={invalid}
         isReadOnly={readOnly}>
-        <TextareaInput value={value} onChange={onChange} placeholder={placeholder} />
+        <TextareaInput value={value} fontSize={12} onChange={onChange} placeholder={placeholder} />
       </Textarea>
       {invalid && <Text fontSize={14} color={"$red700"}>{errorMessage}</Text>}
 

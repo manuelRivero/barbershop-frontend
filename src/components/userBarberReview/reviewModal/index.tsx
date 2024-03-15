@@ -22,6 +22,7 @@ import BaseTextArea from '../../shared/baseTextArea';
 import { useCreateReviewMutation } from '../../../api/reviewsApi';
 import { useAppDispatch } from '../../../store';
 import { hideInfoModal, showInfoModal } from '../../../store/features/layoutSlice';
+import CustomText from '../../shared/text';
 
 
 interface Props {
@@ -98,7 +99,7 @@ export default function ReviewModal({onClose, show, barberId}: Props) {
         </ModalHeader>
         <ModalBody>
           <VStack mb="$4" justifyContent='flex-start'>
-            <Text color="$textDark500">Calificación</Text>
+            <CustomText color="$textDark500">Calificación</CustomText>
             <HStack>
             <Controller
               name="score"
