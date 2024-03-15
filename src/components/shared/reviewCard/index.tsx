@@ -1,10 +1,10 @@
 import { VStack } from "@gluestack-ui/themed";
-import { Text } from "@gluestack-ui/themed";
 import { HStack } from "@gluestack-ui/themed";
 import { Box } from "@gluestack-ui/themed";
 import { AirbnbRating } from "react-native-ratings";
 import { Image } from "@gluestack-ui/themed";
 import { User } from "../../../types/user";
+import CustomText from "../text";
 interface Props{
     item:{
         userData:[ User]
@@ -32,7 +32,7 @@ export default function ReviewCard({item}:Props) {
             size={24}
             isDisabled={true}
           />
-          <Text color="$textDark500">{item.comment}</Text>
+          <CustomText color="$textDark500">{item.comment}</CustomText>
         </VStack>
       </Box>
     </HStack>

@@ -99,6 +99,7 @@ export default function Services() {
             contentContainerStyle={{padding:16, paddingBottom: 80}}
             mt="$10"
             data={services}
+            ListEmptyComponent={<Text>No has agregado ningún servico</Text>}
             renderItem={(props: ListRenderItemInfo<any>) => {
               const {item} = props;
               return <ServiceCard data={item} />;

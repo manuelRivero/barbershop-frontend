@@ -1,5 +1,5 @@
-import { FlatList, Image, Text, VStack } from '@gluestack-ui/themed';
-import { Box, HStack, Heading, Icon, Pressable } from '@gluestack-ui/themed';
+import { FlatList, Image, VStack } from '@gluestack-ui/themed';
+import { Box, HStack, Icon, Pressable } from '@gluestack-ui/themed';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ChevronLeftIcon } from 'lucide-react-native';
@@ -13,6 +13,8 @@ import Loader from '../../components/shared/loader';
 import { User } from '../../types/user';
 import LinearGradient from 'react-native-linear-gradient';
 import { Dimensions } from 'react-native';
+import CustomHeading from '../../components/shared/heading';
+import CustomText from '../../components/shared/text';
 
 interface Review {
   comment: string;
@@ -21,7 +23,7 @@ interface Review {
   barber: User;
   createdAt: string;
 }
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function UserBarberReview({ route }: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -63,14 +65,14 @@ export default function UserBarberReview({ route }: any) {
           <Pressable onPress={() => navigation.goBack()} p={'$4'}>
             <Icon as={ChevronLeftIcon} size={24} color="$textDark500" />
           </Pressable>
-          <Heading textAlign="center" color="$textDark500">
+          <CustomHeading textAlign="center" color="$textDark500">
             Calificaciones
-          </Heading>
+          </CustomHeading>
           <Box p="$6"></Box>
         </HStack>
-        <Box mt="$10" position='relative'>
-          <FlatList
-            contentContainerStyle={{ padding: 16, paddingBottom: 24 }}
+        <Box mt="$10" position='relative' flex={1}>
+          <FlatList 
+            contentContainerStyle={{ padding: 16 }}
             data={data?.data}
             onEndReached={() => {
               if (data && data?.metadata.totalPages > page) {
@@ -98,8 +100,8 @@ export default function UserBarberReview({ route }: any) {
                           size={24}
                           isDisabled={true}
                         />
-                        <Text color="$textDark500">{item.userData[0].name}</Text>
-                        <Text color="$textDark500">{item.comment}</Text>
+                        <CustomText color="$textDark500">{item.userData[0].name}</CustomText>
+                        <CustomText color="$textDark500">{item.comment}</CustomText>
                       </VStack>
                     </Box>
                   </HStack>
@@ -117,7 +119,7 @@ export default function UserBarberReview({ route }: any) {
               );
             }}
           />
-          <HStack justifyContent="center" position='absolute' bottom={0} w={"$full"}>
+          <HStack justifyContent="center" mt={'$4'}>
             <BaseButton
               background="$primary500"
               isLoading={false}

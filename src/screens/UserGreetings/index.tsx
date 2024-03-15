@@ -15,6 +15,8 @@ import BaseButton from '../../components/shared/baseButton';
 import LinearGradient from 'react-native-linear-gradient';
 import { resetUserTurn } from '../../store/features/turnsSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomHeading from '../../components/shared/heading';
+import CustomText from '../../components/shared/text';
 
 const { width } = Dimensions.get('window');
 
@@ -122,19 +124,19 @@ export default function UserGreetings({ route }: any) {
             style={{ fontSize: 16, color: '#1f3d56' }}
           />
         </HStack>
-        <Heading textAlign="center" color="$textDark500">
+        <CustomHeading textAlign="center" color="$textDark500">
           Gracias por visitarnos
-        </Heading>
+        </CustomHeading>
 
         <Center mt={'$10'}>
           <Box p="$4" w={'$full'} maxWidth={400}>
             <Box hardShadow={'1'} p="$4" bg="$white" borderRadius="$lg">
-              <Heading textAlign="center" color="$textDark500">
+              <CustomHeading textAlign="center" color="$textDark500">
                 ¡Gracias por preferir nuestro servicio!
-              </Heading>
-              <Text color="$textDark500" mt={10} textAlign='center'>
+              </CustomHeading>
+              <CustomText color="$textDark500" mt={10} textAlign='center'>
                 ¿Deseas calificar a {data.turn[0].barberData[0].name} {data.turn[0].barberData[0].lastname}?
-              </Text>
+              </CustomText>
               <HStack justifyContent="center" mt="$4">
                 <BaseButton
                   background="$primary500"
@@ -149,11 +151,9 @@ export default function UserGreetings({ route }: any) {
             </Box>
           </Box>
         </Center>
-        <Center mt={10} px={100}>
-          <Text color="$textDark500" textAlign='center'>
+          <CustomText color="$textDark500" textAlign='center'>
             Podrás agendar nuevos servicios a partir de mañana
-          </Text>
-        </Center>
+          </CustomText>
       </Box>
     </LinearGradient>
   );
