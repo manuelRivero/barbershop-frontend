@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import moment from 'moment-timezone';
 import {
   ScrollView,
@@ -10,39 +10,45 @@ import {
   Text,
   VStack,
 } from '@gluestack-ui/themed';
-import { Event, TurnSelectItem } from '../../types/turns';
+import {Event, TurnSelectItem} from '../../types/turns';
 import Clock from 'react-live-clock';
 import SelectServiceModal from '../../components/selectServiceModal';
-import { Service } from '../../types/services';
+import {Service} from '../../types/services';
 import SelectTurnModal from '../../components/shared/selectTurnModal';
 import TurnCard from '../../components/turnCard';
 import BaseButton from '../../components/shared/baseButton';
-import { RootState, useAppDispatch, useAppSelector } from '../../store';
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {
   addTurn,
   initTurns,
   resetAllturns,
 } from '../../store/features/turnsSlice';
-import { OverridedEvent, useAddTurnMutation, useGetTurnsQuery } from '../../api/turnsApi';
-import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
+import {
+  OverridedEvent,
+  useAddTurnMutation,
+  useGetTurnsQuery,
+} from '../../api/turnsApi';
+import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import PushNotification from 'react-native-push-notification';
-import { Dimensions } from 'react-native';
-import { DollarSignIcon } from 'lucide-react-native';
-import { Icon } from '@gluestack-ui/themed';
+import {Dimensions} from 'react-native';
+import {DollarSignIcon} from 'lucide-react-native';
+import {Icon} from '@gluestack-ui/themed';
 import socket from '../../socket';
-import { setUser } from '../../store/features/authSlice';
+import {setUser} from '../../store/features/authSlice';
+import LottieView from 'lottie-react-native';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 export default function Schedule() {
   const [businessHoursStart, setBusinessHoursStart] = useState<moment.Moment>(
-    moment().set({ hour: 9, minute: 0, second: 0 }).utc().utcOffset(3, true),
+    moment().set({hour: 9, minute: 0, second: 0}).utc().utcOffset(3, true),
   );
   const [businessHoursEnd, setBusinessHoursEnd] = useState<moment.Moment>(
-    moment().set({ hour: 20, minute: 0, second: 0 }).utc().utcOffset(3, true),
+    moment().set({hour: 20, minute: 0, second: 0}).utc().utcOffset(3, true),
   );
+  const [businessIsClosed, setBusinessIsClosed] = useState<boolean>(false);
 
   console.log('businessHoursStart', businessHoursStart);
   console.log('businessHoursEnd', businessHoursEnd);
@@ -50,10 +56,10 @@ export default function Schedule() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const dispatch = useAppDispatch();
-  const { turns } = useAppSelector((state: RootState) => state.turns);
-  const { user } = useAppSelector((state: RootState) => state.auth);
+  const {turns} = useAppSelector((state: RootState) => state.turns);
+  const {user} = useAppSelector((state: RootState) => state.auth);
   const [restartTime, setRestartTime] = useState<moment.Moment>(
-    moment().set({ hour: 23, minutes: 59, second: 59 }).utc().utcOffset(3, true),
+    moment().set({hour: 23, minutes: 59, second: 59}).utc().utcOffset(3, true),
   );
 
   const {
@@ -61,16 +67,17 @@ export default function Schedule() {
     refetch: refetchTurns,
     isLoading: isLoadingTurns,
     fulfilledTimeStamp,
-  } = useGetTurnsQuery({ id: user?._id ?? '' }, { skip: moment().utc().utcOffset(3, true).isBefore(businessHoursStart) ? true : false });
-
-  const [addTurnRequest, { isLoading }] = useAddTurnMutation();
+    isUninitialized
+  } = useGetTurnsQuery(
+    {id: user?._id ?? ''}
+  );
+  const [addTurnRequest, {isLoading}] = useAddTurnMutation();
 
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [isSunday, setIsSunday] = useState<boolean>(false)
-
+  const [isSunday, setIsSunday] = useState<boolean>(false);
 
   const handleAddTurn = async (turn: TurnSelectItem) => {
     if (selectedService && user) {
@@ -99,7 +106,7 @@ export default function Schedule() {
             .format('hh:mm')}?`,
           type: 'info',
           hasCancel: true,
-          cancelCb: () => { },
+          cancelCb: () => {},
           hasSubmit: true,
           submitCb: () => {
             handleRequest()
@@ -324,38 +331,49 @@ export default function Schedule() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-
-      const sunday = moment().get('day') === 0
+      const sunday = moment().get('day') === 0;
 
       if (sunday && !isSunday) {
-        setIsSunday(true)
+        setIsSunday(true);
       } else if (!sunday && !isSunday) {
-        setIsSunday(false)
+        setIsSunday(false);
       }
 
       if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
         const day = moment().get('date');
         setRestartTime(
           moment()
-            .set({ date: day + 1, hour: 23, minute: 59, second: 59 })
+            .set({date: day + 1, hour: 23, minute: 59, second: 59})
             .utc()
             .utcOffset(3, true),
         );
         setBusinessHoursStart(
           moment()
-            .set({ date: day + 1, hour: 9, minute: 0 })
+            .set({date: day + 1, hour: 9, minute: 0})
             .utc()
             .utcOffset(3, true),
         );
         setBusinessHoursEnd(
           moment()
-            .set({ date: day + 1, hour: 11, minute: 0 })
+            .set({date: day + 1, hour: 20, minute: 0})
             .utc()
             .utcOffset(3, true),
         );
         if (turns.length > 0) {
           dispatch(resetAllturns());
         }
+      }
+
+      if (
+        moment().utc().utcOffset(3, true).isAfter(businessHoursEnd) &&
+        !businessIsClosed
+      ) {
+        setBusinessIsClosed(true);
+      } else if (
+        moment().utc().utcOffset(3, true).isBefore(businessHoursEnd) &&
+        businessIsClosed
+      ) {
+        setBusinessIsClosed(false);
       }
     }, 1000);
 
@@ -367,24 +385,25 @@ export default function Schedule() {
     setShowServiceModal(false);
   };
 
-  console.log("restart time", restartTime)
   React.useEffect(() => {
     if (turnsData) {
-      dispatch(initTurns(turnsData));
+       dispatch(initTurns(turnsData));
     }
   }, [fulfilledTimeStamp]);
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
-      console.log('focus');
-      refetchTurns();
+      console.log('focus', isUninitialized);
+      if (!isUninitialized) {
+        refetchTurns();    
+     }
     });
 
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, isUninitialized]);
 
   useEffect(() => {
-    socket.on('add-turn', ({ data }) => {
+    socket.on('add-turn', ({data}) => {
       console.log('notification');
       dispatch(addTurn(data));
       PushNotification.localNotification({
@@ -402,8 +421,8 @@ export default function Schedule() {
         visibility: 'private', // (optional) set notification visibility, default: private
         ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
         title: '¡Nueva notificación!', // (optional)
-        smallIcon: "ic_notification",
-        largeIcon: "ic_launcher",
+        smallIcon: 'ic_notification',
+        largeIcon: 'ic_launcher',
 
         /* iOS only properties */
 
@@ -417,8 +436,8 @@ export default function Schedule() {
   }, []);
 
   useEffect(() => {
-    socket.on('status-change', ({ status }) => {
-      dispatch(setUser({isActive: status}))
+    socket.on('status-change', ({status}) => {
+      dispatch(setUser({isActive: status}));
       console.log('notification');
       PushNotification.localNotification({
         /* Android Only Properties */
@@ -432,12 +451,12 @@ export default function Schedule() {
         visibility: 'private', // (optional) set notification visibility, default: private
         ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
         title: '¡Nueva notificación!', // (optional)
-        smallIcon: "ic_notification",
-        largeIcon: "ic_launcher",
+        smallIcon: 'ic_notification',
+        largeIcon: 'ic_launcher',
 
         /* iOS only properties */
 
-        message: `Tu estado actual es: ${status ? "Activo" : "Inactivo"}` , // (required)
+        message: `Tu estado actual es: ${status ? 'Activo' : 'Inactivo'}`, // (required)
       });
     });
 
@@ -445,13 +464,13 @@ export default function Schedule() {
       socket?.off('status-change');
     };
   }, []);
-  console.log("socket", socket)
+
   return (
     <LinearGradient
-      style={{ flex: 1 }}
+      style={{flex: 1}}
       colors={['#fff', '#f1e2ca']}
-      start={{ x: 0, y: 0.6 }}
-      end={{ x: 0, y: 1 }}>
+      start={{x: 0, y: 0.6}}
+      end={{x: 0, y: 1}}>
       <Box flex={1} position="relative">
         <Box
           borderRadius={9999}
@@ -466,7 +485,7 @@ export default function Schedule() {
         />
         <HStack paddingHorizontal={'$3'}>
           <VStack
-          pt={"$1"}
+            pt={'$1'}
             alignItems="center"
             width={'100%'}
             justifyContent="flex-end">
@@ -474,24 +493,18 @@ export default function Schedule() {
               format={'hh:mm:ss'}
               ticking={true}
               element={Text}
-              style={{ fontSize: 16, color: '#1f3d56' }}
+              style={{fontSize: 16, color: '#1f3d56'}}
             />
             <Heading textAlign="center" color="$textDark500">
               Turnos agendados
             </Heading>
+
             <Text
               textAlign="center"
-              fontSize={14}
               color="$textDark500"
-              fontWeight="bold">
-              Fecha actual:{' '}
-              <Text
-                textAlign="center"
-                color="$textDark500"
-                fontWeight="bold"
-                fontSize={14}>
-                {moment().format('DD-MM-yyyy')}
-              </Text>
+              fontWeight="bold"
+              fontSize={14}>
+              {moment().format('DD-MM-yyyy')}
             </Text>
           </VStack>
         </HStack>
@@ -504,12 +517,16 @@ export default function Schedule() {
               borderWidth={2}
               borderRadius={16}
               borderColor="$textDark500"
-              alignItems='center'
-              mr={"$2"}
+              alignItems="center"
+              mr={'$2'}
               w="auto">
               <Icon as={DollarSignIcon} color={'$textDark500'} />
               <Text color={'$textDark500'}>
-                {turns.filter((turn: Event) => turn.status === "COMPLETE").reduce((acc: number, obj: Event) => acc + obj.price, 0) * (user?.commission ? user?.commission : 0) / 100}
+                {(turns
+                  .filter((turn: Event) => turn.status === 'COMPLETE')
+                  .reduce((acc: number, obj: Event) => acc + obj.price, 0) *
+                  (user?.commission ? user?.commission : 0)) /
+                  100}
               </Text>
             </HStack>
           </HStack>
@@ -521,7 +538,7 @@ export default function Schedule() {
                 mt={'$10'}
                 mb={'$4'}>
                 Los turnos agendados para el día de hoy serán visibles en tu
-                agenda hasta las {restartTime.format("hh:mm A")}.
+                agenda hasta las {restartTime.format('hh:mm A')}.
               </Text>
             )}
             {[...turns.filter(turn => turn.status !== 'CANCELED')]
@@ -529,29 +546,35 @@ export default function Schedule() {
                 return moment(left.startDate).diff(moment(right.startDate));
               })
               .map(e => {
-                console.log("user data", user)
+                console.log('user data', user);
                 return (
                   <TurnCard key={moment(e.startDate).toString()} event={e} />
                 );
               })}
             {turns.filter(turn => turn.status !== 'CANCELED').length === 0 && (
               <>
-                {isSunday && <Text textAlign="center" mt={'$10'} color="$textDark500">
-                  Hoy es domingo y la barberìa se encuentra cerrada
-                </Text>}
-                {!isSunday && user?.isActive && <Text textAlign="center" mt={'$10'} color="$textDark500">
-                  Aún no has agendado ningún turno para hoy
-                </Text>}
-                {!isSunday && !user?.isActive && <Text textAlign="center" mt={'$10'} color="$textDark500">
-                 Actualmente te encuentras deshabilitado para agendar turnos.
-                </Text>}
+                {isSunday && (
+                  <Text textAlign="center" mt={'$10'} color="$textDark500">
+                    Hoy es domingo y la barberìa se encuentra cerrada
+                  </Text>
+                )}
+                {!isSunday && user?.isActive && !businessIsClosed && (
+                  <Text textAlign="center" mt={'$10'} color="$textDark500">
+                    Aún no has agendado ningún turno para hoy
+                  </Text>
+                )}
+                {!isSunday && !user?.isActive && (
+                  <Text textAlign="center" mt={'$10'} color="$textDark500">
+                    Actualmente te encuentras deshabilitado para agendar turnos.
+                  </Text>
+                )}
 
-                {!isSunday && user?.isActive &&
+                {!isSunday && user?.isActive && !businessIsClosed && (
                   <>
                     <Text textAlign="center" mt={'$4'} color="$textDark500">
                       Agenda abierta para{' '}
                       <Text color="$textDark500" fontWeight="bold">
-                        {businessHoursStart.format('DD-MM-yyyy')}
+                        {moment().format('DD-MM-yyyy')}
                       </Text>
                     </Text>
                     <HStack justifyContent="center">
@@ -564,27 +587,46 @@ export default function Schedule() {
                         alt="agenda-vacia"
                       />
                     </HStack>
-                  </>}
+                  </>
+                )}
+                {!isSunday && user?.isActive && businessIsClosed && (
+                  <>
+                    <Text textAlign="center" mt={'$4'} color="$textDark500">
+                      La barbería ha cerrado por hoy
+                    </Text>
+                    <HStack justifyContent="center" mt="$4">
+                      <LottieView
+                        style={{width: 150, height: 150}}
+                        source={require('./../../assets/lottie/waiting.json')}
+                        autoPlay
+                        loop={true}
+                      />
+                    </HStack>
+                  </>
+                )}
               </>
             )}
           </Box>
         </ScrollView>
-        {!isSunday || user?.isActive && <HStack
-          position="absolute"
-          bottom={10}
-          width={'100%'}
-          justifyContent="center">
-          <BaseButton
-            title="Agendar"
-            background={'$primary500'}
-            color={'$white'}
-            onPress={() => setShowServiceModal(true)}
-            isLoading={false}
-            disabled={false}
-            hasIcon={true}
-            icon={AddIcon}
-          />
-        </HStack>}
+        {!isSunday ||
+          (user?.isActive && (
+            <HStack
+              position="absolute"
+              bottom={10}
+              width={'100%'}
+              justifyContent="center">
+              <BaseButton
+                title="Agendar"
+                background={'$primary500'}
+                color={'$white'}
+                onPress={() => setShowServiceModal(true)}
+                isLoading={false}
+                disabled={false}
+                hasIcon={true}
+                icon={AddIcon}
+              />
+            </HStack>
+          ))}
       </Box>
       <SelectServiceModal
         show={showServiceModal}

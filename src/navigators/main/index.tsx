@@ -7,11 +7,24 @@ import Loading from '../../screens/loading';
 import UserNavigator from '../userNavigator';
 import UserLoading from '../../screens/userloading';
 import WelcomeOnboarding from '../../screens/Onboarding';
+import socket from '../../socket';
 
 const Stack = createNativeStackNavigator();
 
 export default function MainNavigator(): JSX.Element {
-  const {user} = useAppSelector((state: RootState) => state.auth);
+  const {user, token} = useAppSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if(user && user.role !== "admin" && !socket.connected){
+      socket.connect()
+      socket.emit('log-in', {
+        user: {
+          _id: user._id,
+        },
+      });
+
+    } 
+  }, [user, socket]);
 
   return (
     <Stack.Navigator

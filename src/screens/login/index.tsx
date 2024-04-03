@@ -4,16 +4,13 @@ import { Heading, Box, HStack, VStack } from '@gluestack-ui/themed';
 import BaseInput from '../../components/shared/baseInput';
 import BaseButton from '../../components/shared/baseButton';
 import { useForm, Controller } from 'react-hook-form';
-import { RootState, useAppDispatch, useAppSelector } from '../../store';
+import { useAppDispatch } from '../../store';
 import { setToken, setUser } from '../../store/features/authSlice';
 import { authApi, useLoginMutation } from '../../api/authApi';
 import { LoginManager, Settings, AccessToken } from 'react-native-fbsdk-next';
 import { Divider } from '@gluestack-ui/themed';
 import { useFacebookLoginMutation } from '../../api/facebookApi';
 import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
-import socket from '../../socket';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
 
 Settings.setAppID('315996248039279');
 
@@ -23,13 +20,11 @@ interface Form {
 }
 
 export default function Login() {
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const dispatch = useAppDispatch();
-  const { user, token } = useAppSelector((state: RootState) => state.auth);
 
   const [login, { isLoading, isError, data }] = useLoginMutation();
-  console.log('is error', isError);
+
   const [facebookLogin, { isLoading: isLoadingFacebook }] =
     useFacebookLoginMutation();
 
@@ -40,14 +35,10 @@ export default function Login() {
     watch,
   } = useForm<Form>();
   const submit = async (values: Form): Promise<void> => {
-    console.log("Login values", values);
-
     try {
       const response = await login(values).unwrap();
-      await dispatch(setToken({ token: response.token, refreshToken: response.refreshToken }));
+      // await dispatch(setToken({ token: response.token, refreshToken: response.refreshToken }));
     } catch (error) {
-      console.log("error", error)
-
       dispatch(
         showInfoModal({
           title: '¡Ups! No se ha podido iniciar sesión',
@@ -110,38 +101,16 @@ export default function Login() {
       const { data, isError } = await dispatch(
         authApi.endpoints.getMe.initiate({}, { forceRefetch: true }),
       );
-      if (data?.data.role !== "admin") {
-
-        console.log("login socket", socket)
-        socket.emit('log-in', {
-          user: {
-            _id: data?.data?._id,
-          },
-        });
-
-      }
+      
       if (isError) {
         throw new Error();
       }
-      dispatch(
-        setUser({
-          ...data?.data,
-        }),
-      );
     }
     if (data) {
       getMe()
     }
   }, [data])
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', async () => {
-      socket.connect()
-    });
-
-    return unsubscribe;
-  }, [navigation]);
-  console.log("user", user)
-  console.log("token", token)
+  
   return (
     <Box flex={1} bg="$primary100" p={'$4'}>
       <VStack flex={1} justifyContent="center" alignItems="center">

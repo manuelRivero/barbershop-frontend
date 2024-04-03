@@ -1,21 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
 import fetchBase from '../fetchBase'
-
-export interface User {
-
-  _id: string
-  name: string
-  lastname: string
-  email: string
-  phone?: string
-  password: string
-  resetToken: string
-  resetTokenExpiresAt: string
-  avatar?: string
-  avatarId?: string
-  role: string
-  createdAt: string
-}
+import { User } from '../../types/user'
 
 interface UpdateProfilerResponse {
   targetUser: User
@@ -54,19 +39,22 @@ interface MeRequest{
 export const authApi = createApi({
   baseQuery: fetchBase,
   reducerPath: 'authApi',
+  tagTypes: ["Me"],
   endpoints: (builder) => ({
     login: builder.mutation<UserResponse, LoginRequest>({
       query: (credentials) => ({
         url: '/auth/login',
         method: 'POST',
-        body: credentials
+        body: credentials,
+        invalidateTags: ['Me']
       })
     }),
     getMe: builder.query<MeRequest, {}>({
       query() {
-        return {
-          url: `/auth/me`
-        }
+        return ({
+          url: `/auth/me`,
+          providesTags: ['Me']
+        })
       }
     }),
     refreshToken: builder.mutation<any, {}>({

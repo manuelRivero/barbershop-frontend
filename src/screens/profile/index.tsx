@@ -49,13 +49,13 @@ export default function Profile() {
   const handleLogout = () => {
     dispacth(resetUserTurn())
     dispacth(resetAllturns())
-    dispacth(logout());
     AsyncStorage.removeItem("persist:root");
     if (user?.role === "barber" || user?.role === "admin-barber" || user?.role === "user") {
       socket.emit('remove-online-user', { user: { _id: user?._id } });
     }
     socket.close();
     socket.disconnect()
+    dispacth(logout());
 
   };
   console.log("galleryData", galleryData)
