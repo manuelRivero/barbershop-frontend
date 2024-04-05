@@ -49,7 +49,7 @@ export default function UserGreetings({ route }: any) {
         title: '¡Nueva notificación!', // (optional)
         // @ts-ignore
         data: {
-          barberId: data.turn[0].barberData[0]._id,
+          params:{ id: data.turn[0].barberData[0]._id},
           path: "UserBarberReview"
         },
 

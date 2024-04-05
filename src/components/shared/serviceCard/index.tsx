@@ -17,6 +17,7 @@ import {
 import {Image} from 'react-native';
 import { AdvancedImage } from 'cloudinary-react-native';
 import { Cloudinary } from '@cloudinary/url-gen';
+import CustomText from '../text';
 
 
 
@@ -91,10 +92,13 @@ export default function ServiceCard({data}: Props) {
           onError={({ nativeEvent: {error} }) => console.log(error)}
         />
         
-        <Box>
-          <Text fontWeight="bold" color="$textDark500">
+        <Box flex={1}>
+          <Box flexDirection='row'>
+          <CustomText fontWeight="bold" color="$textDark500">
             {data.name}
-          </Text>
+          </CustomText>
+
+          </Box>
           <VStack space="sm" mt={'$1'} flexWrap="wrap">
             <HStack
               space="xs"
@@ -103,9 +107,9 @@ export default function ServiceCard({data}: Props) {
               borderRadius={'$full'}
               alignItems="center">
               <Icon as={Clock2} color="$textDark500" />
-              <Text fontWeight="bold" color="$textDark500">
+              <CustomText fontWeight="bold">
                 {data.duration} minutos
-              </Text>
+              </CustomText>
             </HStack>
             <HStack
               space="xs"
@@ -114,15 +118,15 @@ export default function ServiceCard({data}: Props) {
               borderRadius={'$full'}
               alignItems="center">
               <Icon as={CircleDollarSign} color="$textDark500" />
-              <Text fontWeight="bold" color="$textDark500">
+              <CustomText fontWeight="bold">
                 {data.price} pesos
-              </Text>
+              </CustomText>
             </HStack>
           </VStack>
         </Box>
       </HStack>
 
-      <Text color="$textDark500">{data.description}</Text>
+      <CustomText color="$textDark500">{data.description}</CustomText>
       <HStack justifyContent="flex-end" w="$full" space="md" zIndex={100}>
         <Pressable onPress={handleDelete}>
           <Box borderRadius={'$full'} p="$2" bg={'$white'}>

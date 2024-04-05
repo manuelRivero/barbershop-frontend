@@ -27,6 +27,8 @@ import { useGetImagesQuery } from '../../api/galleryApi';
 import { resetAllturns, resetUserTurn } from '../../store/features/turnsSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import socket from '../../socket';
+import CustomHeading from '../../components/shared/heading';
+import CustomText from '../../components/shared/text';
 
 
 const { width } = Dimensions.get('window');
@@ -102,11 +104,11 @@ export default function Profile() {
             element={Text}
             style={{ fontSize: 16, color: '#1f3d56' }}
           />
-          <Heading color="$textDark500" textAlign="center">
+          <CustomHeading textAlign="center">
             Perfil
-          </Heading>
+          </CustomHeading>
         </VStack>
-        <Box p="$4" mt="$10">
+        <Box p="$4" mt="$16">
           <ProfileCard data={user} />
         </Box>
         <HStack
@@ -131,9 +133,9 @@ export default function Profile() {
         </HStack>
         {(user?.role === 'barber' || user?.role === 'admin-barber') && (
           <Box mt="$4" p="$4">
-            <Heading size="lg" color="$textDark500">
+            <CustomHeading size="lg" color="$textDark500">
               Ultimas calificaciones
-            </Heading>
+            </CustomHeading>
             <Carousel
               data={data ? data?.data : []}
               layout={'default'}
@@ -156,14 +158,14 @@ export default function Profile() {
               dotsLength={data ? data?.data.length : [].length}
               activeDotIndex={activeSlideReview}
             />
-            {data?.data.length === 0 && <Text color="$textDark500">Aún no tienes ninguna calificación</Text>}
+            {data?.data.length === 0 && <CustomText>Aún no tienes ninguna calificación</CustomText>}
           </Box>
         )}
         {(user?.role === 'barber' || user?.role === 'admin-barber') && (
           <Box mt="$4" p="$4">
-            <Heading size="lg" color="$textDark500" mb="$4">
+            <CustomHeading size="lg" color="$textDark500" mb="$4">
               Galería{' '}
-            </Heading>
+            </CustomHeading>
             <Carousel
               data={galleryData ? galleryData.data : []}
               layout={'default'}
@@ -194,7 +196,7 @@ export default function Profile() {
                 activeDotIndex={activeSlideGallery}
               />
 
-              {galleryData?.data.length === 0 && <Text color="$textDark500">Aún no tienes imagenes en tu galería</Text>}
+              {galleryData?.data.length === 0 && <CustomText>Aún no tienes imagenes en tu galería</CustomText>}
 
 
             </Box>

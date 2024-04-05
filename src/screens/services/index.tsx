@@ -25,6 +25,7 @@ import {useGetServicesQuery} from '../../api/servicesApi';
 import {useNavigation} from '@react-navigation/native';
 import Loader from '../../components/shared/loader';
 import LinearGradient from 'react-native-linear-gradient';
+import CustomHeading from '../../components/shared/heading';
 
 const {width} = Dimensions.get('window');
 
@@ -90,14 +91,14 @@ export default function Services() {
             element={Text}
             style={{fontSize: 16, color: '#1f3d56'}}
           />
-          <Heading textAlign="center" color="$textDark500">
+          <CustomHeading textAlign="center" color="$textDark500">
             Servicios disponibles
-          </Heading>
+          </CustomHeading>
         </VStack>
 
           <FlatList
             contentContainerStyle={{padding:16, paddingBottom: 80}}
-            mt="$10"
+            mt="$16"
             data={services}
             ListEmptyComponent={<Text>No has agregado ningún servico</Text>}
             renderItem={(props: ListRenderItemInfo<any>) => {

@@ -18,6 +18,7 @@ import { User } from '../../types/user';
 import { useCancelTurnMutation, useCompleteTurnMutation } from '../../api/turnsApi';
 import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
 import socket from '../../socket';
+import CustomText from '../shared/text';
 interface Props {
   event: Event;
 }
@@ -99,8 +100,6 @@ export default function TurnCard({ event }: Props) {
     }
 
   }, [status]);
-  console.log("event date ", moment(event.endDate))
-
 
   return (
     <Box
@@ -123,7 +122,7 @@ export default function TurnCard({ event }: Props) {
             as={Clock2}
             color={status === 'COMPLETE' ? '$white' : '$textDark500'}
           />
-          <Text
+          <CustomText
             fontWeight="bold"
             color={
               status === 'COMPLETE' ? '$white' : '$textDark500'
@@ -131,7 +130,7 @@ export default function TurnCard({ event }: Props) {
               event.endDate,
             )
               .utc()
-              .format('hh:mm A')}`}</Text>
+              .format('hh:mm A')}`}</CustomText>
         </HStack>
 
       </HStack>
@@ -140,28 +139,28 @@ export default function TurnCard({ event }: Props) {
           as={UserCircle}
           color={status === 'COMPLETE' ? '$white' : '$textDark500'}
         />
-        <Text color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
+        <CustomText color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
           Agendado por:{' '}
-          <Text
+          <CustomText
             fontWeight="bold"
             color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
             {event.user === null ? "Ti" : `${event.user.name} ${event.user.lastname}`}
-          </Text>
-        </Text>
+          </CustomText>
+        </CustomText>
       </HStack>
       <HStack mb="$1" space="xs" alignItems="center">
         <Icon
           as={Briefcase}
           color={status === 'COMPLETE' ? '$white' : '$textDark500'}
         />
-        <Text color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
+        <CustomText color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
           Servicio:{' '}
-          <Text
+          <CustomText
             fontWeight="bold"
             color={
               status === 'COMPLETE' ? '$white' : '$textDark500'
-            }>{`${event.name}`}</Text>
-        </Text>
+            }>{`${event.name}`}</CustomText>
+        </CustomText>
       </HStack>
       <HStack space="lg" alignItems="center">
         <HStack space="xs" alignItems="center">
@@ -169,23 +168,23 @@ export default function TurnCard({ event }: Props) {
             as={CircleDollarSign}
             color={status === 'COMPLETE' ? '$white' : '$textDark500'}
           />
-          <Text
+          <CustomText
             fontWeight="bold"
             color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
             {event.price}
-          </Text>
+          </CustomText>
         </HStack>
         <HStack space="xs" alignItems="center">
           <Icon
             as={PercentCircle}
             color={status === 'COMPLETE' ? '$white' : '$textDark500'}
           />
-          <Text
+          <CustomText
             fontWeight="bold"
             color={status === 'COMPLETE' ? '$white' : '$textDark500'}>
 
             {event.price * (user?.commission ? user.commission : 0) / 100}
-          </Text>
+          </CustomText>
         </HStack>
       </HStack>
     </Box>

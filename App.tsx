@@ -29,10 +29,10 @@ export default function App() {
           notification
         ) {
           console.log('notification', notification);
-          navigationRef.current?.navigate("BarberSelection")
-          if (notification.data.path === "UserBarberReview") {
+          if (notification.data.path) {
             if (notification.userInteraction === true) {
-              navigationRef.current?.navigate('UserBarberReview', { id: notification.data.barberId });
+              const params = notification.data.params || {}
+              navigationRef.current?.navigate(notification.data.path, { ...params });
             }
           }
         },

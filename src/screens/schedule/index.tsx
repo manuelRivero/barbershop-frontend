@@ -39,6 +39,8 @@ import {Icon} from '@gluestack-ui/themed';
 import socket from '../../socket';
 import {setUser} from '../../store/features/authSlice';
 import LottieView from 'lottie-react-native';
+import CustomText from '../../components/shared/text';
+import CustomHeading from '../../components/shared/heading';
 
 const {width} = Dimensions.get('window');
 export default function Schedule() {
@@ -423,6 +425,10 @@ export default function Schedule() {
         title: '¡Nueva notificación!', // (optional)
         smallIcon: 'ic_notification',
         largeIcon: 'ic_launcher',
+        // @ts-ignore
+        data:{
+          path: "Schedule"
+        },
 
         /* iOS only properties */
 
@@ -465,6 +471,8 @@ export default function Schedule() {
     };
   }, []);
 
+  console.log("socket", socket.id)
+
   return (
     <LinearGradient
       style={{flex: 1}}
@@ -495,51 +503,51 @@ export default function Schedule() {
               element={Text}
               style={{fontSize: 16, color: '#1f3d56'}}
             />
-            <Heading textAlign="center" color="$textDark500">
+            <CustomHeading textAlign="center" >
               Turnos agendados
-            </Heading>
+            </CustomHeading>
 
-            <Text
+            <CustomHeading
               textAlign="center"
-              color="$textDark500"
+              
               fontWeight="bold"
               fontSize={14}>
               {moment().format('DD-MM-yyyy')}
-            </Text>
+            </CustomHeading>
           </VStack>
         </HStack>
 
-        <ScrollView flex={1}>
+        <ScrollView flex={1} mt={'$10'}>
           <HStack justifyContent="flex-end">
             <HStack
               py={'$1'}
               px={'$4'}
               borderWidth={2}
               borderRadius={16}
-              borderColor="$textDark500"
+              borderColor='$textDark500'
               alignItems="center"
               mr={'$2'}
               w="auto">
               <Icon as={DollarSignIcon} color={'$textDark500'} />
-              <Text color={'$textDark500'}>
+              <CustomText>
                 {(turns
                   .filter((turn: Event) => turn.status === 'COMPLETE')
                   .reduce((acc: number, obj: Event) => acc + obj.price, 0) *
                   (user?.commission ? user?.commission : 0)) /
                   100}
-              </Text>
+              </CustomText>
             </HStack>
           </HStack>
           <Box padding={'$4'}>
             {turns.filter(turn => turn.status !== 'CANCELED').length > 0 && (
-              <Text
-                color="$textDark500"
+              <CustomText
+                
                 textAlign="center"
                 mt={'$10'}
                 mb={'$4'}>
                 Los turnos agendados para el día de hoy serán visibles en tu
-                agenda hasta las {restartTime.format('hh:mm A')}.
-              </Text>
+                agenda hasta las {restartTime.utc().utcOffset(3, true).format('hh:mm A')}.
+              </CustomText>
             )}
             {[...turns.filter(turn => turn.status !== 'CANCELED')]
               .sort(function (left, right) {
@@ -554,29 +562,29 @@ export default function Schedule() {
             {turns.filter(turn => turn.status !== 'CANCELED').length === 0 && (
               <>
                 {isSunday && (
-                  <Text textAlign="center" mt={'$10'} color="$textDark500">
+                  <CustomText textAlign="center" mt={'$10'} >
                     Hoy es domingo y la barberìa se encuentra cerrada
-                  </Text>
+                  </CustomText>
                 )}
                 {!isSunday && user?.isActive && !businessIsClosed && (
-                  <Text textAlign="center" mt={'$10'} color="$textDark500">
+                  <CustomText textAlign="center" mt={'$10'} >
                     Aún no has agendado ningún turno para hoy
-                  </Text>
+                  </CustomText>
                 )}
                 {!isSunday && !user?.isActive && (
-                  <Text textAlign="center" mt={'$10'} color="$textDark500">
+                  <CustomText textAlign="center" mt={'$10'} >
                     Actualmente te encuentras deshabilitado para agendar turnos.
-                  </Text>
+                  </CustomText>
                 )}
 
                 {!isSunday && user?.isActive && !businessIsClosed && (
                   <>
-                    <Text textAlign="center" mt={'$4'} color="$textDark500">
+                    <CustomText textAlign="center" mt={'$4'} >
                       Agenda abierta para{' '}
-                      <Text color="$textDark500" fontWeight="bold">
+                      <CustomText  fontWeight="bold">
                         {moment().format('DD-MM-yyyy')}
-                      </Text>
-                    </Text>
+                      </CustomText>
+                    </CustomText>
                     <HStack justifyContent="center">
                       <Image
                         mt={'$10'}
@@ -591,9 +599,9 @@ export default function Schedule() {
                 )}
                 {!isSunday && user?.isActive && businessIsClosed && (
                   <>
-                    <Text textAlign="center" mt={'$4'} color="$textDark500">
+                    <CustomText textAlign="center" mt={'$4'} >
                       La barbería ha cerrado por hoy
-                    </Text>
+                    </CustomText>
                     <HStack justifyContent="center" mt="$4">
                       <LottieView
                         style={{width: 150, height: 150}}

@@ -22,6 +22,8 @@ import { Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import WeekPicker from '../../components/shared/weekPicker';
 import "moment/locale/es"
+import CustomHeading from '../../components/shared/heading';
+import CustomText from '../../components/shared/text';
 moment.locale("es")
 
 const chartConfig = {
@@ -140,16 +142,16 @@ export default function Stats() {
             element={Text}
             style={{ fontSize: 16, color: '#1f3d56' }}
           />
-          <Heading textAlign="center" color="$textDark500">
+          <CustomHeading textAlign="center">
             Estadisticas
-          </Heading>
+          </CustomHeading>
         </VStack>
         <Box flex={1}>
-          <ScrollView flex={1} mt="$10">
+          <ScrollView flex={1} mt="$16">
 
-            <Heading textAlign="center" color="$textDark500">
+            <CustomHeading textAlign="center">
               Resumen del día de hoy
-            </Heading>
+            </CustomHeading>
             {mappedData && (
               <Box p="$4">
                 <Box
@@ -158,47 +160,47 @@ export default function Stats() {
                   mb="$4"
                   borderRadius="$lg"
                   bg="$white">
-                  <Text color="$textDark500">
+                  <CustomText >
                     Cortes realizados el día de hoy:{' '}
-                    <Text color="$textDark500" fontWeight="bold">
+                    <CustomText fontWeight="bold">
                       {
                         turns.filter(
                           (turn: Event) => turn.status === 'COMPLETE',
                         ).length
                       }
-                    </Text>
-                  </Text>
+                    </CustomText>
+                  </CustomText>
                   <HStack alignItems="center">
-                    <Text color="$textDark500">Total el día de hoy: </Text>
-                    <Text color="$textDark500" fontWeight="bold">
+                    <CustomText>Total el día de hoy: </CustomText>
+                    <CustomText fontWeight="bold">
                       {[...turns].reduce((accumulator, object) => {
                         return object.status === 'COMPLETE'
                           ? accumulator + object.price
                           : accumulator;
                       }, 0) * (user?.commission ? user?.commission / 100 : 1)}
                       {" "}Pesos
-                    </Text>
+                    </CustomText>
 
                   </HStack>
                   <HStack>
-                    <Text color="$textDark500">Comisión: </Text>
-                    <Text color="$textDark500" fontWeight="bold">
+                    <CustomText>Comisión: </CustomText>
+                    <CustomText fontWeight="bold">
                       {user?.commission} %
-                    </Text>
+                    </CustomText>
                   </HStack>
-                  <Text color="$textDark500">
+                  <CustomText>
                     Cortes pendientes el día de hoy:{' '}
-                    <Text color="$textDark500" fontWeight="bold">
+                    <CustomText fontWeight="bold">
                       {
                         turns.filter(
                           (turn: Event) => turn.status !== 'COMPLETE',
                         ).length
                       }
-                    </Text>
-                  </Text>
+                    </CustomText>
+                  </CustomText>
                   <HStack alignItems="center">
-                    <Text color="$textDark500">Cortes cancelados el día de hoy: </Text>
-                    <Text color="$textDark500" fontWeight="bold">
+                    <CustomText>Cortes cancelados el día de hoy: </CustomText>
+                    <Text fontWeight="bold">
                       {[...turns].reduce((accumulator, object) => {
                         return object.status === 'CANCELED'
                           ? accumulator + 1 : accumulator
@@ -225,7 +227,7 @@ export default function Stats() {
                       return (
                         <Text
                           position="absolute"
-                          color="$textDark500"
+                        
                           top={y}
                           left={x}>
                           {indexData}
@@ -253,32 +255,32 @@ export default function Stats() {
                           mb="$6"
                           borderRadius="$lg"
                           bg="$white">
-                            <Heading color='$textDark500' textTransform='capitalize'>
+                            <CustomHeading textTransform='capitalize'>
                               {item.day} - {item.date} 
-                            </Heading>
-                          <Text color="$textDark500">
+                            </CustomHeading>
+                          <CustomText>
                             {`Total: `}
-                            <Text color="$textDark500" fontWeight="bold">
+                            <CustomText fontWeight="bold">
                               {user?.commission && item?.dayTotalAmount * user?.commission / 100 | 0}
-                            </Text>
-                          </Text>
-                          <Text color="$textDark500">
+                            </CustomText>
+                          </CustomText>
+                          <CustomText>
                             Cortes realizados:{' '}
-                            <Text color="$textDark500" fontWeight="bold">
+                            <CustomText fontWeight="bold">
                               {item?.dayCompleteServices | 0}
-                            </Text>
-                          </Text>
-                          <Text color="$textDark500">
+                            </CustomText>
+                          </CustomText>
+                          <CustomText>
                             Cortes cancelados:{' '}
-                            <Text color="$textDark500" fontWeight="bold">
+                            <CustomText fontWeight="bold">
                               {item?.dayCanceledServices}
-                            </Text>
-                          </Text>
+                            </CustomText>
+                          </CustomText>
                           <HStack>
-                            <Text color="$textDark500">Comisión: </Text>
-                            <Text color="$textDark500" fontWeight="bold">
+                            <CustomText>Comisión: </CustomText>
+                            <CustomText fontWeight="bold">
                               {user?.commission} %
-                            </Text>
+                            </CustomText>
                           </HStack>
                         </Box>
                       );

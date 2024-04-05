@@ -3,7 +3,8 @@ import { Text } from "@gluestack-ui/themed";
 
 const CustomText = styled(Text, {
     fontSize:12,
-    lineHeight: "$xs"
+    lineHeight: "$xs",
+    color:"$textDark500"
 
 
 
