@@ -29,9 +29,9 @@ export const servicesSlice = createSlice({
     },
     setServiceForEdition: (state, action) => {
       state.serviceForEdition = action.payload;
-      state.showCreateServiceModal = true
     },
     toggleCreateServiceModal : (state, action) => {
+      console.log("action", action.payload)
       state.showCreateServiceModal = action.payload
     },
     editService : (state, action) => {

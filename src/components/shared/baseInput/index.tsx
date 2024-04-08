@@ -4,13 +4,13 @@ import {
   InputField,
   InputIcon,
   InputSlot,
-  Text,
   VStack,
   Pressable,
 } from '@gluestack-ui/themed';
 import {Eye} from 'lucide-react-native';
 import React, {useState} from 'react';
 import {NativeSyntheticEvent, TextInputChangeEventData} from 'react-native';
+import CustomText from '../text';
 interface Props {
   label: string;
   invalid: boolean;
@@ -42,7 +42,7 @@ export default function BaseInput({
   const [showPassword, setShowPassword] = useState<boolean>(false);
   return (
     <VStack space="xs">
-      <Text color="$textDark500">{label}</Text>
+      <CustomText color="$textDark500">{label}</CustomText>
       <Input
         variant="outline"
         size="md"
@@ -50,6 +50,7 @@ export default function BaseInput({
         isInvalid={invalid}
         isReadOnly={readOnly}>
         <InputField
+        fontSize={12}
           secureTextEntry={type === 'password' && !showPassword}
           keyboardType={keyboard}
           value={value}
@@ -69,9 +70,9 @@ export default function BaseInput({
         )}
       </Input>
       {invalid && (
-        <Text fontSize={14} color={'$red700'}>
+        <CustomText fontSize={14} color={'$red700'}>
           {errorMessage}
-        </Text>
+        </CustomText>
       )}
     </VStack>
   );

@@ -38,7 +38,7 @@ export default function Services() {
     (state: RootState) => state.services,
   );
   const {data, isLoading, refetch} = useGetServicesQuery();
-  console.log('data', data);
+  console.log('services', data?.services[0].images);
 
   const handleCloseModal = (): void => {
     dispatch(toggleCreateServiceModal(false));
@@ -126,7 +126,7 @@ export default function Services() {
             title="Crear servicio"
             background={'$primary500'}
             color={'$white'}
-            onPress={handleOpenModal}
+            onPress={()=>handleOpenModal()}
             isLoading={false}
             disabled={false}
             hasIcon={true}
@@ -136,7 +136,7 @@ export default function Services() {
       </Box>
       <CreateServiceModal
         show={showCreateServiceModal}
-        onClose={handleCloseModal}
+        onClose={()=>handleCloseModal()}
       />
     </LinearGradient>
   );

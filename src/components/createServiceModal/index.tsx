@@ -1,7 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
-  Button,
-  Heading,
   Modal,
   ModalBackdrop,
   ModalBody,
@@ -10,35 +8,37 @@ import {
   ModalFooter,
   ModalHeader,
   Icon,
-  Text,
   CloseIcon,
-  ButtonText,
-  FlatList,
   Box,
   Pressable,
-  Input,
-  InputField,
   VStack,
   HStack,
-  AddIcon,
   Image,
-  ScrollView,
 } from '@gluestack-ui/themed';
 import BaseInput from '../shared/baseInput';
 import BaseTextArea from '../shared/baseTextArea';
 import BaseButton from '../shared/baseButton';
 import LinkButton from '../shared/linkButton';
-import { useForm, Controller } from 'react-hook-form';
-import { Asset, launchImageLibrary } from 'react-native-image-picker';
-import { RootState, useAppDispatch, useAppSelector } from '../../store';
+import {useForm, Controller} from 'react-hook-form';
+import {Asset, launchImageLibrary} from 'react-native-image-picker';
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {
   addService,
   setServiceForEdition,
   editService,
 } from '../../store/features/servicesSlice';
-import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
-import { useAddServiceMutation, useEditServicesMutation } from '../../api/servicesApi';
-import { Platform } from 'react-native';
+import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
+import {
+  useAddServiceMutation,
+  useEditServicesMutation,
+} from '../../api/servicesApi';
+import {Dimensions, Platform} from 'react-native';
+import Carousel, {Pagination} from 'react-native-snap-carousel';
+import CustomText from '../shared/text';
+import CustomHeading from '../shared/heading';
+import {X} from 'lucide-react-native';
+
+const {width} = Dimensions.get('window');
 
 interface Props {
   show: boolean;
@@ -52,27 +52,35 @@ interface Form {
   description: string;
 }
 
-export default function CreateServiceModal({ show, onClose }: Props) {
+export default function CreateServiceModal({show, onClose}: Props) {
   const imageRef = useRef(null);
   const ref = useRef();
   const dispatch = useAppDispatch();
-  const { serviceForEdition } = useAppSelector(
+  const {serviceForEdition} = useAppSelector(
     (state: RootState) => state.services,
   );
-  const [EditServiceRequest, { isLoading: isLoadingEditService }] = useEditServicesMutation()
-  const [addServiceRequest, { isLoading: isLoadingAddService }] = useAddServiceMutation();
+  const [EditServiceRequest, {isLoading: isLoadingEditService}] =
+    useEditServicesMutation();
+  const [addServiceRequest, {isLoading: isLoadingAddService}] =
+    useAddServiceMutation();
   const {
-    formState: { errors },
+    formState: {errors},
     handleSubmit,
     control,
     reset,
     watch,
   } = useForm<Form>();
-  const [image, setImage] = useState<null | { uri: string | undefined }>(null);
-  const [imageBlob, setImageBlob] = useState<Asset | null>(null);
+  const [images, setImages] = useState<
+    {uri: string | undefined; publicId: string | undefined}[] | null
+  >(null);
+  const [imagesForDelete, setImagesForDelete] = useState<{publicId: string}[]>(
+    [],
+  );
+  const [imagesBlob, setImagesBlob] = useState<Asset[] | null>(null);
   const [imageAlert, setImageAlert] = useState<string | null>(null);
+  const [activeSlide, setActiveSlide] = useState<number>(0);
+
   const submit = async (values: Form) => {
-    console.log('image on submit', image);
     const form = new FormData();
     form.append('name', values.name);
     form.append('price', values.price);
@@ -80,29 +88,38 @@ export default function CreateServiceModal({ show, onClose }: Props) {
     form.append('duration', values.duration);
 
     setImageAlert(null);
-    if (!imageBlob && !serviceForEdition) {
+    if (!imagesBlob && !serviceForEdition) {
       setImageAlert('La imagen del servicio es requerida');
       return;
     }
 
     if (serviceForEdition) {
-      form.append('id', serviceForEdition._id);
       try {
-        if(imageBlob){
+        form.append('id', serviceForEdition._id);
+        if (imagesForDelete.length > 0) {
+          imagesForDelete.forEach(e => {
+            form.append('imageForDelete', e.publicId);
+          });
+        }
+        imagesBlob?.forEach((e: Asset) => {
           form.append('image', {
             uri: Platform.select({
-              ios: imageBlob?.uri?.replace('file://', ''),
-              android: imageBlob?.uri,
+              ios: e?.uri?.replace('file://', ''),
+              android: e?.uri,
             }),
-            type: imageBlob?.type,
-            name: imageBlob?.fileName,
-          })
-        }
+            type: e?.type,
+            name: e?.fileName,
+          });
+        });
 
-        const response = await EditServiceRequest(form).unwrap()
-        console.log("response", response)
+        const response = await EditServiceRequest(form).unwrap();
+        console.log('response', response);
         dispatch(
-          editService({ ...values, image: image?.uri, _id: serviceForEdition._id }),
+          editService({
+            ...values,
+            images: response.targetService.images,
+            _id: serviceForEdition._id,
+          }),
         );
         dispatch(
           showInfoModal({
@@ -122,25 +139,26 @@ export default function CreateServiceModal({ show, onClose }: Props) {
           duration: '',
           description: '',
         });
-        setImage(null);
+        setImages(null);
         onClose();
       } catch (error) {
-        console.log("error al editar el servicio", error)
+        console.log('error al editar el servicio', error);
       }
     } else {
-      console.log('else case');
-      form.append('image', {
-        uri: Platform.select({
-          ios: imageBlob?.uri?.replace('file://', ''),
-          android: imageBlob?.uri,
-        }),
-        type: imageBlob?.type,
-        name: imageBlob?.fileName,
+      imagesBlob?.forEach((e: Asset) => {
+        form.append('image', {
+          uri: Platform.select({
+            ios: e?.uri?.replace('file://', ''),
+            android: e?.uri,
+          }),
+          type: e?.type,
+          name: e?.fileName,
+        });
       });
       try {
-        const response = await addServiceRequest(form).unwrap()
+        const response = await addServiceRequest(form).unwrap();
         console.log('response', response);
-        dispatch(addService({ ...response.service }));
+        dispatch(addService({...response.service}));
         dispatch(
           showInfoModal({
             title: '¡Servicio guardado!',
@@ -159,7 +177,7 @@ export default function CreateServiceModal({ show, onClose }: Props) {
           duration: '',
           description: '',
         });
-        setImage(null);
+        setImages(null);
         onClose();
       } catch (error) {
         console.log('error al crear el servicio', error);
@@ -173,12 +191,29 @@ export default function CreateServiceModal({ show, onClose }: Props) {
     console.log('result', result);
     if (result.assets) {
       console.log('result.assets[0].uri', result.assets[0].uri);
-      setImage({ uri: result.assets[0].uri });
-      setImageBlob(result.assets[0]);
+      const imagesList = images ? images : [];
+      const blobsList = imagesBlob ? imagesBlob : [];
+      setImages([...imagesList, {uri: result.assets[0].uri}]);
+      setImagesBlob([...blobsList, result.assets[0]]);
     }
   };
 
+  const handleDelete = (publicId: string | undefined, index: number) => {
+    const newImagesList = images ? [...images] : [];
+    const newBlobsList = imagesBlob ? [...imagesBlob] : [];
+    const filteredImages = newImagesList.filter((_, i) => i !== index);
+    const filteredBlobs = newBlobsList.filter((_, i) => i !== index);
+    console.log('filteredImages', filteredImages);
+    console.log('filteredBlobs ', filteredBlobs);
+    setImages(filteredImages.length > 0 ? filteredImages : null);
+    setImagesBlob(filteredBlobs.length > 0 ? filteredBlobs : null);
+    if (publicId) {
+      setImagesForDelete([...imagesForDelete, {publicId}]);
+    }
+  };
+  console.log('images ', images);
   useEffect(() => {
+    setImagesForDelete([]);
     if (serviceForEdition) {
       reset({
         name: serviceForEdition.name,
@@ -186,7 +221,10 @@ export default function CreateServiceModal({ show, onClose }: Props) {
         duration: serviceForEdition.duration.toString(),
         description: serviceForEdition.description,
       });
-      setImage({ uri: serviceForEdition.image });
+      console.log('images', serviceForEdition.images);
+      setImages(
+        serviceForEdition.images.map(e => ({uri: e.url, publicId: e.publicId})),
+      );
     } else {
       reset({
         name: '',
@@ -194,39 +232,33 @@ export default function CreateServiceModal({ show, onClose }: Props) {
         duration: '',
         description: '',
       });
-      setImage(null);
+      setImages(null);
     }
   }, [serviceForEdition]);
 
   return (
     <Modal
-
       isOpen={show}
       onClose={() => {
+        console.log('close');
         onClose();
         dispatch(setServiceForEdition(null));
       }}
-      finalFocusRef={ref}
-      bg="$primary100">
+      finalFocusRef={ref}>
       <ModalBackdrop />
       <ModalContent bg="$white" maxHeight={'$3/4'}>
         <ModalHeader>
-          <Heading size="lg" color="$textDark900">
-            Crear servicio
-          </Heading>
+          <CustomHeading>Crear servicio</CustomHeading>
           <ModalCloseButton>
-            <Icon as={CloseIcon} />
+            <Icon color="$textDark500" as={CloseIcon} />
           </ModalCloseButton>
         </ModalHeader>
-        <ModalBody >
-
-
-
+        <ModalBody>
           <Box mb={'$2'}>
             <Controller
               name="name"
               control={control}
-              render={({ field, fieldState }) => {
+              render={({field, fieldState}) => {
                 return (
                   <BaseInput
                     errorMessage={
@@ -245,7 +277,7 @@ export default function CreateServiceModal({ show, onClose }: Props) {
               }}
               rules={{
                 required: 'Campo requerido',
-                maxLength: { value: 80, message: 'Máximo 80 caracteres' },
+                maxLength: {value: 80, message: 'Máximo 80 caracteres'},
               }}
             />
           </Box>
@@ -253,7 +285,7 @@ export default function CreateServiceModal({ show, onClose }: Props) {
             <Controller
               name="price"
               control={control}
-              render={({ field, fieldState }) => {
+              render={({field, fieldState}) => {
                 console.log('field state', fieldState);
                 console.log('value', field.value);
                 return (
@@ -274,7 +306,7 @@ export default function CreateServiceModal({ show, onClose }: Props) {
               }}
               rules={{
                 required: 'Campo requerido',
-                maxLength: { value: 10, message: 'Máximo 10 caracteres' },
+                maxLength: {value: 10, message: 'Máximo 10 caracteres'},
                 pattern: {
                   value: /^(0|[1-9]\d*)(\.\d+)?$/,
                   message: 'Solo se permiten numeros',
@@ -286,7 +318,7 @@ export default function CreateServiceModal({ show, onClose }: Props) {
             <Controller
               name="duration"
               control={control}
-              render={({ field, fieldState }) => (
+              render={({field, fieldState}) => (
                 <BaseInput
                   errorMessage={
                     fieldState.error ? fieldState.error.message : undefined
@@ -303,7 +335,7 @@ export default function CreateServiceModal({ show, onClose }: Props) {
               )}
               rules={{
                 required: 'Campo requerido',
-                maxLength: { value: 10, message: 'Máximo 10 caracteres' },
+                maxLength: {value: 10, message: 'Máximo 10 caracteres'},
                 pattern: {
                   value: /^(0|[1-9]\d*)(\.\d+)?$/,
                   message: 'Solo se permiten numeros',
@@ -315,7 +347,7 @@ export default function CreateServiceModal({ show, onClose }: Props) {
             <Controller
               name="description"
               control={control}
-              render={({ field, fieldState }) => (
+              render={({field, fieldState}) => (
                 <BaseTextArea
                   errorMessage={
                     fieldState.error ? fieldState.error.message : undefined
@@ -331,41 +363,104 @@ export default function CreateServiceModal({ show, onClose }: Props) {
               )}
               rules={{
                 required: 'Campo requerido',
-                maxLength: { value: 160, message: 'Máximo 160 caracteres' },
+                maxLength: {value: 160, message: 'Máximo 160 caracteres'},
               }}
             />
           </Box>
-          <HStack mt={'$2'} justifyContent="center">
-            <Pressable onPress={handleGallery}>
-              <Image
-                ref={imageRef}
-                borderRadius={8}
-                style={{ width: 200, height: 200 }}
-                resizeMode="cover"
-                source={
-                  image
-                    ? image
-                    : require('../../assets/images/image-placeholder.png')
-                }
-                alt="imagen-de-servicio"
+          <CustomText mt="$2">
+            Selecciona las imágenes de tu servicio
+          </CustomText>
+          {images && images.length > 0 ? (
+            <VStack mt={'$2'} justifyContent="center">
+              <Carousel
+                data={images}
+                layout={'default'}
+                onSnapToItem={index => setActiveSlide(index)}
+                renderItem={({item, index}) => {
+                  console.log('index', index);
+                  return (
+                    <Box position="relative" style={{width: 200, height: 200}}>
+                      <Box
+                        bg="$red500"
+                        w="auto"
+                        top={5}
+                        right={5}
+                        zIndex={2}
+                        position="absolute"
+                        p="$2"
+                        borderRadius={'$3xl'}>
+                        <Pressable
+                          onPress={() =>
+                            handleDelete(item.publicId || null, index)
+                          }>
+                          <Icon
+                            as={X}
+                            size={20}
+                            alt="Eliminar"
+                            color="$white"
+                          />
+                        </Pressable>
+                      </Box>
+                      <Image
+                        ref={imageRef}
+                        borderRadius={8}
+                        style={{width: 200, height: 200}}
+                        resizeMode="cover"
+                        source={{uri: item.uri}}
+                        alt="imagen-de-servicio"
+                      />
+                    </Box>
+                  );
+                }}
+                sliderWidth={width}
+                itemWidth={width * 0.8}
               />
-            </Pressable>
-          </HStack>
-          {imageAlert && (
-            <Text fontSize={14} color={'$red700'}>
-              {imageAlert}
-            </Text>
+              <Pagination
+                dotStyle={{
+                  backgroundColor: '#367187',
+                }}
+                dotsLength={images.length}
+                activeDotIndex={activeSlide}
+              />
+            </VStack>
+          ) : (
+            <Box mt={'$2'}>
+              <VStack justifyContent="center" alignItems="center" mt={'$4'}>
+                <Pressable onPress={handleGallery}>
+                  <Image
+                    ref={imageRef}
+                    borderRadius={8}
+                    style={{width: 200, height: 200}}
+                    resizeMode="cover"
+                    source={require('./../../assets/images/image-placeholder.png')}
+                    alt="imagen-de-servicio"
+                  />
+                </Pressable>
+              </VStack>
+            </Box>
           )}
-          <HStack mt={'$2'} width={'100%'} justifyContent="center">
-            <LinkButton
-              title="Seleccionar imagen"
-              color="$primary500"
-              onPress={handleGallery}
-              isLoading={false}
-              disabled={false}
-              hasIcon={false}
-            />
-          </HStack>
+          {imageAlert && (
+            <CustomText fontSize={14} color={'$red700'}>
+              {imageAlert}
+            </CustomText>
+          )}
+          {images?.length === 4 && (
+            <CustomText fontSize={14}>
+              Has alcanzado el limite de imagenes por servicio
+            </CustomText>
+          )}
+          {(!images || (images && images?.length < 4)) && (
+            <HStack mt={'$2'} width={'100%'} justifyContent="center">
+              <LinkButton
+                title={!images ? 'Seleccionar imagen' : 'Agregar otra imagen'}
+                color="$primary500"
+                onPress={handleGallery}
+                isLoading={false}
+                disabled={false}
+                hasIcon={false}
+              />
+            </HStack>
+          )}
         </ModalBody>
         <ModalFooter>
           <HStack width={'100%'} justifyContent="center">
@@ -380,8 +475,7 @@ export default function CreateServiceModal({ show, onClose }: Props) {
             />
           </HStack>
         </ModalFooter>
-
       </ModalContent>
-    </Modal >
+    </Modal>
   );
 }
