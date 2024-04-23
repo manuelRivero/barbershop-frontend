@@ -30,7 +30,7 @@ import {
 } from '../../api/turnsApi';
 import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import PushNotification from 'react-native-push-notification';
 import {Dimensions} from 'react-native';
@@ -41,6 +41,17 @@ import {setUser} from '../../store/features/authSlice';
 import LottieView from 'lottie-react-native';
 import CustomText from '../../components/shared/text';
 import CustomHeading from '../../components/shared/heading';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  useDerivedValue,
+  interpolate,
+  withRepeat,
+  Easing,
+  withDelay,
+} from 'react-native-reanimated';
+import Header from '../../components/header';
 
 const {width} = Dimensions.get('window');
 export default function Schedule() {
@@ -69,10 +80,8 @@ export default function Schedule() {
     refetch: refetchTurns,
     isLoading: isLoadingTurns,
     fulfilledTimeStamp,
-    isUninitialized
-  } = useGetTurnsQuery(
-    {id: user?._id ?? ''}
-  );
+    isUninitialized,
+  } = useGetTurnsQuery({id: user?._id ?? ''});
   const [addTurnRequest, {isLoading}] = useAddTurnMutation();
 
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
@@ -80,7 +89,15 @@ export default function Schedule() {
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isSunday, setIsSunday] = useState<boolean>(false);
+  const translateY = useSharedValue(-100);
+  const titleOpacity = useSharedValue(0);
 
+  const animatedStyles = useAnimatedStyle(() => ({
+    transform: [{translateY: translateY.value}],
+  }));
+  const animatedTitleStyles = useAnimatedStyle(() => ({
+    opacity: titleOpacity.value,
+  }));
   const handleAddTurn = async (turn: TurnSelectItem) => {
     if (selectedService && user) {
       const handleRequest = async () => {
@@ -389,20 +406,52 @@ export default function Schedule() {
 
   React.useEffect(() => {
     if (turnsData) {
-       dispatch(initTurns(turnsData));
+      dispatch(initTurns(turnsData));
     }
   }, [fulfilledTimeStamp]);
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
-      console.log('focus', isUninitialized);
       if (!isUninitialized) {
-        refetchTurns();    
-     }
+        refetchTurns();
+      }
     });
 
     return unsubscribe;
   }, [navigation, isUninitialized]);
+
+  React.useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      console.log('focus', isUninitialized);
+    });
+
+    return unsubscribe;
+  }, [navigation, isUninitialized]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const unsubscribe = () => {
+        translateY.value = withTiming(0, {
+          duration: 1000,
+          easing: Easing.bounce,
+        });
+        titleOpacity.value = withDelay(
+          1000,
+          withTiming(1, {
+            duration: 1000,
+            easing: Easing.bounce,
+            // @ts-ignore
+          } as Animated.WithTimingConfig),
+        );
+      };
+      unsubscribe();
+
+      return () => {
+        translateY.value = -100;
+        titleOpacity.value = 0;
+      };
+    }, []),
+  );
 
   useEffect(() => {
     socket.on('add-turn', ({data}) => {
@@ -426,8 +475,8 @@ export default function Schedule() {
         smallIcon: 'ic_notification',
         largeIcon: 'ic_launcher',
         // @ts-ignore
-        data:{
-          path: "Schedule"
+        data: {
+          path: 'Schedule',
         },
 
         /* iOS only properties */
@@ -471,7 +520,7 @@ export default function Schedule() {
     };
   }, []);
 
-  console.log("socket", socket.id)
+  console.log('translateY', translateY.value);
 
   return (
     <LinearGradient
@@ -480,43 +529,13 @@ export default function Schedule() {
       start={{x: 0, y: 0.6}}
       end={{x: 0, y: 1}}>
       <Box flex={1} position="relative">
-        <Box
-          borderRadius={9999}
-          w={width * 3}
-          h={width * 3}
-          position="absolute"
-          bg="#f1e2ca"
-          overflow="hidden"
-          top={-width * 2.75}
-          left={-width}
-          opacity={0.5}
+        <Header
+          title="Turnos agendados"
+          subtitle={moment().format('DD-MM-yyyy')}
+          viewGoBack={false}
+          viewClock={true}
+          width={width}
         />
-        <HStack paddingHorizontal={'$3'}>
-          <VStack
-            pt={'$1'}
-            alignItems="center"
-            width={'100%'}
-            justifyContent="flex-end">
-            <Clock
-              format={'hh:mm:ss'}
-              ticking={true}
-              element={Text}
-              style={{fontSize: 16, color: '#1f3d56'}}
-            />
-            <CustomHeading textAlign="center" >
-              Turnos agendados
-            </CustomHeading>
-
-            <CustomHeading
-              textAlign="center"
-              
-              fontWeight="bold"
-              fontSize={14}>
-              {moment().format('DD-MM-yyyy')}
-            </CustomHeading>
-          </VStack>
-        </HStack>
-
         <ScrollView flex={1} mt={'$10'}>
           <HStack justifyContent="flex-end">
             <HStack
@@ -524,7 +543,7 @@ export default function Schedule() {
               px={'$4'}
               borderWidth={2}
               borderRadius={16}
-              borderColor='$textDark500'
+              borderColor="$textDark500"
               alignItems="center"
               mr={'$2'}
               w="auto">
@@ -540,13 +559,10 @@ export default function Schedule() {
           </HStack>
           <Box padding={'$4'}>
             {turns.filter(turn => turn.status !== 'CANCELED').length > 0 && (
-              <CustomText
-                
-                textAlign="center"
-                mt={'$10'}
-                mb={'$4'}>
+              <CustomText textAlign="center" mt={'$10'} mb={'$4'}>
                 Los turnos agendados para el día de hoy serán visibles en tu
-                agenda hasta las {restartTime.utc().utcOffset(3, true).format('hh:mm A')}.
+                agenda hasta las{' '}
+                {restartTime.utc().utcOffset(3, true).format('hh:mm A')}.
               </CustomText>
             )}
             {[...turns.filter(turn => turn.status !== 'CANCELED')]
@@ -562,26 +578,26 @@ export default function Schedule() {
             {turns.filter(turn => turn.status !== 'CANCELED').length === 0 && (
               <>
                 {isSunday && (
-                  <CustomText textAlign="center" mt={'$10'} >
+                  <CustomText textAlign="center" mt={'$10'}>
                     Hoy es domingo y la barberìa se encuentra cerrada
                   </CustomText>
                 )}
                 {!isSunday && user?.isActive && !businessIsClosed && (
-                  <CustomText textAlign="center" mt={'$10'} >
+                  <CustomText textAlign="center" mt={'$10'}>
                     Aún no has agendado ningún turno para hoy
                   </CustomText>
                 )}
                 {!isSunday && !user?.isActive && (
-                  <CustomText textAlign="center" mt={'$10'} >
+                  <CustomText textAlign="center" mt={'$10'}>
                     Actualmente te encuentras deshabilitado para agendar turnos.
                   </CustomText>
                 )}
 
                 {!isSunday && user?.isActive && !businessIsClosed && (
                   <>
-                    <CustomText textAlign="center" mt={'$4'} >
+                    <CustomText textAlign="center" mt={'$4'}>
                       Agenda abierta para{' '}
-                      <CustomText  fontWeight="bold">
+                      <CustomText fontWeight="bold">
                         {moment().format('DD-MM-yyyy')}
                       </CustomText>
                     </CustomText>
@@ -599,7 +615,7 @@ export default function Schedule() {
                 )}
                 {!isSunday && user?.isActive && businessIsClosed && (
                   <>
-                    <CustomText textAlign="center" mt={'$4'} >
+                    <CustomText textAlign="center" mt={'$4'}>
                       La barbería ha cerrado por hoy
                     </CustomText>
                     <HStack justifyContent="center" mt="$4">
@@ -616,25 +632,25 @@ export default function Schedule() {
             )}
           </Box>
         </ScrollView>
-        {!isSunday ||
-          (user?.isActive && (
-            <HStack
-              position="absolute"
-              bottom={10}
-              width={'100%'}
-              justifyContent="center">
-              <BaseButton
-                title="Agendar"
-                background={'$primary500'}
-                color={'$white'}
-                onPress={() => setShowServiceModal(true)}
-                isLoading={false}
-                disabled={false}
-                hasIcon={true}
-                icon={AddIcon}
-              />
-            </HStack>
-          ))}
+        {console.log('sunday', isSunday)}
+        {!isSunday && user?.isActive && (
+          <HStack
+            position="absolute"
+            bottom={10}
+            width={'100%'}
+            justifyContent="center">
+            <BaseButton
+              title="Agendar"
+              background={'$primary500'}
+              color={'$white'}
+              onPress={() => setShowServiceModal(true)}
+              isLoading={false}
+              disabled={false}
+              hasIcon={true}
+              icon={AddIcon}
+            />
+          </HStack>
+        )}
       </Box>
       <SelectServiceModal
         show={showServiceModal}

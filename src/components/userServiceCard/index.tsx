@@ -1,5 +1,5 @@
-import React from 'react';
-import {Box, Icon} from '@gluestack-ui/themed';
+import React, { useState } from 'react';
+import {Box, Icon, Pressable} from '@gluestack-ui/themed';
 import {Text} from '@gluestack-ui/themed';
 import {HStack} from '@gluestack-ui/themed';
 import { Clock2, CircleDollarSign} from 'lucide-react-native';
@@ -7,6 +7,8 @@ import {Image} from 'react-native';
 import { useAppDispatch } from '../../store';
 import { Service } from '../../types/services';
 import { VStack } from '@gluestack-ui/themed';
+import ServiceImageModal from '../serviceImageModal';
+import CustomText from '../shared/text';
 
 
 
@@ -16,16 +18,21 @@ interface Props {
 }
 export default function UserServiceCard({data}: Props) {
   const dispatch = useAppDispatch();
+  const [showImageModal, setShowImageModal] = useState<boolean>(false);
+
   
   return (
+    <>
     <Box softShadow={'1'} p="$4" borderRadius="$lg" bg="$white">
       <HStack space="lg" mb={'$4'}>
+        <Pressable onPress={()=> setShowImageModal(true)}>
+
         <Image
           style={{width: 100, height: 100}}
           borderRadius={10}
           resizeMode={'cover'}
           source={{
-            uri: data.image,
+            uri: data.images[0].url,
             headers: {
               Pragma: 'no-cache',
             },
@@ -33,11 +40,13 @@ export default function UserServiceCard({data}: Props) {
           alt="foto-del-servicio"
           onError={({ nativeEvent: {error} }) => console.log(error)}
         />
+
+        </Pressable>
         
         <Box>
-          <Text fontWeight="bold" color="$textDark500">
+          <CustomText fontWeight="bold">
             {data.name}
-          </Text>
+          </CustomText>
           <VStack space="xs" mt={'$2'} flexWrap="wrap">
             <HStack
               space="xs"
@@ -46,9 +55,9 @@ export default function UserServiceCard({data}: Props) {
               borderRadius={'$full'}
               alignItems="center">
               <Icon as={Clock2} color="$textDark500" />
-              <Text fontWeight="bold" color="$textDark500">
+              <CustomText fontWeight="bold" color="$textDark500">
                 {data.duration} minutos
-              </Text>
+              </CustomText>
             </HStack>
             <HStack
               space="xs"
@@ -57,15 +66,21 @@ export default function UserServiceCard({data}: Props) {
               borderRadius={'$full'}
               alignItems="center">
               <Icon as={CircleDollarSign} color="$textDark500" />
-              <Text fontWeight="bold" color="$textDark500">
+              <CustomText fontWeight="bold" >
                 {data.price} pesos
-              </Text>
+              </CustomText>
             </HStack>
           </VStack>
         </Box>
       </HStack>
 
-      <Text color="$textDark500">{data.description}</Text>
+      <CustomText >{data.description}</CustomText>
     </Box>
+    <ServiceImageModal
+        show={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        service={data}
+      />
+    </>
   );
 }

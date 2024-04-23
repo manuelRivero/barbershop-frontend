@@ -25,10 +25,9 @@ import {useGetServicesQuery} from '../../api/servicesApi';
 import {useNavigation} from '@react-navigation/native';
 import Loader from '../../components/shared/loader';
 import LinearGradient from 'react-native-linear-gradient';
-import CustomHeading from '../../components/shared/heading';
+import Header from '../../components/header';
 
 const {width} = Dimensions.get('window');
-
 
 export default function Services() {
   const navigation = useNavigation();
@@ -58,64 +57,42 @@ export default function Services() {
 
     return unsubscribe;
   }, [navigation]);
-  if(isLoading){
-    return(<Loader />)
+  if (isLoading) {
+    return <Loader />;
   }
   return (
     <LinearGradient
-    style={{flex: 1}}
-    colors={['#fff', '#f1e2ca']}
-    start={{x: 0, y: 0.6}}
-    end={{x: 0, y: 1}}>
-      <Box flex={1} position='relative'>
-
-      <Box
-          borderRadius={9999}
-          w={width * 3}
-          h={width * 3}
-          position="absolute"
-          bg="#f1e2ca"
-          overflow="hidden"
-          top={-width * 2.75}
-          left={-width}
-          opacity={0.5}
+      style={{flex: 1}}
+      colors={['#fff', '#f1e2ca']}
+      start={{x: 0, y: 0.6}}
+      end={{x: 0, y: 1}}>
+      <Box flex={1} position="relative">
+        <Header
+          title="Servicios disponibles"
+          viewGoBack={false}
+          viewClock={true}
+          width={width}
         />
-        <VStack
-        alignItems='center'
-          mt={'$1'}
-          width={'100%'}
-          justifyContent="center">
-          <Clock
-            format={'hh:mm:ss'}
-            ticking={true}
-            element={Text}
-            style={{fontSize: 16, color: '#1f3d56'}}
-          />
-          <CustomHeading textAlign="center" color="$textDark500">
-            Servicios disponibles
-          </CustomHeading>
-        </VStack>
-
-          <FlatList
-            contentContainerStyle={{padding:16, paddingBottom: 80}}
-            mt="$16"
-            data={services}
-            ListEmptyComponent={<Text>No has agregado ningún servico</Text>}
-            renderItem={(props: ListRenderItemInfo<any>) => {
-              const {item} = props;
-              return <ServiceCard data={item} />;
-            }}
-            ItemSeparatorComponent={() => {
-              return (
-                <Box
-                  style={{
-                    height: 15,
-                    width: '100%',
-                  }}
-                />
-              );
-            }}
-          />
+        <FlatList
+          contentContainerStyle={{padding: 16, paddingBottom: 80}}
+          mt="$16"
+          data={services}
+          ListEmptyComponent={<Text>No has agregado ningún servico</Text>}
+          renderItem={(props: ListRenderItemInfo<any>) => {
+            const {item} = props;
+            return <ServiceCard data={item} />;
+          }}
+          ItemSeparatorComponent={() => {
+            return (
+              <Box
+                style={{
+                  height: 15,
+                  width: '100%',
+                }}
+              />
+            );
+          }}
+        />
 
         <HStack
           position="absolute"
@@ -126,7 +103,7 @@ export default function Services() {
             title="Crear servicio"
             background={'$primary500'}
             color={'$white'}
-            onPress={()=>handleOpenModal()}
+            onPress={() => handleOpenModal()}
             isLoading={false}
             disabled={false}
             hasIcon={true}
@@ -136,7 +113,7 @@ export default function Services() {
       </Box>
       <CreateServiceModal
         show={showCreateServiceModal}
-        onClose={()=>handleCloseModal()}
+        onClose={() => handleCloseModal()}
       />
     </LinearGradient>
   );

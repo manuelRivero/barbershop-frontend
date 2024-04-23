@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import ProfileCard from '../../components/profile/profileCard';
 import {
   Box,
@@ -12,61 +12,71 @@ import {
 import Clock from 'react-live-clock';
 import BaseButton from '../../components/shared/baseButton';
 import LinkButton from '../../components/shared/linkButton';
-import { RootState, useAppDispatch, useAppSelector } from '../../store';
-import { logout } from '../../store/features/authSlice';
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
+import {logout} from '../../store/features/authSlice';
 import ProfileForm from '../../components/profile/profileForm';
-import { Dimensions } from 'react-native';
+import {Dimensions} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import Carousel, { Pagination } from 'react-native-snap-carousel';
+import Carousel, {Pagination} from 'react-native-snap-carousel';
 import ReviewCard from '../../components/shared/reviewCard';
-import { useGetReviewsQuery } from '../../api/reviewsApi';
+import {useGetReviewsQuery} from '../../api/reviewsApi';
 import Loader from '../../components/shared/loader';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
-import { useGetImagesQuery } from '../../api/galleryApi';
-import { resetAllturns, resetUserTurn } from '../../store/features/turnsSlice';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useNavigation} from '@react-navigation/native';
+import {useGetImagesQuery} from '../../api/galleryApi';
+import {resetAllturns, resetUserTurn} from '../../store/features/turnsSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import socket from '../../socket';
 import CustomHeading from '../../components/shared/heading';
 import CustomText from '../../components/shared/text';
+import Header from '../../components/header';
 
-
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 export default function Profile() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const dispacth = useAppDispatch();
-  const { user } = useAppSelector((state: RootState) => state.auth);
+  const {user} = useAppSelector((state: RootState) => state.auth);
   const [showModal, setShowModal] = useState<boolean>(false);
 
   const [activeSlideReview, setActiveSlideReview] = useState<number>(0);
   const [activeSlideGallery, setActiveSlideGallery] = useState<number>(0);
 
-  const { data, isLoading, refetch } = useGetReviewsQuery(
-    { barber: user ? user?._id : '', page: 1 },
-    { skip: user?.role === 'user' || user?.role === 'admin' ? true : false },
+  const {data, isLoading, refetch} = useGetReviewsQuery(
+    {barber: user ? user?._id : '', page: 1},
+    {skip: user?.role === 'user' || user?.role === 'admin' ? true : false},
   );
 
-  const { data: galleryData, isLoading: isLoadingGallery, refetch: refecthGallery } = useGetImagesQuery({}, { skip: user?.role === 'user' || user?.role === 'admin' ? true : false },)
+  const {
+    data: galleryData,
+    isLoading: isLoadingGallery,
+    refetch: refecthGallery,
+  } = useGetImagesQuery(
+    {},
+    {skip: user?.role === 'user' || user?.role === 'admin' ? true : false},
+  );
   const handleLogout = () => {
-    dispacth(resetUserTurn())
-    dispacth(resetAllturns())
-    AsyncStorage.removeItem("persist:root");
-    if (user?.role === "barber" || user?.role === "admin-barber" || user?.role === "user") {
-      socket.emit('remove-online-user', { user: { _id: user?._id } });
+    dispacth(resetUserTurn());
+    dispacth(resetAllturns());
+    AsyncStorage.removeItem('persist:root');
+    if (
+      user?.role === 'barber' ||
+      user?.role === 'admin-barber' ||
+      user?.role === 'user'
+    ) {
+      socket.emit('remove-online-user', {user: {_id: user?._id}});
     }
     socket.close();
-    socket.disconnect()
+    socket.disconnect();
     dispacth(logout());
-
   };
-  console.log("galleryData", galleryData)
-  const handleProfileEdition = () => { };
+  console.log('galleryData', galleryData);
+  const handleProfileEdition = () => {};
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       refetch();
-      refecthGallery()
+      refecthGallery();
     });
 
     return unsubscribe;
@@ -77,44 +87,21 @@ export default function Profile() {
   }
   return (
     <LinearGradient
-      style={{ flex: 1 }}
+      style={{flex: 1}}
       colors={['#fff', '#f1e2ca']}
-      start={{ x: 0, y: 0.6 }}
-      end={{ x: 0, y: 1 }}>
+      start={{x: 0, y: 0.6}}
+      end={{x: 0, y: 1}}>
       <ScrollView position="relative" flex={1}>
-        <Box
-          borderRadius={9999}
-          w={width * 3}
-          h={width * 3}
-          position="absolute"
-          bg="#f1e2ca"
-          overflow="hidden"
-          top={-width * 2.75}
-          left={-width}
-          opacity={0.5}
+        <Header
+          viewClock={true}
+          viewGoBack={false}
+          title={'Perfil'}
+          width={width}
         />
-        <VStack
-          mt={'$1'}
-          width={'100%'}
-          alignItems="center"
-          justifyContent="center">
-          <Clock
-            format={'hh:mm:ss'}
-            ticking={true}
-            element={Text}
-            style={{ fontSize: 16, color: '#1f3d56' }}
-          />
-          <CustomHeading textAlign="center">
-            Perfil
-          </CustomHeading>
-        </VStack>
         <Box p="$4" mt="$16">
           <ProfileCard data={user} />
         </Box>
-        <HStack
-          mt="$4"
-          space="2xl"
-          justifyContent="center">
+        <HStack mt="$4" space="2xl" justifyContent="center">
           <LinkButton
             color="$primary500"
             title="Cerrar sesión"
@@ -141,7 +128,7 @@ export default function Profile() {
               layout={'default'}
               loop={true}
               onSnapToItem={index => setActiveSlideReview(index)}
-              renderItem={({ item }) => {
+              renderItem={({item}) => {
                 return (
                   <Box mt="$6" mb="$6">
                     <ReviewCard item={item} />
@@ -158,7 +145,9 @@ export default function Profile() {
               dotsLength={data ? data?.data.length : [].length}
               activeDotIndex={activeSlideReview}
             />
-            {data?.data.length === 0 && <CustomText>Aún no tienes ninguna calificación</CustomText>}
+            {data?.data.length === 0 && (
+              <CustomText>Aún no tienes ninguna calificación</CustomText>
+            )}
           </Box>
         )}
         {(user?.role === 'barber' || user?.role === 'admin-barber') && (
@@ -171,14 +160,14 @@ export default function Profile() {
               layout={'default'}
               loop={true}
               onSnapToItem={index => setActiveSlideGallery(index)}
-              renderItem={({ item }) => {
+              renderItem={({item}) => {
                 return (
                   <Image
                     borderRadius={16}
                     w={300}
                     h={300}
                     resizeMode="cover"
-                    source={{ uri: item.url }}
+                    source={{uri: item.url}}
                     alt="imagen"
                   />
                 );
@@ -187,7 +176,6 @@ export default function Profile() {
               itemWidth={width * 0.8}
             />
             <Box mb="$6">
-
               <Pagination
                 dotStyle={{
                   backgroundColor: '#367187',
@@ -196,19 +184,16 @@ export default function Profile() {
                 activeDotIndex={activeSlideGallery}
               />
 
-              {galleryData?.data.length === 0 && <CustomText>Aún no tienes imagenes en tu galería</CustomText>}
-
-
+              {galleryData?.data.length === 0 && (
+                <CustomText>Aún no tienes imagenes en tu galería</CustomText>
+              )}
             </Box>
-            <HStack
-              mt="$4"
-              space="2xl"
-              justifyContent="center">
+            <HStack mt="$4" space="2xl" justifyContent="center">
               <BaseButton
                 title="Editar galería"
                 background={'$primary500'}
                 color={'$white'}
-                onPress={() => navigation.navigate("BarberGallery")}
+                onPress={() => navigation.navigate('BarberGallery')}
                 isLoading={false}
                 disabled={false}
               />

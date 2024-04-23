@@ -1,32 +1,38 @@
-import { HStack, Box, Text, Heading, Center } from '@gluestack-ui/themed';
+import {HStack, Box, Text, Heading, Center, Image} from '@gluestack-ui/themed';
 import Clock from 'react-live-clock';
 
-import React, { useEffect, useState } from 'react';
-import { useGetTurnDetailsQuery } from '../../api/turnsApi';
+import React, {useEffect, useState} from 'react';
+import {useGetTurnDetailsQuery} from '../../api/turnsApi';
 import Loader from '../../components/shared/loader';
 import moment from 'moment';
 import LottieView from 'lottie-react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
-import { BackHandler, Dimensions } from 'react-native';
-import { RootState, useAppDispatch, useAppSelector } from '../../store';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useNavigation} from '@react-navigation/native';
+import {BackHandler, Dimensions} from 'react-native';
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import LinearGradient from 'react-native-linear-gradient';
 import PushNotification from 'react-native-push-notification';
 import socket from '../../socket';
-import { resetUserTurn } from '../../store/features/turnsSlice';
+import {resetUserTurn} from '../../store/features/turnsSlice';
+import Carousel, {Pagination} from 'react-native-snap-carousel';
+import {VStack} from '@gluestack-ui/themed';
+import {ScrollView} from '@gluestack-ui/themed';
+import CustomHeading from '../../components/shared/heading';
+import CustomText from '../../components/shared/text';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
-let interval: NodeJS.Timeout
-export default function UserWaitingRoom({ route }: any) {
+let interval: NodeJS.Timeout;
+export default function UserWaitingRoom({route}: any) {
   const dispacth = useAppDispatch();
 
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const { userTurn } = useAppSelector((state: RootState) => state.turns);
+  const {userTurn} = useAppSelector((state: RootState) => state.turns);
 
-  const turnId = route.params?.turnId || userTurn?._id
-  console.log("turnId", userTurn)
-  const { data, isLoading } = useGetTurnDetailsQuery({ id: turnId });
+  const turnId = route.params?.turnId || userTurn?._id;
+  console.log('turnId', userTurn);
+  const {data, isLoading} = useGetTurnDetailsQuery({id: turnId});
+  const [activeSlide, setActiveSlide] = useState<number>(0);
 
   useEffect(() => {
     BackHandler.addEventListener('hardwareBackPress', function () {
@@ -34,8 +40,8 @@ export default function UserWaitingRoom({ route }: any) {
     });
     interval = setInterval(() => {
       if (moment().utc().utcOffset(3, true).isAfter(userTurn?.endDate)) {
-        navigation.navigate('UserGreetings', { turnId });
-        clearInterval(interval)
+        navigation.navigate('UserGreetings', {turnId});
+        clearInterval(interval);
       }
     }, 1000);
 
@@ -43,9 +49,9 @@ export default function UserWaitingRoom({ route }: any) {
   }, [userTurn]);
 
   useEffect(() => {
-    socket?.on('canceled-turn', ({ data }) => {
-      console.log("canceled turn notification")
-      
+    socket?.on('canceled-turn', ({data}) => {
+      console.log('canceled turn notification');
+
       PushNotification.localNotification({
         /* Android Only Properties */
         channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
@@ -58,17 +64,16 @@ export default function UserWaitingRoom({ route }: any) {
         visibility: 'private', // (optional) set notification visibility, default: private
         ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
         title: '¡Nueva notificación!', // (optional)
-        smallIcon: "ic_notification",
-        largeIcon: "ic_launcher",
+        smallIcon: 'ic_notification',
+        largeIcon: 'ic_launcher',
 
         /* iOS only properties */
 
         message: 'Tu turno ha sido cancelado por inasistencia', // (required)
       });
-      dispacth(resetUserTurn())
+      dispacth(resetUserTurn());
       navigation.navigate('CanceledTurn');
-      clearInterval(interval)
-
+      clearInterval(interval);
     });
 
     return () => {
@@ -76,18 +81,18 @@ export default function UserWaitingRoom({ route }: any) {
     };
   }, []);
 
-  console.log("socket", socket)
+  console.log('socket', socket);
 
   if (isLoading) {
     return <Loader />;
   }
   return (
     <LinearGradient
-      style={{ flex: 1 }}
+      style={{flex: 1}}
       colors={['#fff', '#f1e2ca']}
-      start={{ x: 0, y: 0.6 }}
-      end={{ x: 0, y: 1 }}>
-      <Box position="relative" flex={1}>
+      start={{x: 0, y: 0.6}}
+      end={{x: 0, y: 1}}>
+      <Box position="relative">
         <Box
           borderRadius={9999}
           w={width * 3}
@@ -99,59 +104,100 @@ export default function UserWaitingRoom({ route }: any) {
           left={-width}
           opacity={0.5}
         />
-        <HStack
-          mt={'$1'}
-          width={'100%'}
-          justifyContent="center">
+        <HStack mt={'$1'} width={'100%'} justifyContent="center">
           <Clock
             format={'hh:mm:ss'}
             ticking={true}
             element={Text}
-            style={{ fontSize: 16, color: '#1f3d56' }}
+            style={{fontSize: 16, color: '#1f3d56'}}
           />
         </HStack>
-        <Heading textAlign="center" color="$textDark500">
+        <CustomHeading textAlign="center" color="$textDark500">
           Sala de espera
-        </Heading>
-        <Center mt={'$10'}>
-          <Box p="$4" w={'$full'} maxWidth={400}>
-            <Box hardShadow={'1'} p="$4" bg="$white" borderRadius="$lg">
-              <Text color="$textDark500">
-                Tienes un turno agendado para :{' '}
-                <Text color="$textDark900" fontWeight="bold">
-                  {moment(data.turn[0].startDate)
-                    .utc()
-                    .utcOffset(3, true)
-                    .format('hh:mm')}
-                </Text>
-              </Text>
-              <Text color="$textDark500">
-                Barbero:{' '}
-                <Text
-                  color="$textDark900"
-                  fontWeight="bold">{`${data.turn[0].barberData[0].name} ${data.turn[0].barberData[0].lastname}`}</Text>
-              </Text>
-              <Text color="$textDark500">
-                Servicio:{' '}
-                <Text color="$textDark900" fontWeight="bold">
-                  {data.turn[0].name}
-                </Text>
-              </Text>
-              <Text color="$textDark500">
-                Recuerda que tu asistencia debe ser 15 minutos antes de la hora de tu turno
-              </Text>
-            </Box>
-            <HStack justifyContent="center" mt="$4">
-              <LottieView
-                style={{ width: 150, height: 150 }}
-                source={require('./../../assets/lottie/waiting.json')}
-                autoPlay
-                loop={true}
-              />
-            </HStack>
-          </Box>
-        </Center>
+        </CustomHeading>
       </Box>
+        <ScrollView mt={'$16'} flex={1}>
+          <Center>
+            <Box p="$4" w={'$full'} maxWidth={400}>
+              <HStack justifyContent="center" mb="$6">
+                <LottieView
+                  style={{width: 90, height: 90}}
+                  source={require('./../../assets/lottie/waiting.json')}
+                  autoPlay
+                  loop={true}
+                />
+              </HStack>
+              <Box hardShadow={'1'} p="$4" bg="$white" borderRadius="$lg">
+                <CustomText color="$textDark500">
+                  Tienes un turno agendado para :{' '}
+                  <CustomText color="$textDark900" fontWeight="bold">
+                    {moment(data.turn[0].startDate)
+                      .utc()
+                      .utcOffset(3, true)
+                      .format('hh:mm')}
+                  </CustomText>
+                </CustomText>
+                <CustomText color="$textDark500">
+                  Barbero:{' '}
+                  <CustomText color="$textDark900" fontWeight="bold">
+                    {`${data.turn[0].barberData[0].name} ${data.turn[0].barberData[0].lastname}`}
+                  </CustomText>
+                </CustomText>
+                <CustomText color="$textDark500">
+                  Servicio:{' '}
+                  <CustomText color="$textDark900" fontWeight="bold">
+                    {data.turn[0].name}
+                  </CustomText>
+                </CustomText>
+                <CustomText color="$textDark500">
+                  Precio:{' '}
+                  <CustomText color="$textDark900" fontWeight="bold">
+                    {data.turn[0].price}
+                  </CustomText>
+                </CustomText>
+                <CustomText color="$textDark500">
+                  Recuerda que tu asistencia debe ser 15 minutos antes de la
+                  hora de tu turno
+                </CustomText>
+              </Box>
+
+              {data && (
+                <VStack mt={'$10'}>
+                  <CustomHeading mb={'$4'}>
+                    Galería de {data.turn[0].serviceData[0].name}
+                  </CustomHeading>
+                  <Carousel
+                    data={data.turn[0].serviceData[0].images}
+                    layout={'default'}
+                    onSnapToItem={index => setActiveSlide(index)}
+                    renderItem={({item, index}: any) => {
+                      console.log('index', index);
+                      return (
+                        <Image
+                          borderRadius={8}
+                          w={'$full'}
+                          style={{width: width * 0.8, height: width * 0.8}}
+                          resizeMode="cover"
+                          source={{uri: item.url}}
+                          alt="imagen-de-servicio"
+                        />
+                      );
+                    }}
+                    sliderWidth={width}
+                    itemWidth={width * 0.9}
+                  />
+                  <Pagination
+                    dotStyle={{
+                      backgroundColor: '#367187',
+                    }}
+                    dotsLength={data.turn[0].serviceData[0].images.length}
+                    activeDotIndex={activeSlide}
+                  />
+                </VStack>
+              )}
+            </Box>
+          </Center>
+        </ScrollView>
     </LinearGradient>
   );
 }
