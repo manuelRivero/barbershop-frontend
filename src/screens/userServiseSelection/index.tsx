@@ -33,14 +33,14 @@ import UserServiceCard from '../../components/userServiceCard';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useNavigation} from '@react-navigation/native';
 
-import moment from 'moment-timezone';
+import moment, {Moment} from 'moment-timezone';
 import {getDateByTimeZone} from '../../helpers';
 import LinearGradient from 'react-native-linear-gradient';
 import {ChevronLeftIcon} from 'lucide-react-native';
 import socket from '../../socket';
 import Header from '../../components/header';
+import CalendarModal from '../../components/shared/calendarModal';
 
-moment.tz.setDefault(moment.tz.guess());
 const {width} = Dimensions.get('window');
 
 export default function UserServiceSelection({route}: any) {
@@ -50,6 +50,7 @@ export default function UserServiceSelection({route}: any) {
   const [businessHoursEnd, setBusinessHoursEnd] = useState<moment.Moment>(
     moment().set({hour: 20, minute: 0, second: 0}).utc().utcOffset(3, true),
   );
+  console.log('businessHoursEnd', businessHoursEnd);
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {id, service} = route.params;
   const timeRef = useRef<number | null>(null);
@@ -63,23 +64,20 @@ export default function UserServiceSelection({route}: any) {
 
   const {data, isLoading, refetch, fulfilledTimeStamp} =
     useGetBarberServicesQuery({id});
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const {
     data: turnsData,
     refetch: refetchTurns,
     isLoading: isLoadingTurns,
     fulfilledTimeStamp: turnsFulfilledTimeStamp,
   } = useGetTurnsQuery(
-    {id},
-    {
-      skip: moment().utc().utcOffset(3, true).isBefore(businessHoursStart)
-        ? true
-        : false,
-    },
+    {id, date:selectedDate!},{ skip: !selectedDate ? true : false },
   );
   const [addTurnRequest, {isLoading: isLoadingAddTurn}] = useAddTurnMutation();
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
+  const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [isSunday, setIsSunday] = useState<boolean>(false);
   const [restartTime, setRestartTime] = useState<moment.Moment>(
@@ -99,22 +97,58 @@ export default function UserServiceSelection({route}: any) {
       return [...frontPart, ...lastPart];
     }
     const checkTurnForServiceTime = async () => {
-      if (selectedService) {
+      if (selectedService && selectedDate && turns) {
+        console.log("entró a la función", turns)
         const slots = [];
         let turnsList = [...turns];
-        console.log('turnsList', turnsList);
-        let currentTime = moment().utc().utcOffset(3, true).add(1, 'hour');
 
-        if (currentTime.isBefore(businessHoursStart)) {
-          // const diff = currentTime.clone().diff(businessHoursStart, 'minutes');
-          const diff = businessHoursStart.clone().diff(currentTime, 'minutes');
-          currentTime = currentTime.add(diff, 'minutes');
+        let currentTime: Moment;
+        if (
+          moment(selectedDate, 'YYYY-MM-DD')
+            .set({hour: 0, minute: 0, second: 0, millisecond: 0})
+            .utc()
+            .utcOffset(3, true)
+            .isSame(
+              moment()
+                .set({hour: 0, minute: 0, second: 0, millisecond: 0})
+                .utc()
+                .utcOffset(3, true),
+            )
+        ) {
+          currentTime = moment().utc().utcOffset(3, true).add(1, 'hour');
+          console.log('entro al if');
+          // if (currentTime.isBefore(businessHoursStart)) {
+          //   // const diff = currentTime.clone().diff(businessHoursStart, 'minutes');
+          //   const diff = businessHoursStart
+          //     .clone()
+          //     .diff(currentTime, 'minutes');
+          //   currentTime = currentTime.add(diff, 'minutes');
+          // }
+        } else {
+          currentTime = moment(selectedDate).set('hours', 9).set('minutes', 0).utc()
+          .utcOffset(3, true);
+          console.log("entro al else")
         }
+        console.log(
+          'turns',
+          currentTime,
+          moment(selectedDate, 'YYYY-MM-DD')
+            .set('hours', 20)
+            .set('minutes', 0)
+            .utc()
+            .utcOffset(3, true),
+        );
         while (
           currentTime
             .clone()
             .add(selectedService.duration, 'minutes')
-            .isBefore(businessHoursEnd)
+            .isBefore(
+              moment(selectedDate, 'YYYY-MM-DD')
+                .set('hours', 20)
+                .set('minutes', 0)
+                .utc()
+                .utcOffset(3, true),
+            )
         ) {
           const endTime = currentTime
             .clone()
@@ -146,10 +180,12 @@ export default function UserServiceSelection({route}: any) {
                 moment(slot.endDate).isBetween(currentTime, endTime) ||
                 moment(currentTime).isBetween(slot.startDate, slot.endDate) ||
                 nextSlotValidation ||
-                endTime.isBetween(slot.startDate, slot.endDate)
+                endTime.isBetween(slot.startDate, slot.endDate) ||
+                moment(slot.startDate).isSame(currentTime)
               );
             });
           if (isSlotInavailable < 0) {
+            console.log('slot', currentTime.toDate());
             slots.push({
               startDate: currentTime.toDate(),
               endDate: endTime.toDate(),
@@ -188,10 +224,10 @@ export default function UserServiceSelection({route}: any) {
       }
     };
 
-    if (selectedService) {
+    if (selectedService && selectedDate && turns) {
       checkTurnForServiceTime();
     }
-  }, [selectedService]);
+  }, [selectedDate, turns]);
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
@@ -262,6 +298,7 @@ export default function UserServiceSelection({route}: any) {
                 turnData: res.turn,
               });
             } catch (error) {
+              dispatch(hideInfoModal());
               dispatch(
                 showInfoModal({
                   title: '¡No se ha podido agendar tu turno!',
@@ -312,14 +349,17 @@ export default function UserServiceSelection({route}: any) {
   const handleServiceSelect = (e: Service) => {
     setSelectedService(e);
   };
+  useEffect(() => {
+    if (selectedService) {
+      setShowCalendarModal(true);
+    }
+  }, [selectedService]);
 
   useEffect(() => {
     if (service) {
       setSelectedService(service);
     }
   }, [service]);
-
-  console.log('service', service);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -358,10 +398,13 @@ export default function UserServiceSelection({route}: any) {
     }, 1000);
     return () => clearInterval(interval);
   }, [restartTime]);
+  
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       console.log('focus');
-      refetch();
+      if(turnsData){
+        refetch();
+      }
     });
 
     return unsubscribe;
@@ -373,11 +416,21 @@ export default function UserServiceSelection({route}: any) {
     }
   }, [fulfilledTimeStamp]);
 
+  useEffect(()=>{
+    if(showTurnModal){
+      setSelectedDate(null)
+
+    }
+  }, [showTurnModal])
+
+  console.log("turns", turnsData)
+
   if (isLoading || isLoadingTurns) {
     return <Loader />;
   }
 
-  console.log('restart time', restartTime.clone().get('day'));
+
+
   return (
     <LinearGradient
       style={{flex: 1}}
@@ -399,10 +452,10 @@ export default function UserServiceSelection({route}: any) {
           </Box>
         ) : (
           <>
-            <ScrollView flex={1}>
               <FlatList
                 contentContainerStyle={{paddingBottom: 50}}
                 p="$4"
+                mt={"$20"}
                 data={services}
                 renderItem={(props: ListRenderItemInfo<any>) => {
                   const {item} = props;
@@ -423,9 +476,18 @@ export default function UserServiceSelection({route}: any) {
                   );
                 }}
               />
-            </ScrollView>
-            <SelectTurnModal
-              businessHoursEnd={businessHoursEnd}
+            {showCalendarModal && (
+              <CalendarModal
+                show={showCalendarModal}
+                onClose={() => setShowCalendarModal(false)}
+                onSelect={e => {
+                  setShowCalendarModal(false);
+                  setSelectedDate(e);
+                }}
+              />
+            )}
+           { showTurnModal && <SelectTurnModal
+            date={selectedDate!}
               onSelect={handleAddTurn}
               turns={turnList}
               show={showTurnModal}
@@ -433,7 +495,7 @@ export default function UserServiceSelection({route}: any) {
                 setShowTurnModal(false);
                 setSelectedService(null);
               }}
-            />
+            />}
           </>
         )}
       </Box>

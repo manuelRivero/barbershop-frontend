@@ -12,9 +12,24 @@ import pushNotifications, {
 import { Platform } from 'react-native';
 import { PersistGate } from 'redux-persist/integration/react';
 
+import { LocaleConfig } from 'react-native-calendars';
+
+
+import moment from 'moment-timezone';
+
+moment.tz.setDefault(moment.tz.guess());
 
 export default function App() {
   const navigationRef = useRef<any>()
+
+  LocaleConfig.locales.es = {
+    monthNames: 'Enero_Febrero_Marzo_Abril_Mayo_Junio_Julio_Augosto_Septiembre_Octubrr_Noviembre_Dicembre'.split('_'),
+    dayNames: 'Domingo_Lunes_Martes_Miercoles_Juesves_Viernes_Sabado'.split('_'),
+    dayNamesShort: 'Do_Lun_Mar_Mier_Jue_Vie_Sab'.split('_'),
+    today: 'Today',
+  };
+
+  LocaleConfig.defaultLocale = "es";
 
   useEffect(() => {
 

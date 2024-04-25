@@ -30,7 +30,7 @@ interface Props {
   onClose: () => void;
   turns: TurnSelectItem[];
   onSelect: (e: TurnSelectItem) => Promise<any>;
-  businessHoursEnd: moment.Moment
+  date: string
 }
 
 export default function SelectTurnModal({
@@ -38,7 +38,7 @@ export default function SelectTurnModal({
   onClose,
   turns,
   onSelect,
-  businessHoursEnd,
+  date,
 }: Props) {
   const dispatch = useAppDispatch();
   const ref = useRef();
@@ -60,7 +60,7 @@ export default function SelectTurnModal({
               </ModalCloseButton>
 
             </HStack>
-            <Text mt="$2" textAlign="center" fontSize="$xl" color="$textDark500">{businessHoursEnd.format("DD-MM-yyyy")}</Text>
+            <Text mt="$2" textAlign="center" fontSize="$xl" color="$textDark500">{moment(date).format("DD-MM-yyyy")}</Text>
 
           </VStack>
         </ModalHeader>

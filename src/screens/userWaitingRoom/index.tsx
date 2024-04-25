@@ -134,7 +134,10 @@ export default function UserWaitingRoom({route}: any) {
                     {moment(data.turn[0].startDate)
                       .utc()
                       .utcOffset(3, true)
-                      .format('hh:mm')}
+                      .format('DD-MM')} a las {moment(data.turn[0].startDate)
+                        .utc()
+                        .utcOffset(3, true)
+                        .format('hh:mm A')}
                   </CustomText>
                 </CustomText>
                 <CustomText color="$textDark500">

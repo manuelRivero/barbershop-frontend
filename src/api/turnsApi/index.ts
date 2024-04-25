@@ -25,6 +25,7 @@ interface AddTurnRequest {
 }
 interface GetTurnsRequest {
   id: number | string;
+  date?: string
 }
 interface GetTurnsDetailRequest {
   id: number | string;
@@ -82,6 +83,7 @@ export const turnsApi = createApi({
       query: args => {
         return ({
           url: '/turns/get/' + args.id,
+          params: {date:args.date}
         })
       },
       transformResponse: (response: GetTurnsResponse) => {
