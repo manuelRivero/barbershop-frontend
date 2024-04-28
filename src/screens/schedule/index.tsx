@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import moment from 'moment-timezone';
+import moment, {Moment} from 'moment-timezone';
 import {
   ScrollView,
   AddIcon,
@@ -9,6 +9,7 @@ import {
   Image,
   Text,
   VStack,
+  FlatList,
 } from '@gluestack-ui/themed';
 import {Event, TurnSelectItem} from '../../types/turns';
 import Clock from 'react-live-clock';
@@ -33,7 +34,7 @@ import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import PushNotification from 'react-native-push-notification';
-import {Dimensions} from 'react-native';
+import {Dimensions, SectionListData} from 'react-native';
 import {DollarSignIcon} from 'lucide-react-native';
 import {Icon} from '@gluestack-ui/themed';
 import socket from '../../socket';
@@ -52,6 +53,12 @@ import Animated, {
   withDelay,
 } from 'react-native-reanimated';
 import Header from '../../components/header';
+import {
+  AgendaList,
+  CalendarProvider,
+  ExpandableCalendar,
+  WeekCalendar,
+} from 'react-native-calendars';
 
 const {width} = Dimensions.get('window');
 export default function Schedule() {
@@ -59,7 +66,7 @@ export default function Schedule() {
     moment().set({hour: 9, minute: 0, second: 0}).utc().utcOffset(3, true),
   );
   const [businessHoursEnd, setBusinessHoursEnd] = useState<moment.Moment>(
-    moment().set({hour: 20, minute: 0, second: 0}).utc().utcOffset(3, true),
+    moment().set({hour: 23, minute: 0, second: 0}).utc().utcOffset(3, true),
   );
   const [businessIsClosed, setBusinessIsClosed] = useState<boolean>(false);
 
@@ -74,6 +81,9 @@ export default function Schedule() {
   const [restartTime, setRestartTime] = useState<moment.Moment>(
     moment().set({hour: 23, minutes: 59, second: 59}).utc().utcOffset(3, true),
   );
+  const [selectedDate, setSelectedDate] = useState<string>(
+    moment().utc().utcOffset(3, true).format('yyyy-MM-DD'),
+  );
 
   const {
     data: turnsData,
@@ -81,7 +91,7 @@ export default function Schedule() {
     isLoading: isLoadingTurns,
     fulfilledTimeStamp,
     isUninitialized,
-  } = useGetTurnsQuery({id: user?._id ?? ''});
+  } = useGetTurnsQuery({id: user?._id ?? '', date: selectedDate});
   const [addTurnRequest, {isLoading}] = useAddTurnMutation();
 
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
@@ -253,21 +263,61 @@ export default function Schedule() {
       return [...frontPart, ...lastPart];
     }
     const checkTurnForServiceTime = async () => {
-      if (selectedService) {
+      if (selectedService && selectedDate && turns) {
+        console.log('entró a la función', turns);
         const slots = [];
-        let turnsList = [...turns.filter(turn => turn.status !== 'CANCELED')];
-        let currentTime = moment().utc().utcOffset(3, true);
-        if (currentTime.isBefore(businessHoursStart)) {
-          // const diff = currentTime.clone().diff(businessHoursStart, 'minutes');
-          const diff = businessHoursStart.clone().diff(currentTime, 'minutes');
-          currentTime = currentTime.add(diff, 'minutes');
-        }
+        let turnsList = [...turns];
 
+        let currentTime: Moment;
+        if (
+          moment(selectedDate, 'YYYY-MM-DD')
+            .set({hour: 0, minute: 0, second: 0, millisecond: 0})
+            .utc()
+            .utcOffset(3, true)
+            .isSame(
+              moment()
+                .set({hour: 0, minute: 0, second: 0, millisecond: 0})
+                .utc()
+                .utcOffset(3, true),
+            )
+        ) {
+          currentTime = moment().utc().utcOffset(3, true).add(1, 'hour');
+          console.log('entro al if');
+          // if (currentTime.isBefore(businessHoursStart)) {
+          //   // const diff = currentTime.clone().diff(businessHoursStart, 'minutes');
+          //   const diff = businessHoursStart
+          //     .clone()
+          //     .diff(currentTime, 'minutes');
+          //   currentTime = currentTime.add(diff, 'minutes');
+          // }
+        } else {
+          currentTime = moment(selectedDate)
+            .set('hours', 9)
+            .set('minutes', 0)
+            .utc()
+            .utcOffset(3, true);
+          console.log('entro al else');
+        }
+        console.log(
+          'turns',
+          currentTime,
+          moment(selectedDate, 'YYYY-MM-DD')
+            .set('hours', 20)
+            .set('minutes', 0)
+            .utc()
+            .utcOffset(3, true),
+        );
         while (
           currentTime
             .clone()
             .add(selectedService.duration, 'minutes')
-            .isBefore(businessHoursEnd)
+            .isBefore(
+              moment(selectedDate, 'YYYY-MM-DD')
+                .set('hours', 20)
+                .set('minutes', 0)
+                .utc()
+                .utcOffset(3, true),
+            )
         ) {
           const endTime = currentTime
             .clone()
@@ -279,7 +329,6 @@ export default function Schedule() {
             .findIndex((slot, slotIndex, slotArray) => {
               const hasNextSlot = slotIndex + 1 < slotArray.length;
               let nextSlotValidation = false;
-              console.log('IS AFTER');
               if (hasNextSlot) {
                 nextSlotValidation =
                   endTime
@@ -300,15 +349,16 @@ export default function Schedule() {
                 moment(slot.endDate).isBetween(currentTime, endTime) ||
                 moment(currentTime).isBetween(slot.startDate, slot.endDate) ||
                 nextSlotValidation ||
-                endTime.isBetween(slot.startDate, slot.endDate)
+                endTime.isBetween(slot.startDate, slot.endDate) ||
+                moment(slot.startDate).isSame(currentTime)
               );
             });
           if (isSlotInavailable < 0) {
+            console.log('slot', currentTime.toDate());
             slots.push({
               startDate: currentTime.toDate(),
               endDate: endTime.toDate(),
             });
-
             currentTime = endTime;
           } else {
             if (
@@ -343,10 +393,10 @@ export default function Schedule() {
       }
     };
 
-    if (selectedService) {
+    if (selectedService && selectedDate && turns) {
       checkTurnForServiceTime();
     }
-  }, [selectedService]);
+  }, [selectedService, turns]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -377,6 +427,13 @@ export default function Schedule() {
             .set({date: day + 1, hour: 20, minute: 0})
             .utc()
             .utcOffset(3, true),
+        );
+        setSelectedDate(
+          moment()
+            .set({date: day + 1, hour: 20, minute: 0})
+            .utc()
+            .utcOffset(3, true)
+            .format('yyyy-MM-DD'),
         );
         if (turns.length > 0) {
           dispatch(resetAllturns());
@@ -536,103 +593,98 @@ export default function Schedule() {
           viewClock={true}
           width={width}
         />
-        <ScrollView flex={1} mt={'$10'}>
-          <HStack justifyContent="flex-end">
-            <HStack
-              py={'$1'}
-              px={'$4'}
-              borderWidth={2}
-              borderRadius={16}
-              borderColor="$textDark500"
-              alignItems="center"
-              mr={'$2'}
-              w="auto">
-              <Icon as={DollarSignIcon} color={'$textDark500'} />
-              <CustomText>
-                {(turns
-                  .filter((turn: Event) => turn.status === 'COMPLETE')
-                  .reduce((acc: number, obj: Event) => acc + obj.price, 0) *
-                  (user?.commission ? user?.commission : 0)) /
-                  100}
-              </CustomText>
-            </HStack>
+        <HStack justifyContent="flex-end" mt={'$10'}>
+          <HStack
+            py={'$1'}
+            px={'$4'}
+            borderWidth={2}
+            borderRadius={16}
+            borderColor="$textDark500"
+            alignItems="center"
+            mr={'$2'}
+            w="auto">
+            <Icon as={DollarSignIcon} color={'$textDark500'} />
+            <CustomText>
+              {(turns
+                .filter((turn: Event) => turn.status === 'COMPLETE')
+                .reduce((acc: number, obj: Event) => acc + obj.price, 0) *
+                (user?.commission ? user?.commission : 0)) /
+                100}
+            </CustomText>
           </HStack>
-          <Box padding={'$4'}>
-            {turns.filter(turn => turn.status !== 'CANCELED').length > 0 && (
-              <CustomText textAlign="center" mt={'$10'} mb={'$4'}>
-                Los turnos agendados para el día de hoy serán visibles en tu
-                agenda hasta las{' '}
-                {restartTime.utc().utcOffset(3, true).format('hh:mm A')}.
-              </CustomText>
-            )}
-            {[...turns.filter(turn => turn.status !== 'CANCELED')]
-              .sort(function (left, right) {
-                return moment(left.startDate).diff(moment(right.startDate));
-              })
-              .map(e => {
-                console.log('user data', user);
-                return (
-                  <TurnCard key={moment(e.startDate).toString()} event={e} />
-                );
-              })}
-            {turns.filter(turn => turn.status !== 'CANCELED').length === 0 && (
-              <>
-                {isSunday && (
-                  <CustomText textAlign="center" mt={'$10'}>
-                    Hoy es domingo y la barberìa se encuentra cerrada
-                  </CustomText>
-                )}
-                {!isSunday && user?.isActive && !businessIsClosed && (
-                  <CustomText textAlign="center" mt={'$10'}>
-                    Aún no has agendado ningún turno para hoy
-                  </CustomText>
-                )}
-                {!isSunday && !user?.isActive && (
-                  <CustomText textAlign="center" mt={'$10'}>
-                    Actualmente te encuentras deshabilitado para agendar turnos.
-                  </CustomText>
-                )}
+        </HStack>
+        <Box padding={'$4'} flex={1}>
+          {turns && (
+            <CalendarProvider
+              style={{flex: turns.length > 0 ? 1 : 0}}
+              date={selectedDate}
+              onDateChanged={date => setSelectedDate(date)}>
+              <Box mb={'$2'}>
+                <WeekCalendar firstDay={1} allowShadow hideDayNames={true} />
+              </Box>
 
-                {!isSunday && user?.isActive && !businessIsClosed && (
-                  <>
-                    <CustomText textAlign="center" mt={'$4'}>
-                      Agenda abierta para{' '}
-                      <CustomText fontWeight="bold">
-                        {moment().format('DD-MM-yyyy')}
-                      </CustomText>
-                    </CustomText>
-                    <HStack justifyContent="center">
-                      <Image
-                        mt={'$10'}
-                        maxWidth={'$32'}
-                        maxHeight={'$32'}
-                        resizeMode="contain"
-                        source={require('../../assets/images/schedule-placeholder.png')}
-                        alt="agenda-vacia"
-                      />
-                    </HStack>
-                  </>
-                )}
-                {!isSunday && user?.isActive && businessIsClosed && (
-                  <>
-                    <CustomText textAlign="center" mt={'$4'}>
-                      La barbería ha cerrado por hoy
-                    </CustomText>
-                    <HStack justifyContent="center" mt="$4">
-                      <LottieView
-                        style={{width: 150, height: 150}}
-                        source={require('./../../assets/lottie/waiting.json')}
-                        autoPlay
-                        loop={true}
-                      />
-                    </HStack>
-                  </>
-                )}
-              </>
-            )}
-          </Box>
-        </ScrollView>
-        {console.log('sunday', isSunday)}
+              <FlatList
+                data={[...turns]
+                  .filter(turn => turn.status !== 'CANCELED')
+                  .sort(function (left, right) {
+                    return moment(left.startDate).diff(moment(right.startDate));
+                  })}
+                renderItem={({item}: any) => {
+                  console.log('item', item);
+                  return <TurnCard event={item} />;
+                }}
+                // scrollToNextEvent
+                // dayFormat={'yyyy-MM-d'}
+              />
+            </CalendarProvider>
+          )}
+          {turns.filter(turn => turn.status !== 'CANCELED').length === 0 && (
+            <>
+              {isSunday && (
+                <CustomText textAlign="center" mt={'$10'}>
+                  Hoy es domingo y la barberìa se encuentra cerrada
+                </CustomText>
+              )}
+              {!isSunday && user?.isActive && !businessIsClosed && (
+                <>
+                  <CustomText textAlign="center" mt={'$10'}>
+                    Aún no has agendado ningún turno para está fecha
+                  </CustomText>
+                  <HStack justifyContent="center">
+                    <Image
+                      mt={'$10'}
+                      maxWidth={'$32'}
+                      maxHeight={'$32'}
+                      resizeMode="contain"
+                      source={require('../../assets/images/schedule-placeholder.png')}
+                      alt="agenda-vacia"
+                    />
+                  </HStack>
+                </>
+              )}
+              {!isSunday && !user?.isActive && (
+                <CustomText textAlign="center" mt={'$10'}>
+                  Actualmente te encuentras deshabilitado para agendar turnos.
+                </CustomText>
+              )}
+              {!isSunday && user?.isActive && businessIsClosed && (
+                <>
+                  <CustomText textAlign="center" mt={'$4'}>
+                    La barbería ha cerrado por hoy
+                  </CustomText>
+                  <HStack justifyContent="center" mt="$4">
+                    <LottieView
+                      style={{width: 150, height: 150}}
+                      source={require('./../../assets/lottie/waiting.json')}
+                      autoPlay
+                      loop={true}
+                    />
+                  </HStack>
+                </>
+              )}
+            </>
+          )}
+        </Box>
         {!isSunday && user?.isActive && (
           <HStack
             position="absolute"
@@ -658,7 +710,7 @@ export default function Schedule() {
         onClose={() => setShowServiceModal(false)}
       />
       <SelectTurnModal
-        businessHoursEnd={businessHoursEnd}
+        date={selectedDate}
         onSelect={handleAddTurn}
         turns={turnList}
         show={showTurnModal}
