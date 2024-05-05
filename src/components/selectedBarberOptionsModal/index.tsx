@@ -18,41 +18,44 @@ import {
 import React, {useRef} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { User } from '../../types/user';
+import { useBarberDisableMutation } from '../../api/barbersApi';
+import BarberAvatar from '../shared/barberAvatar';
 
 
 interface Props {
   show: boolean;
   onClose: () => void;
-  barberId: number | null
+  barberData: User | null
 }
 export default function SelectBarberOptionsModal({
   show,
   onClose,
-  barberId
+  barberData
 }: Props) {
   const ref = useRef();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
 
   const handleReview = () => {
-    navigation.navigate("UserBarberReview",{id:barberId})
+    navigation.navigate("UserBarberReview",{id:barberData?._id})
     onClose()
   }
   const handleGallery = () => {
-    navigation.navigate("UserBarberGallery",{id:barberId})
+    navigation.navigate("UserBarberGallery",{id:barberData?._id})
     onClose()
 
   }
   const handleReservation = () => {
     navigation.navigate('UserServiceSelection', {
-      id: barberId,
+      id: barberData?._id,
     })
     onClose()
 
   }
   return (
     <Modal
-      isOpen={show && Boolean(barberId)}
+      isOpen={show && Boolean(barberData)}
       onClose={onClose}
       finalFocusRef={ref}
       >
@@ -65,6 +68,9 @@ export default function SelectBarberOptionsModal({
           </ModalCloseButton>
         </ModalHeader>
         <ModalBody>
+          <Box mb={"$4"}>
+          <BarberAvatar barber={barberData} />
+          </Box>
           <Pressable onPress={handleGallery}>
             <Box
               softShadow={'2'}

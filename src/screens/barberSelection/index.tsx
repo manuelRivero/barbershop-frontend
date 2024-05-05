@@ -20,6 +20,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {RootState, useAppSelector} from '../../store';
 import {useGetActiveTurnQuery} from '../../api/turnsApi';
 import Header from '../../components/header';
+import { User } from '../../types/user';
 
 const {width} = Dimensions.get('window');
 
@@ -33,7 +34,7 @@ export default function BarberSelection() {
   } = useGetBarbersQuery({});
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [selectedBarber, setSelectedBarber] = useState<number | null>(null);
+  const [selectedBarber, setSelectedBarber] = useState<User | null>(null);
   useEffect(() => {
     if (selectedBarber) {
       setIsOpen(true);
@@ -78,7 +79,7 @@ export default function BarberSelection() {
                     <Center>
                       <SelectBarberCard
                         data={item}
-                        selectBarber={() => setSelectedBarber(item._id)}
+                        selectBarber={() => setSelectedBarber(item)}
                       />
                     </Center>
                   );
@@ -96,13 +97,13 @@ export default function BarberSelection() {
               />
             </Box>
           </Box>
-          <SelectBarberOptionsModal
+          {selectedBarber && <SelectBarberOptionsModal
             show={isOpen}
-            barberId={selectedBarber}
+            barberData={selectedBarber}
             onClose={() => {
               setSelectedBarber(null);
             }}
-          />
+          />}
         </Box>
       </LinearGradient>
     )
