@@ -7,14 +7,16 @@ import { authApi } from '../../../api/authApi';
 interface State {
   user: User | null;
   token: string | null;
-  refreshToken: string | null
+  refreshToken: string | null;
+  lastServiceDate: string | null
 }
 
 // Define the initial state using that type
 const initialState: State = {
   user: null,
   token: null,
-  refreshToken: null
+  refreshToken: null,
+  lastServiceDate: null
 };
 
 export const authSlice = createSlice({
@@ -42,10 +44,13 @@ export const authSlice = createSlice({
       state.user = null;
       state.token = null;
     },
+    setLastServiceDate : (state, action) => {
+      state.lastServiceDate = action.payload
+    }
   },
 });
 
-export const {setUser, setToken, logout} = authSlice.actions;
+export const {setUser, setToken, logout, setLastServiceDate} = authSlice.actions;
 export const selectRefreshToken = (state: RootState) => state.auth.refreshToken;
 
 export default authSlice.reducer;

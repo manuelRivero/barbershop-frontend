@@ -1,13 +1,13 @@
 import {HStack, Box, Text, Heading, Center, Image} from '@gluestack-ui/themed';
 import Clock from 'react-live-clock';
 
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useGetTurnDetailsQuery} from '../../api/turnsApi';
 import Loader from '../../components/shared/loader';
 import moment from 'moment';
 import LottieView from 'lottie-react-native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {BackHandler, Dimensions} from 'react-native';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import LinearGradient from 'react-native-linear-gradient';
@@ -19,6 +19,7 @@ import {VStack} from '@gluestack-ui/themed';
 import {ScrollView} from '@gluestack-ui/themed';
 import CustomHeading from '../../components/shared/heading';
 import CustomText from '../../components/shared/text';
+import { setLastServiceDate } from '../../store/features/authSlice';
 
 const {width} = Dimensions.get('window');
 
@@ -30,23 +31,29 @@ export default function UserWaitingRoom({route}: any) {
   const {userTurn} = useAppSelector((state: RootState) => state.turns);
 
   const turnId = route.params?.turnId || userTurn?._id;
-  console.log('turnId', userTurn);
-  const {data, isLoading} = useGetTurnDetailsQuery({id: turnId});
+
+  const {data, isLoading, refetch, fulfilledTimeStamp} = useGetTurnDetailsQuery({id: turnId});
   const [activeSlide, setActiveSlide] = useState<number>(0);
 
-  useEffect(() => {
-    BackHandler.addEventListener('hardwareBackPress', function () {
-      return true;
-    });
-    interval = setInterval(() => {
-      if (moment().utc().utcOffset(3, true).isAfter(userTurn?.endDate)) {
-        navigation.navigate('UserGreetings', {turnId});
-        clearInterval(interval);
-      }
-    }, 1000);
 
-    return () => clearInterval(interval);
-  }, [userTurn]);
+  useFocusEffect(
+    useCallback(() => {
+      BackHandler.addEventListener('hardwareBackPress', function () {
+        return true;
+      });
+      
+      
+      interval = setInterval(() => {
+        if (moment().utc().utcOffset(3, true).isAfter(moment(userTurn?.endDate))) {
+          navigation.navigate('UserGreetings', {turnId});
+          clearInterval(interval);
+          refetch()
+        }
+      }, 1000);
+  
+      return () => clearInterval(interval);
+    }, [userTurn]),
+  );
 
   useEffect(() => {
     socket?.on('canceled-turn', ({data}) => {
@@ -81,7 +88,9 @@ export default function UserWaitingRoom({route}: any) {
     };
   }, []);
 
-  console.log('socket', socket);
+  useEffect(()=>{
+
+  },[fulfilledTimeStamp])
 
   if (isLoading) {
     return <Loader />;

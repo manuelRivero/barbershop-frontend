@@ -15,7 +15,7 @@ export default function UserTurnCard({event}: Props) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime(moment().diff(moment(event.endDate), 'minutes'));
+      setTime(moment().utc().utcOffset(3, true).diff(moment(event.endDate), 'minutes'));
     }, 1000);
 
     return () => clearInterval(interval);

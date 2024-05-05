@@ -1,37 +1,37 @@
-import { HStack, Box, Text, Heading, Center, Button } from '@gluestack-ui/themed';
+import {HStack, Box, Text, Heading, Center, Button} from '@gluestack-ui/themed';
 import Clock from 'react-live-clock';
 
-import React, { useEffect, useState } from 'react';
-import { useGetTurnDetailsQuery } from '../../api/turnsApi';
+import React, {useCallback, useEffect, useState} from 'react';
+import {useGetTurnDetailsQuery} from '../../api/turnsApi';
 import Loader from '../../components/shared/loader';
 import moment from 'moment';
 import LottieView from 'lottie-react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
-import { BackHandler, Dimensions } from 'react-native';
-import { RootState, useAppDispatch, useAppSelector } from '../../store';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import {BackHandler, Dimensions} from 'react-native';
+import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import PushNotification from 'react-native-push-notification';
 import BaseButton from '../../components/shared/baseButton';
 import LinearGradient from 'react-native-linear-gradient';
-import { resetUserTurn } from '../../store/features/turnsSlice';
+import {resetUserTurn} from '../../store/features/turnsSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomHeading from '../../components/shared/heading';
 import CustomText from '../../components/shared/text';
+import {setLastServiceDate} from '../../store/features/authSlice';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
-export default function UserGreetings({ route }: any) {
+export default function UserGreetings({route}: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const dispatch = useAppDispatch();
-  const { userTurn } = useAppSelector((state: RootState) => state.turns);
+  const {userTurn} = useAppSelector((state: RootState) => state.turns);
 
-  const turnId = route.params?.turnId || userTurn?._id
-  const { data, isLoading } = useGetTurnDetailsQuery({ id: turnId });
+  const turnId = route.params?.turnId || userTurn?._id;
+  const {data, isLoading} = useGetTurnDetailsQuery({id: turnId});
 
   const [restartTime, setRestartTime] = useState<moment.Moment>(
-    moment().set({ hour: 23, minutes: 0 }).utc().utcOffset(3, true),
+    moment().set({hour: 23, minutes: 0}).utc().utcOffset(3, true),
   );
-
 
   useEffect(() => {
     if (data) {
@@ -49,8 +49,8 @@ export default function UserGreetings({ route }: any) {
         title: '¡Nueva notificación!', // (optional)
         // @ts-ignore
         data: {
-          params:{ id: data.turn[0].barberData[0]._id},
-          path: "UserBarberReview"
+          params: {id: data.turn[0].barberData[0]._id},
+          path: 'UserBarberReview',
         },
 
         /* iOS only properties */
@@ -66,17 +66,17 @@ export default function UserGreetings({ route }: any) {
     });
     const interval = setInterval(() => {
       if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
-        const day = moment().utc().utcOffset(3, true).get('date')
-        console.log("day", day)
+        const day = moment().get('date');
+        console.log('day', day);
         setRestartTime(
           moment()
-            .set({ date: day + 1, hour: 23, minute: 0, second: 0 })
+            .set({date: day + 1, hour: 23, minute: 59, second: 59})
             .utc()
             .utcOffset(3, true),
         );
-        dispatch(resetUserTurn())
-        AsyncStorage.removeItem("persist:turns")
-        console.log("render")
+        dispatch(resetUserTurn());
+        AsyncStorage.removeItem('persist:turns');
+        console.log('render');
         navigation.navigate('BarberSelection');
       }
     }, 1000);
@@ -84,18 +84,15 @@ export default function UserGreetings({ route }: any) {
     return () => clearInterval(interval);
   }, [restartTime]);
 
-  console.log("restar time", restartTime)
-  console.log("restar time", restartTime)
-
   if (isLoading) {
     return <Loader />;
   }
   return (
     <LinearGradient
-      style={{ flex: 1 }}
+      style={{flex: 1}}
       colors={['#fff', '#f1e2ca']}
-      start={{ x: 0, y: 0.6 }}
-      end={{ x: 0, y: 1 }}>
+      start={{x: 0, y: 0.6}}
+      end={{x: 0, y: 1}}>
       <Box position="relative" flex={1}>
         <Box
           borderRadius={9999}
@@ -121,7 +118,7 @@ export default function UserGreetings({ route }: any) {
             format={'hh:mm:ss'}
             ticking={true}
             element={Text}
-            style={{ fontSize: 16, color: '#1f3d56' }}
+            style={{fontSize: 16, color: '#1f3d56'}}
           />
         </HStack>
         <CustomHeading textAlign="center" color="$textDark500">
@@ -134,14 +131,19 @@ export default function UserGreetings({ route }: any) {
               <CustomHeading textAlign="center" color="$textDark500">
                 ¡Gracias por preferir nuestro servicio!
               </CustomHeading>
-              <CustomText color="$textDark500" mt={10} textAlign='center'>
-                ¿Deseas calificar a {data.turn[0].barberData[0].name} {data.turn[0].barberData[0].lastname}?
+              <CustomText color="$textDark500" mt={10} textAlign="center">
+                ¿Deseas calificar a {data.turn[0].barberData[0].name}{' '}
+                {data.turn[0].barberData[0].lastname}?
               </CustomText>
               <HStack justifyContent="center" mt="$4">
                 <BaseButton
                   background="$primary500"
                   color="$white"
-                  onPress={() => navigation.navigate("UserBarberReview", { id: data.turn[0].barberData[0]._id })}
+                  onPress={() =>
+                    navigation.navigate('UserBarberReview', {
+                      id: data.turn[0].barberData[0]._id,
+                    })
+                  }
                   title="Calificar"
                   hasIcon={false}
                   disabled={false}
@@ -151,9 +153,9 @@ export default function UserGreetings({ route }: any) {
             </Box>
           </Box>
         </Center>
-          <CustomText color="$textDark500" textAlign='center'>
-            Podrás agendar nuevos servicios a partir de mañana
-          </CustomText>
+        <CustomText color="$textDark500" textAlign="center">
+          Podrás agendar nuevos servicios a partir de mañana
+        </CustomText>
       </Box>
     </LinearGradient>
   );

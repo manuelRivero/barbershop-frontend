@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import BarberSelection from '../../screens/barberSelection';
 import UserServiceSelection from '../../screens/userServiseSelection';
@@ -11,6 +11,7 @@ import UserGreetings from '../../screens/UserGreetings';
 import {RootState, useAppSelector} from '../../store';
 import Profile from '../../screens/profile';
 import UserCanceledTurn from '../../screens/UserCanceledTurn';
+import moment from 'moment';
 
 export type RootStackParamList = {
   BarberSelection: undefined;
@@ -46,15 +47,32 @@ const Stack = createNativeStackNavigator();
 
 const Schedule = () => {
   const {userTurn} = useAppSelector((state: RootState) => state.turns);
+  const [activeTurnScreen, setActiveTurnScreen] = useState<string>('UserWaitingRoom')
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (
+        userTurn &&
+        moment()
+          .utc()
+          .utcOffset(3, true)
+          .isAfter(moment(userTurn?.endDate), 'minutes')
+      ) {
+        setActiveTurnScreen('UserWaitingRoom');
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [userTurn]);
+  console.log("userTurn", userTurn)
 
   return (
     <Stack.Navigator
-      initialRouteName={!userTurn ? 'BarberSelection' : 'UserWaitingRoom'}
+      initialRouteName={!userTurn ? 'BarberSelection' : activeTurnScreen}
       screenOptions={{headerShown: false}}>
       {!userTurn && (
         <>
           <Stack.Screen name="BarberSelection" component={BarberSelection} />
-          <Stack.Screen name="UserBarberReview" component={UserBarberReview} />
           <Stack.Screen
             name="UserBarberGallery"
             component={UserBarberGallery}
@@ -62,6 +80,7 @@ const Schedule = () => {
         </>
       )}
 
+      <Stack.Screen name="UserBarberReview" component={UserBarberReview} />
       <Stack.Screen
         name="UserServiceSelection"
         component={UserServiceSelection}
