@@ -22,23 +22,26 @@ import {Clock2} from 'lucide-react-native';
 import {VStack} from '@gluestack-ui/themed';
 import BaseButton from '../../components/shared/baseButton';
 import Header from '../../components/header';
+import { useGetBarberDetailQuery } from '../../api/barbersApi';
+import BarberAvatar from '../../components/shared/barberAvatar';
 
 const width = Dimensions.get('window').width;
 export default function UserBarberGallery({route}: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {id} = route.params;
   const {data, isLoading, refetch} = useGetBarberServicesQuery({id: id});
+  const {data:barberData, isLoading:isLoadingBarberData, refetch: refetchBarberData} = useGetBarberDetailQuery({id})
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       refetch();
+      refetchBarberData();
     });
 
     return unsubscribe;
   }, [navigation]);
 
-  if (!isLoading) console.log('images data', data, id);
-  if (isLoading) {
+  if (isLoading || isLoadingBarberData) {
     return <Loader />;
   }
 
@@ -48,14 +51,17 @@ export default function UserBarberGallery({route}: any) {
       colors={['#fff', '#f1e2ca']}
       start={{x: 0, y: 0.6}}
       end={{x: 0, y: 1}}>
-      <Box flex={1} position="relative">
+      <Box p="$4" flex={1} position="relative">
         <Header
           title="Galería"
           viewClock={false}
           viewGoBack={true}
           width={width}
         />
-        <Box mt="$16" flex={1} justifyContent="center" alignItems="center">
+        <Box mt="$16" mb={"$4"} >
+          <BarberAvatar barber={barberData?.barber[0] || null} />
+        </Box>
+        <Box mb="$4" flex={1} justifyContent="center" alignItems="center">
           {data && data.services.length > 0 ? (
             <Carousel
               data={data?.services.flatMap((service: Service) =>

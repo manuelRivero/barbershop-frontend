@@ -16,6 +16,8 @@ import {Dimensions} from 'react-native';
 import CustomHeading from '../../components/shared/heading';
 import CustomText from '../../components/shared/text';
 import Header from '../../components/header';
+import BarberAvatar from '../../components/shared/barberAvatar';
+import { useGetBarberDetailQuery } from '../../api/barbersApi';
 
 interface Review {
   comment: string;
@@ -31,6 +33,8 @@ export default function UserBarberReview({route}: any) {
   const {id} = route.params;
   const [page, setPage] = useState<number>(1);
   const {data, isLoading, refetch} = useGetReviewsQuery({barber: id, page});
+  const {data:barberData, isLoading:isLoadingBarberData, refetch: refetchBarberData} = useGetBarberDetailQuery({id})
+
   const [open, setOpen] = useState<boolean>(false);
 
   React.useEffect(() => {
@@ -41,7 +45,7 @@ export default function UserBarberReview({route}: any) {
     return unsubscribe;
   }, [navigation]);
 
-  if (isLoading) {
+  if (isLoading || isLoadingBarberData) {
     return <Loader />;
   }
   return (
@@ -57,7 +61,11 @@ export default function UserBarberReview({route}: any) {
           viewGoBack={true}
           width={width}
         />
-        <Box mt="$10" position="relative" flex={1}>
+        <Box mt="$16"  position="relative" flex={1}>
+          <Box p="$4">
+          <BarberAvatar barber={barberData?.barber[0] || null} />
+
+          </Box>
           <FlatList
             contentContainerStyle={{padding: 16}}
             data={data?.data}

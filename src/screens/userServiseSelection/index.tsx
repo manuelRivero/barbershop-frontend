@@ -40,21 +40,18 @@ import {ChevronLeftIcon} from 'lucide-react-native';
 import socket from '../../socket';
 import Header from '../../components/header';
 import CalendarModal from '../../components/shared/calendarModal';
+import BarberAvatar from '../../components/shared/barberAvatar';
+import { useGetBarberDetailQuery } from '../../api/barbersApi';
 
 const {width} = Dimensions.get('window');
 
 export default function UserServiceSelection({route}: any) {
-  const [businessHoursStart, setBusinessHoursStart] = useState<moment.Moment>(
-    moment().set({hour: 9, minute: 0, second: 0}).utc().utcOffset(3, true),
-  );
-  const [businessHoursEnd, setBusinessHoursEnd] = useState<moment.Moment>(
-    moment().set({hour: 20, minute: 0, second: 0}).utc().utcOffset(3, true),
-  );
-  console.log('businessHoursEnd', businessHoursEnd);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {id, service} = route.params;
   const timeRef = useRef<number | null>(null);
-
+  
   const dispatch = useAppDispatch();
   const {services, showCreateServiceModal} = useAppSelector(
     (state: RootState) => state.services,
@@ -64,22 +61,22 @@ export default function UserServiceSelection({route}: any) {
 
   const {data, isLoading, refetch, fulfilledTimeStamp} =
     useGetBarberServicesQuery({id});
-    const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const {
-    data: turnsData,
-    refetch: refetchTurns,
-    isLoading: isLoadingTurns,
-    fulfilledTimeStamp: turnsFulfilledTimeStamp,
-  } = useGetTurnsQuery(
-    {id, date:selectedDate!},{ skip: !selectedDate ? true : false },
-  );
-  const [addTurnRequest, {isLoading: isLoadingAddTurn}] = useAddTurnMutation();
+    const {data:barberData, isLoading:isLoadingBarberData, refetch: refetchBarberData} = useGetBarberDetailQuery({id})
+
+    const {
+      data: turnsData,
+      refetch: refetchTurns,
+      isLoading: isLoadingTurns,
+      fulfilledTimeStamp: turnsFulfilledTimeStamp,
+    } = useGetTurnsQuery(
+      {id, date:selectedDate!},{ skip: !selectedDate ? true : false },
+    );
+    const [addTurnRequest, {isLoading: isLoadingAddTurn}] = useAddTurnMutation();
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
   const [showCalendarModal, setShowCalendarModal] = useState<boolean>(false);
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
-  const [isSunday, setIsSunday] = useState<boolean>(false);
   const [restartTime, setRestartTime] = useState<moment.Moment>(
     moment().set({hour: 23, minutes: 59, seconds: 59}).utc().utcOffset(3, true),
   );
@@ -363,13 +360,6 @@ export default function UserServiceSelection({route}: any) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const sunday = moment().get('day') === 0;
-
-      if (sunday && !isSunday) {
-        setIsSunday(true);
-      } else if (!sunday && !isSunday) {
-        setIsSunday(false);
-      }
 
       if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
         const day = moment().get('date');
@@ -379,18 +369,7 @@ export default function UserServiceSelection({route}: any) {
             .utc()
             .utcOffset(3, true),
         );
-        setBusinessHoursStart(
-          moment()
-            .set({date: day + 1, hour: 9, minute: 0})
-            .utc()
-            .utcOffset(3, true),
-        );
-        setBusinessHoursEnd(
-          moment()
-            .set({date: day + 1, hour: 11, minute: 0})
-            .utc()
-            .utcOffset(3, true),
-        );
+        
         if (turns.length > 0) {
           dispatch(resetAllturns());
         }
@@ -444,18 +423,13 @@ export default function UserServiceSelection({route}: any) {
           viewGoBack={true}
           viewClock={false}
         />
-        {isSunday ? (
-          <Box flex={1} mt={'$20'}>
-            <Heading textAlign="center" color="$textDark500">
-              Hoy es domingo y la barberìa se encuentra cerrada
-            </Heading>
-          </Box>
-        ) : (
+      
           <>
+          <Box p="$4" mt={"$16"}>
+            <BarberAvatar barber={barberData?.barber[0] || null} />
+          </Box>
               <FlatList
-                contentContainerStyle={{paddingBottom: 50}}
-                p="$4"
-                mt={"$20"}
+                contentContainerStyle={{paddingBottom: 50, paddingHorizontal: 16}}                
                 data={services}
                 renderItem={(props: ListRenderItemInfo<any>) => {
                   const {item} = props;
@@ -497,7 +471,7 @@ export default function UserServiceSelection({route}: any) {
               }}
             />}
           </>
-        )}
+
       </Box>
     </LinearGradient>
   );

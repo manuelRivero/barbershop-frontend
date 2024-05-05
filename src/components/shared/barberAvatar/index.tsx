@@ -1,6 +1,6 @@
 import {Avatar, Box, AvatarImage, HStack} from '@gluestack-ui/themed';
 import {User} from '../../../types/user';
-import CustomText from '../text';
+import CustomHeading from '../heading';
 
 interface Props {
   barber: User | null;
@@ -14,9 +14,9 @@ const BarberAvatar = ({barber}: Props) => {
           <AvatarImage source={{uri: barber?.avatar}} />
         </Avatar>
         <Box>
-          <CustomText>
+          <CustomHeading fontWeight='bold'>
             {`${barber?.name} ${barber?.lastname}`}
-          </CustomText>
+          </CustomHeading>
         </Box>
     </HStack>
   );
