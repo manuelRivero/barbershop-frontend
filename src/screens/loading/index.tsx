@@ -16,7 +16,7 @@ import {
 } from 'react-native-permissions';
 import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 import {Platform} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function Loading() {
   const [newCheckStatus, setNewCheckStatus] = useState<any>('');

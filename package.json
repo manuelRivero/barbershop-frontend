@@ -9,7 +9,8 @@
     "start": " react-native start",
     "test": "jest",
     "generate-bundle": " npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
-    "generate-keyhash": "keytool -exportcert -alias barbershop -keystore ./ | openssl sha1 -binary | openssl base64"
+    "generate-keyhash": "keytool -genkey -v -keystore key.keystore -alias barbershop -keyalg RSA -keysize 2048 -validity 10000",
+    "get-key": "keytool -list -keystore ./android/app/key.keystore -alias barbershop"
   },
   "dependencies": {
     "@cloudinary/url-gen": "^1.11.2",
@@ -17,6 +18,7 @@
     "@gluestack-ui/themed": "^0.1.53",
     "@react-native-async-storage/async-storage": "^1.21.0",
     "@react-native-community/datetimepicker": "^7.6.2",
+    "@react-native-google-signin/google-signin": "^11.0.1",
     "@react-navigation/bottom-tabs": "^6.5.9",
     "@react-navigation/native": "^6.1.8",
     "@react-navigation/native-stack": "^6.9.14",
