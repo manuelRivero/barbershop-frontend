@@ -21,11 +21,10 @@ import BaseButton from '../../components/shared/baseButton';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {
   addTurn,
-  initTurns,
+  deleteTurn,
   resetAllturns,
 } from '../../store/features/turnsSlice';
 import {
-  OverridedEvent,
   useAddTurnMutation,
   useGetTurnsQuery,
 } from '../../api/turnsApi';
@@ -70,9 +69,6 @@ export default function Schedule() {
   );
   const [businessIsClosed, setBusinessIsClosed] = useState<boolean>(false);
 
-  console.log('businessHoursStart', businessHoursStart);
-  console.log('businessHoursEnd', businessHoursEnd);
-
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const dispatch = useAppDispatch();
@@ -91,7 +87,7 @@ export default function Schedule() {
     isLoading: isLoadingTurns,
     fulfilledTimeStamp,
     isUninitialized,
-  } = useGetTurnsQuery({id: user?._id ?? '', date: selectedDate});
+  } = useGetTurnsQuery({id: user?._id ?? '', date: selectedDate}, {pollingInterval:1800000});
   const [addTurnRequest, {isLoading}] = useAddTurnMutation();
 
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
@@ -102,12 +98,6 @@ export default function Schedule() {
   const translateY = useSharedValue(-100);
   const titleOpacity = useSharedValue(0);
 
-  const animatedStyles = useAnimatedStyle(() => ({
-    transform: [{translateY: translateY.value}],
-  }));
-  const animatedTitleStyles = useAnimatedStyle(() => ({
-    opacity: titleOpacity.value,
-  }));
   const handleAddTurn = async (turn: TurnSelectItem) => {
     if (selectedService && user) {
       const handleRequest = async () => {
@@ -169,7 +159,7 @@ export default function Schedule() {
                     background: '$primary500',
                   },
                   submitCb: () => {
-                    dispatch(hideInfoModal());
+                    dispatch(hideInfoModal({component: 'schedule'}));
                     setShowTurnModal(false);
                     refetchTurns();
                   },
@@ -461,11 +451,6 @@ export default function Schedule() {
     setShowServiceModal(false);
   };
 
-  React.useEffect(() => {
-    if (turnsData) {
-      dispatch(initTurns(turnsData));
-    }
-  }, [fulfilledTimeStamp]);
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
@@ -477,13 +462,6 @@ export default function Schedule() {
     return unsubscribe;
   }, [navigation, isUninitialized]);
 
-  React.useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', async () => {
-      console.log('focus', isUninitialized);
-    });
-
-    return unsubscribe;
-  }, [navigation, isUninitialized]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -511,9 +489,9 @@ export default function Schedule() {
   );
 
   useEffect(() => {
-    socket.on('add-turn', ({data}) => {
-      console.log('notification');
-      dispatch(addTurn(data));
+    socket.on('add-turn', ({data, user}) => {
+      console.log('notification', data);
+      dispatch(addTurn({...data, user:{...user}}));
       PushNotification.localNotification({
         /* Android Only Properties */
         channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
@@ -577,6 +555,40 @@ export default function Schedule() {
     };
   }, []);
 
+  useEffect(() => {
+    socket.on('cancel-by-user', ({data}) => {
+      console.log('notification');
+      PushNotification.localNotification({
+        /* Android Only Properties */
+        channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
+        bigText: `¡Turno cancelado!`, // (optional) default: "message" prop
+        vibrate: true, // (optional) default: true
+        vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
+        groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
+        ongoing: false, // (optional) set whether this is an "ongoing" notification
+        priority: 'high', // (optional) set notification priority, default: high
+        visibility: 'private', // (optional) set notification visibility, default: private
+        ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
+        title: '¡Nueva notificación!', // (optional)
+        smallIcon: 'ic_notification',
+        largeIcon: 'ic_launcher',
+         // @ts-ignore
+         data: {
+          path: 'Schedule',
+        },
+
+        /* iOS only properties */
+
+        message: `${data.user} ha cancelado su turno para la fecha ${data.date}`, // (required)
+      });
+      dispatch(deleteTurn(data.turnId))
+    });
+
+    return () => {
+      socket?.off('cancel-by-user');
+    };
+  }, []);
+
   console.log('translateY', translateY.value);
 
   return (
@@ -613,19 +625,26 @@ export default function Schedule() {
             </CustomText>
           </HStack>
         </HStack>
-        <Box padding={'$4'} flex={1}>
+        <Box padding={'$4'} flex={0.9}>
           {turns && (
             <CalendarProvider
-              style={{flex: turns.length > 0 ? 1 : 0}}
+              style={{
+                flex:
+                  turns.filter(
+                    e => e.status === 'INCOMPLETE' || e.status === 'COMPLETE',
+                  ).length > 0
+                    ? 1
+                    : 0,
+              }}
               date={selectedDate}
+              
               onDateChanged={date => setSelectedDate(date)}>
               <Box mb={'$2'}>
-                <WeekCalendar firstDay={1} allowShadow hideDayNames={true} />
+                <WeekCalendar firstDay={1}  allowShadow hideDayNames={true} disableAllTouchEventsForDisabledDays={true} minDate={businessHoursEnd.toLocaleString()} />
               </Box>
-
               <FlatList
                 data={[...turns]
-                  .filter(turn => turn.status !== 'CANCELED')
+                  .filter(e => e.status !== 'CANCELED' && e.status !== 'CANCELED-BY-USER')
                   .sort(function (left, right) {
                     return moment(left.startDate).diff(moment(right.startDate));
                   })}
@@ -638,17 +657,20 @@ export default function Schedule() {
               />
             </CalendarProvider>
           )}
-          {turns.filter(turn => turn.status !== 'CANCELED').length === 0 && (
+          {turns.filter(
+            turn =>
+              turn.status !== 'CANCELED' && turn.status !== 'CANCELED-BY-USER',
+          ).length === 0 && (
             <>
               {isSunday && (
                 <CustomText textAlign="center" mt={'$10'}>
-                  Hoy es domingo y la barberìa se encuentra cerrada
+                  Hoy es domingo y la barbería se encuentra cerrada
                 </CustomText>
               )}
               {!isSunday && user?.isActive && !businessIsClosed && (
                 <>
                   <CustomText textAlign="center" mt={'$10'}>
-                    Aún no has agendado ningún turno para está fecha
+                    Aún no has agendado ningún turno para esta fecha
                   </CustomText>
                   <HStack justifyContent="center">
                     <Image
@@ -667,21 +689,25 @@ export default function Schedule() {
                   Actualmente te encuentras deshabilitado para agendar turnos.
                 </CustomText>
               )}
-              {!isSunday && user?.isActive && businessIsClosed && (
-                <>
-                  <CustomText textAlign="center" mt={'$4'}>
-                    La barbería ha cerrado por hoy
-                  </CustomText>
-                  <HStack justifyContent="center" mt="$4">
-                    <LottieView
-                      style={{width: 150, height: 150}}
-                      source={require('./../../assets/lottie/waiting.json')}
-                      autoPlay
-                      loop={true}
-                    />
-                  </HStack>
-                </>
-              )}
+              {console.log("is same day", businessHoursEnd.isSame(moment(selectedDate), 'day'))}
+              {!isSunday &&
+                user?.isActive &&
+                businessIsClosed &&
+                businessHoursEnd.isSame(moment(selectedDate), 'day') && (
+                  <>
+                    <CustomText textAlign="center" mt={'$4'}>
+                      La barbería ha cerrado por hoy
+                    </CustomText>
+                    <HStack justifyContent="center" mt="$4">
+                      <LottieView
+                        style={{width: 150, height: 150}}
+                        source={require('./../../assets/lottie/waiting.json')}
+                        autoPlay
+                        loop={true}
+                      />
+                    </HStack>
+                  </>
+                )}
             </>
           )}
         </Box>

@@ -8,7 +8,7 @@ export interface Event {
   startDate: string;
   endDate: string;
   price: number;
-  status: 'COMPLETE' | 'INCOMPLETE' | "CANCELED";
+  status: 'COMPLETE' | 'INCOMPLETE' | "CANCELED" | "CANCELED-BY-USER";
   user: null | User;
 }
 

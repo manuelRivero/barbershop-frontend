@@ -41,17 +41,17 @@ import socket from '../../socket';
 import Header from '../../components/header';
 import CalendarModal from '../../components/shared/calendarModal';
 import BarberAvatar from '../../components/shared/barberAvatar';
-import { useGetBarberDetailQuery } from '../../api/barbersApi';
+import {useGetBarberDetailQuery} from '../../api/barbersApi';
 
 const {width} = Dimensions.get('window');
 
 export default function UserServiceSelection({route}: any) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  
+
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {id, service} = route.params;
   const timeRef = useRef<number | null>(null);
-  
+
   const dispatch = useAppDispatch();
   const {services, showCreateServiceModal} = useAppSelector(
     (state: RootState) => state.services,
@@ -61,17 +61,22 @@ export default function UserServiceSelection({route}: any) {
 
   const {data, isLoading, refetch, fulfilledTimeStamp} =
     useGetBarberServicesQuery({id});
-    const {data:barberData, isLoading:isLoadingBarberData, refetch: refetchBarberData} = useGetBarberDetailQuery({id})
+  const {
+    data: barberData,
+    isLoading: isLoadingBarberData,
+    refetch: refetchBarberData,
+  } = useGetBarberDetailQuery({id});
 
-    const {
-      data: turnsData,
-      refetch: refetchTurns,
-      isLoading: isLoadingTurns,
-      fulfilledTimeStamp: turnsFulfilledTimeStamp,
-    } = useGetTurnsQuery(
-      {id, date:selectedDate!},{ skip: !selectedDate ? true : false },
-    );
-    const [addTurnRequest, {isLoading: isLoadingAddTurn}] = useAddTurnMutation();
+  const {
+    data: turnsData,
+    refetch: refetchTurns,
+    isLoading: isLoadingTurns,
+    fulfilledTimeStamp: turnsFulfilledTimeStamp,
+  } = useGetTurnsQuery(
+    {id, date: selectedDate!},
+    {skip: !selectedDate ? true : false},
+  );
+  const [addTurnRequest, {isLoading: isLoadingAddTurn}] = useAddTurnMutation();
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [showTurnModal, setShowTurnModal] = useState<boolean>(false);
@@ -95,9 +100,9 @@ export default function UserServiceSelection({route}: any) {
     }
     const checkTurnForServiceTime = async () => {
       if (selectedService && selectedDate && turns) {
-        console.log("entró a la función", turns)
+        console.log('entró a la función', turns);
         const slots = [];
-        let turnsList = [...turns];
+        let turnsList = [...turns].filter(e => e.status !== "CANCELED" && e.status !== "CANCELED-BY-USER");
 
         let currentTime: Moment;
         if (
@@ -122,9 +127,12 @@ export default function UserServiceSelection({route}: any) {
           //   currentTime = currentTime.add(diff, 'minutes');
           // }
         } else {
-          currentTime = moment(selectedDate).set('hours', 9).set('minutes', 0).utc()
-          .utcOffset(3, true);
-          console.log("entro al else")
+          currentTime = moment(selectedDate)
+            .set('hours', 9)
+            .set('minutes', 0)
+            .utc()
+            .utcOffset(3, true);
+          console.log('entro al else');
         }
         console.log(
           'turns',
@@ -228,12 +236,13 @@ export default function UserServiceSelection({route}: any) {
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
-      refetch();
-      refetchTurns();
+      if (turns) {
+        refetchTurns();
+      }
     });
 
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, selectedDate]);
 
   const handleAddTurn = async (turn: TurnSelectItem) => {
     if (selectedService && user) {
@@ -293,8 +302,10 @@ export default function UserServiceSelection({route}: any) {
                   _id: id,
                 },
                 turnData: res.turn,
+                userData: {...user}
               });
             } catch (error) {
+              console.log('error', error);
               dispatch(hideInfoModal());
               dispatch(
                 showInfoModal({
@@ -310,7 +321,6 @@ export default function UserServiceSelection({route}: any) {
                   submitCb: () => {
                     dispatch(hideInfoModal());
                     setShowTurnModal(false);
-                    refetchTurns();
                   },
                   hideOnAnimationEnd: false,
                   cancelData: null,
@@ -360,7 +370,6 @@ export default function UserServiceSelection({route}: any) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-
       if (moment().utc().utcOffset(3, true).isAfter(restartTime)) {
         const day = moment().get('date');
         setRestartTime(
@@ -369,7 +378,7 @@ export default function UserServiceSelection({route}: any) {
             .utc()
             .utcOffset(3, true),
         );
-        
+
         if (turns.length > 0) {
           dispatch(resetAllturns());
         }
@@ -377,11 +386,11 @@ export default function UserServiceSelection({route}: any) {
     }, 1000);
     return () => clearInterval(interval);
   }, [restartTime]);
-  
+
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       console.log('focus');
-      if(turnsData){
+      if (data) {
         refetch();
       }
     });
@@ -395,20 +404,9 @@ export default function UserServiceSelection({route}: any) {
     }
   }, [fulfilledTimeStamp]);
 
-  useEffect(()=>{
-    if(showTurnModal){
-      setSelectedDate(null)
-
-    }
-  }, [showTurnModal])
-
-  console.log("turns", turnsData)
-
   if (isLoading || isLoadingTurns) {
     return <Loader />;
   }
-
-
 
   return (
     <LinearGradient
@@ -423,55 +421,62 @@ export default function UserServiceSelection({route}: any) {
           viewGoBack={true}
           viewClock={false}
         />
-      
-          <>
-          <Box p="$4" mt={"$16"}>
+
+        <>
+          <Box p="$4" mt={'$16'}>
             <BarberAvatar barber={barberData?.barber[0] || null} />
           </Box>
-              <FlatList
-                contentContainerStyle={{paddingBottom: 50, paddingHorizontal: 16}}                
-                data={services}
-                renderItem={(props: ListRenderItemInfo<any>) => {
-                  const {item} = props;
-                  return (
-                    <Pressable onPress={() => handleServiceSelect(item)}>
-                      <UserServiceCard data={item} />
-                    </Pressable>
-                  );
-                }}
-                ItemSeparatorComponent={() => {
-                  return (
-                    <Box
-                      style={{
-                        height: 15,
-                        width: '100%',
-                      }}
-                    />
-                  );
-                }}
-              />
-            {showCalendarModal && (
-              <CalendarModal
-                show={showCalendarModal}
-                onClose={() => setShowCalendarModal(false)}
-                onSelect={e => {
-                  setShowCalendarModal(false);
-                  setSelectedDate(e);
-                }}
-              />
-            )}
-           { showTurnModal && <SelectTurnModal
-            date={selectedDate!}
+          <FlatList
+            contentContainerStyle={{paddingBottom: 50, paddingHorizontal: 16}}
+            data={services}
+            renderItem={(props: ListRenderItemInfo<any>) => {
+              const {item} = props;
+              return (
+                <Pressable onPress={() => handleServiceSelect(item)}>
+                  <UserServiceCard data={item} />
+                </Pressable>
+              );
+            }}
+            ItemSeparatorComponent={() => {
+              return (
+                <Box
+                  style={{
+                    height: 15,
+                    width: '100%',
+                  }}
+                />
+              );
+            }}
+          />
+          {showCalendarModal && (
+            <CalendarModal
+              show={showCalendarModal}
+              onClose={() => {
+                setSelectedService(null);
+                setShowCalendarModal(false);
+                setSelectedDate(null);
+              }}
+              onSelect={e => {
+                console.log('e', e);
+                setShowCalendarModal(false);
+                setSelectedDate(e);
+              }}
+            />
+          )}
+          {showTurnModal && selectedDate && (
+            <SelectTurnModal
+              date={moment(selectedDate, 'yyyy-MM-DD').toLocaleString()}
               onSelect={handleAddTurn}
               turns={turnList}
               show={showTurnModal}
               onClose={() => {
                 setShowTurnModal(false);
                 setSelectedService(null);
+                setSelectedDate(null);
               }}
-            />}
-          </>
-
+            />
+          )}
+        </>
       </Box>
     </LinearGradient>
   );

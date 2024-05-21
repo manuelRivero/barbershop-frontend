@@ -95,7 +95,7 @@ export default function Profile() {
         <Header
           viewClock={true}
           viewGoBack={false}
-          title={'Perfil'}
+          title={' Perfil '}
           width={width}
         />
         <Box p="$4" mt="$16">

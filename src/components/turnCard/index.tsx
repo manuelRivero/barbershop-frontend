@@ -1,11 +1,7 @@
 import {
-  AvatarGroup,
-  AvatarImage,
   Box,
   HStack,
   Icon,
-  Text,
-  Avatar,
   Pressable,
 } from '@gluestack-ui/themed';
 import React, { useEffect, useState } from 'react';
@@ -14,7 +10,6 @@ import moment, { Moment } from 'moment';
 import { Briefcase, CircleDollarSign, Clock2, PercentCircle, Trash, UserCircle } from 'lucide-react-native';
 import { RootState, useAppDispatch, useAppSelector } from '../../store';
 import { deleteTurn, setCompleteTurn } from '../../store/features/turnsSlice';
-import { User } from '../../types/user';
 import { useCancelTurnMutation, useCompleteTurnMutation } from '../../api/turnsApi';
 import { hideInfoModal, showInfoModal } from '../../store/features/layoutSlice';
 import socket from '../../socket';
@@ -23,13 +18,13 @@ interface Props {
   event: Event;
 }
 export default function TurnCard({ event }: Props) {
+  
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state: RootState) => state.auth);
 
   const [completeTurnRequest, { isLoading }] = useCompleteTurnMutation()
   const [cancelTurnRequest, { isLoading: isLoadingCancelTurn }] = useCancelTurnMutation()
   const [status, setStatus] = useState<string>();
-
   const handleCancel = async () => {
     dispatch(
       showInfoModal({
@@ -48,7 +43,7 @@ export default function TurnCard({ event }: Props) {
             await cancelTurnRequest({ id: event._id }).unwrap()
             if (event.user !== null) {
               console.log("entro al if")
-              socket?.emit('cancel-turn', { id: event.user?._id });
+              socket?.emit('canceled-turn', { id: event.user?._id });
             }
             dispatch(deleteTurn(event._id))
             dispatch(hideInfoModal())

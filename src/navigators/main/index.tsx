@@ -15,16 +15,27 @@ export default function MainNavigator(): JSX.Element {
   const {user, token} = useAppSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    if(user && user.role !== "admin" && !socket.connected){
-      socket.connect()
-      socket.emit('log-in', {
-        user: {
-          _id: user._id,
-        },
-      });
+    if(user && user.role !== "admin"){
+      console.log("Entro al connect del socket");
+      
+      if (!socket.connected) {
+        console.log("socket connect");
+        socket.connect()
+      }
+      socket.on('connect', () => {
+        console.log("emit log-in")
+        socket.emit('log-in', {
+          user: {
+            _id: user._id,
+          },
+        });
+    })
+      
 
     } 
   }, [user, socket]);
+
+  console.log("socket id", socket.id)
 
   return (
     <Stack.Navigator

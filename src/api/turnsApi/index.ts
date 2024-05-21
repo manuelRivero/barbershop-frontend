@@ -69,6 +69,7 @@ export const turnsApi = createApi({
     }),
 
     cancelTurn: builder.mutation<CancelTurnResponse, CancelTurnRequest>({
+      invalidatesTags:["TURNS"],
       query: args => {
         return ({
           url: '/turns/canceled',
@@ -92,13 +93,23 @@ export const turnsApi = createApi({
     }),
     getActiveTurn: builder.query<any, void>({
       query: () => {
-        console.log("User turn endpoint")
         return ({
           url: '/turns/get-active/',
         })
       },
     }),
+    cencelTurnUser: builder.mutation<any, any>({
+      invalidatesTags:["TURNS"],
+
+      query: (args) => {
+        return ({
+          method:"DELETE",
+          url: '/turns/'+ args.id,
+        })
+      },
+    }),
     getTurnDetails: builder.query<any, GetTurnsDetailRequest>({
+      providesTags:["TURNS"],
       query: args => {
         console.log("request")
         return ({
@@ -109,4 +120,4 @@ export const turnsApi = createApi({
   }),
 });
 
-export const { useAddTurnMutation, useGetTurnsQuery, useGetTurnDetailsQuery, useGetActiveTurnQuery, useCompleteTurnMutation, useCancelTurnMutation } = turnsApi;
+export const { useCencelTurnUserMutation, useAddTurnMutation, useGetTurnsQuery, useGetTurnDetailsQuery, useGetActiveTurnQuery, useCompleteTurnMutation, useCancelTurnMutation } = turnsApi;

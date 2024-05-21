@@ -19,7 +19,6 @@ import {Platform} from 'react-native';
 
 
 export default function Loading() {
-  const [newCheckStatus, setNewCheckStatus] = useState<any>('');
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const {user} = useAppSelector((state: RootState) => state.auth);
   const dispatch = useAppDispatch();
@@ -103,18 +102,18 @@ export default function Loading() {
     }, []),
   );
 
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      const hasPermissions = await checkNotificationPermission();
-      if (hasPermissions === RESULTS.GRANTED) {
-        setNewCheckStatus(hasPermissions);
-        dispatch(hideInfoModal());
-        navigation.navigate('BottomsTabs');
+  useFocusEffect(
+    useCallback(() => {
+      const checkPermissions = async ()=>{
+        const hasPermissions = await checkNotificationPermission();
+        if (hasPermissions === RESULTS.GRANTED) {
+          dispatch(hideInfoModal());
+          navigation.navigate('BottomsTabs');
+        }
       }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [newCheckStatus]);
+      checkPermissions()
+    },[]))
+    
 
   return <Loader />;
 }
