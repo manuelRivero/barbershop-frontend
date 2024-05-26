@@ -16,6 +16,7 @@ import { LocaleConfig } from 'react-native-calendars';
 
 
 import moment from 'moment-timezone';
+import { SocketProvider } from './src/context/socketContext';
 
 moment.tz.setDefault(moment.tz.guess());
 
@@ -83,10 +84,11 @@ export default function App() {
     <>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-
           <GluestackUIProvider config={config}>
             <NavigationContainer ref={navigationRef}>
+              <SocketProvider>
               <MainNavigator />
+              </SocketProvider>
             </NavigationContainer>
             <InfoModal />
           </GluestackUIProvider>

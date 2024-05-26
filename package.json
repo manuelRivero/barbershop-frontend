@@ -10,7 +10,8 @@
     "test": "jest",
     "generate-bundle": " npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
     "generate-keyhash": "keytool -genkey -v -keystore key.keystore -alias barbershop -keyalg RSA -keysize 2048 -validity 10000",
-    "get-key": "keytool -list -keystore ./android/app/key.keystore -alias barbershop"
+    "get-key": "keytool -list -keystore ./android/app/key.keystore -alias barbershop",
+    "generate-debug": "./gradlew assembleDebug"
   },
   "dependencies": {
     "@cloudinary/url-gen": "^1.11.2",

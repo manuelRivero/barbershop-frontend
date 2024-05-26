@@ -12,6 +12,7 @@ import {RootState, useAppSelector} from '../../store';
 import Profile from '../../screens/profile';
 import UserCanceledTurn from '../../screens/UserCanceledTurn';
 import moment from 'moment';
+import { useSocket } from '../../context/socketContext';
 
 export type RootStackParamList = {
   BarberSelection: undefined;
@@ -47,6 +48,7 @@ const Stack = createNativeStackNavigator();
 
 const Schedule = () => {
   const {userTurn} = useAppSelector((state: RootState) => state.turns);
+  useSocket()
   const [activeTurnScreen, setActiveTurnScreen] = useState<string>('UserWaitingRoom')
 
   useEffect(() => {
@@ -58,6 +60,7 @@ const Schedule = () => {
           .utcOffset(3, true)
           .isAfter(moment(userTurn?.endDate), 'minutes')
       ) {
+        console.log("UserWaitingRoom")
         setActiveTurnScreen('UserWaitingRoom');
       }
     }, 1000);
@@ -80,11 +83,11 @@ const Schedule = () => {
         </>
       )}
 
-      <Stack.Screen name="UserBarberReview" component={UserBarberReview} />
       <Stack.Screen
         name="UserServiceSelection"
         component={UserServiceSelection}
       />
+      <Stack.Screen name="UserBarberReview" component={UserBarberReview} />
 
       <Stack.Screen name="UserWaitingRoom" component={UserWaitingRoom} />
 

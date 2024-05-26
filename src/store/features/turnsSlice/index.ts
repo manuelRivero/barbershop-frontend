@@ -48,13 +48,24 @@ export const turnsSlice = createSlice({
     },
   },
   extraReducers: builder => {
-    builder.addMatcher(
-      turnsApi.endpoints.getTurns.matchFulfilled,
-      (state, action) => {
-        console.log("set state", action.payload)
-        state.turns = action.payload;
-      },
-    );
+    builder
+      .addMatcher(
+        turnsApi.endpoints.getTurns.matchFulfilled,
+        (state, action) => {
+          console.log('set state', action.payload);
+          state.turns = action.payload;
+        },
+      )
+      .addMatcher(
+        turnsApi.endpoints.getActiveTurn.matchFulfilled,
+        (state, action) => {
+          if (action.payload && action.payload.length > 0) {
+            state.userTurn = action.payload[0];
+          } else if (action.payload && action.payload.length <= 0) {
+            state.userTurn = null;
+          }
+        },
+      );
   },
 });
 

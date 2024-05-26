@@ -36,7 +36,6 @@ import PushNotification from 'react-native-push-notification';
 import {Dimensions, SectionListData} from 'react-native';
 import {DollarSignIcon} from 'lucide-react-native';
 import {Icon} from '@gluestack-ui/themed';
-import socket from '../../socket';
 import {setUser} from '../../store/features/authSlice';
 import LottieView from 'lottie-react-native';
 import CustomText from '../../components/shared/text';
@@ -58,9 +57,11 @@ import {
   ExpandableCalendar,
   WeekCalendar,
 } from 'react-native-calendars';
+import { useSocket } from '../../context/socketContext';
 
 const {width} = Dimensions.get('window');
 export default function Schedule() {
+  const {socket} = useSocket()
   const [businessHoursStart, setBusinessHoursStart] = useState<moment.Moment>(
     moment().set({hour: 9, minute: 0, second: 0}).utc().utcOffset(3, true),
   );
@@ -80,14 +81,14 @@ export default function Schedule() {
   const [selectedDate, setSelectedDate] = useState<string>(
     moment().utc().utcOffset(3, true).format('yyyy-MM-DD'),
   );
-
   const {
-    data: turnsData,
     refetch: refetchTurns,
     isLoading: isLoadingTurns,
+    data: turnsData,
+    isError,
     fulfilledTimeStamp,
     isUninitialized,
-  } = useGetTurnsQuery({id: user?._id ?? '', date: selectedDate}, {pollingInterval:1800000});
+  } = useGetTurnsQuery({id: user?._id ?? '', date: selectedDate});
   const [addTurnRequest, {isLoading}] = useAddTurnMutation();
 
   const [showServiceModal, setShowServiceModal] = useState<boolean>(false);
@@ -159,7 +160,7 @@ export default function Schedule() {
                     background: '$primary500',
                   },
                   submitCb: () => {
-                    dispatch(hideInfoModal({component: 'schedule'}));
+                    dispatch(hideInfoModal());
                     setShowTurnModal(false);
                     refetchTurns();
                   },
@@ -491,7 +492,10 @@ export default function Schedule() {
   useEffect(() => {
     socket.on('add-turn', ({data, user}) => {
       console.log('notification', data);
-      dispatch(addTurn({...data, user:{...user}}));
+      
+      if(moment(data.startDate).isSame(moment(selectedDate), "day")){
+        dispatch(addTurn({...data, user:{...user}}));
+      }
       PushNotification.localNotification({
         /* Android Only Properties */
         channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
@@ -520,8 +524,36 @@ export default function Schedule() {
       });
     });
 
+    socket.on('phone-changed', ({data}) => {
+      console.log('phone notification', data);
+      PushNotification.localNotification({
+        /* Android Only Properties */
+        channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
+        bigText: `El cliente cambio de numero`, // (optional) default: "message" prop
+        vibrate: true, // (optional) default: true
+        vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
+        groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
+        ongoing: false, // (optional) set whether this is an "ongoing" notification
+        priority: 'high', // (optional) set notification priority, default: high
+        visibility: 'private', // (optional) set notification visibility, default: private
+        ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
+        title: '¡Nueva notificación!', // (optional)
+        smallIcon: 'ic_notification',
+        largeIcon: 'ic_launcher',
+        // @ts-ignore
+        data: {
+          path: 'Schedule',
+        },
+
+        /* iOS only properties */
+
+        message: 'El cliente cambio de numero', // (required)
+      });
+    });
+
     return () => {
       socket?.off('add-turn');
+      socket?.off('phone-changed');
     };
   }, []);
 
@@ -589,7 +621,6 @@ export default function Schedule() {
     };
   }, []);
 
-  console.log('translateY', translateY.value);
 
   return (
     <LinearGradient
@@ -643,13 +674,13 @@ export default function Schedule() {
                 <WeekCalendar firstDay={1}  allowShadow hideDayNames={true} disableAllTouchEventsForDisabledDays={true} minDate={businessHoursEnd.toLocaleString()} />
               </Box>
               <FlatList
+              keyExtractor={(item:any) => item._id}
                 data={[...turns]
                   .filter(e => e.status !== 'CANCELED' && e.status !== 'CANCELED-BY-USER')
                   .sort(function (left, right) {
                     return moment(left.startDate).diff(moment(right.startDate));
                   })}
                 renderItem={({item}: any) => {
-                  console.log('item', item);
                   return <TurnCard event={item} />;
                 }}
                 // scrollToNextEvent
@@ -689,7 +720,6 @@ export default function Schedule() {
                   Actualmente te encuentras deshabilitado para agendar turnos.
                 </CustomText>
               )}
-              {console.log("is same day", businessHoursEnd.isSame(moment(selectedDate), 'day'))}
               {!isSunday &&
                 user?.isActive &&
                 businessIsClosed &&

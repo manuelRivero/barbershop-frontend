@@ -81,6 +81,7 @@ export const turnsApi = createApi({
 
     getTurns: builder.query<Event[], GetTurnsRequest>({
       providesTags:["TURNS"],
+      keepUnusedDataFor: 0,
       query: args => {
         return ({
           url: '/turns/get/' + args.id,

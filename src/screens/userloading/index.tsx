@@ -33,14 +33,6 @@ export default function UserLoading() {
     return result;
   };
 
-  useEffect(() => { 
-    console.log("data", data);
-    if(data && data.length > 0){
-      dispatch(setUserTurn({...data[0]}))
-    } else if(data && data.length <= 0){
-      dispatch(resetUserTurn())
-    }
-  }, [fulfilledTimeStamp]);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       refetch();

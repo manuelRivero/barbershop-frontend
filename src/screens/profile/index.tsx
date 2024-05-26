@@ -26,14 +26,16 @@ import {useNavigation} from '@react-navigation/native';
 import {useGetImagesQuery} from '../../api/galleryApi';
 import {resetAllturns, resetUserTurn} from '../../store/features/turnsSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import socket from '../../socket';
 import CustomHeading from '../../components/shared/heading';
 import CustomText from '../../components/shared/text';
 import Header from '../../components/header';
+import PushNotification from 'react-native-push-notification';
+import { useSocket } from '../../context/socketContext';
 
 const {width} = Dimensions.get('window');
 
 export default function Profile() {
+  const {socket} = useSocket()
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const dispacth = useAppDispatch();
   const {user} = useAppSelector((state: RootState) => state.auth);
@@ -81,6 +83,38 @@ export default function Profile() {
 
     return unsubscribe;
   }, [navigation]);
+
+  useEffect(() => {
+    socket.on('phone-requested', () => {
+      PushNotification.localNotification({
+        /* Android Only Properties */
+        channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
+        bigText: `Numero de contacto solicitado`, // (optional) default: "message" prop
+        vibrate: true, // (optional) default: true
+        vibration: 300, // vibration length in milliseconds, ignored if vibrate=false, default: 1000
+        groupSummary: false, // (optional) set this notification to be the group summary for a group of notifications, default: false
+        ongoing: false, // (optional) set whether this is an "ongoing" notification
+        priority: 'high', // (optional) set notification priority, default: high
+        visibility: 'private', // (optional) set notification visibility, default: private
+        ignoreInForeground: false, // (optional) if true, the notification will not be visible when the app is in the foreground (useful for parity with how iOS notifications appear). should be used in combine with `com.dieam.reactnativepushnotification.notification_foreground` setting
+        title: '¡La barbería está intentando comunicarse contigo!', // (optional)
+        smallIcon: 'ic_notification',
+        largeIcon: 'ic_launcher',
+        // @ts-ignore
+        data: {
+          path: 'UserProfile',
+        },
+
+        /* iOS only properties */
+
+        message: 'Ingresa a tu perfil y agrega tu numero de télefono', // (required)
+      });
+    });
+
+    return () => {
+      socket?.off('phone-requested');
+    };
+  }, []);
 
   if (isLoading || isLoadingGallery) {
     return <Loader />;

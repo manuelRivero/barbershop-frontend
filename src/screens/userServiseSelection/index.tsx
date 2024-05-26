@@ -1,18 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
-  ScrollView,
-  AddIcon,
   Box,
-  Heading,
-  HStack,
-  Image,
-  Text,
   FlatList,
   Pressable,
-  VStack,
-  Icon,
 } from '@gluestack-ui/themed';
-import Clock from 'react-live-clock';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {Service} from '../../types/services';
 import {Dimensions, ListRenderItemInfo} from 'react-native';
@@ -20,9 +11,8 @@ import {addAllServices} from '../../store/features/servicesSlice';
 import {useGetBarberServicesQuery} from '../../api/servicesApi';
 import Loader from '../../components/shared/loader';
 import {useAddTurnMutation, useGetTurnsQuery} from '../../api/turnsApi';
-import {Event, TurnSelectItem} from '../../types/turns';
+import { TurnSelectItem} from '../../types/turns';
 import {
-  addTurn,
   initTurns,
   resetAllturns,
   setUserTurn,
@@ -36,16 +26,16 @@ import {useNavigation} from '@react-navigation/native';
 import moment, {Moment} from 'moment-timezone';
 import {getDateByTimeZone} from '../../helpers';
 import LinearGradient from 'react-native-linear-gradient';
-import {ChevronLeftIcon} from 'lucide-react-native';
-import socket from '../../socket';
 import Header from '../../components/header';
 import CalendarModal from '../../components/shared/calendarModal';
 import BarberAvatar from '../../components/shared/barberAvatar';
 import {useGetBarberDetailQuery} from '../../api/barbersApi';
+import { useSocket } from '../../context/socketContext';
 
 const {width} = Dimensions.get('window');
 
 export default function UserServiceSelection({route}: any) {
+  const {socket} = useSocket()
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const navigation = useNavigation<NativeStackNavigationProp<any>>();

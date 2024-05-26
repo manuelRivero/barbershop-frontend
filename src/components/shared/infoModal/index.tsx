@@ -46,7 +46,6 @@ export default function InfoModal() {
     }
   };
   const handleAnimationEnd = () => {
-    console.log('on animation end');
     if (infoModal?.hideOnAnimationEnd) {
       dispatch(hideInfoModal());
     }

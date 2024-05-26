@@ -24,7 +24,7 @@ import CustomText from '../../components/shared/text';
 import LinkButton from '../../components/shared/linkButton';
 import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import socket from '../../socket';
+import { useSocket } from '../../context/socketContext';
 
 const {width} = Dimensions.get('window');
 
@@ -34,8 +34,9 @@ export default function UserWaitingRoom({route}: any) {
   const dispacth = useAppDispatch();
   const {user} = useAppSelector((state: RootState) => state.auth);
   const {userTurn} = useAppSelector((state: RootState) => state.turns);
-
+  const {socket} = useSocket()
   const turnId = route.params?.turnId || userTurn?._id;
+  console.log('turn id', userTurn)
 
   const {data, isLoading, refetch, fulfilledTimeStamp} = useGetTurnDetailsQuery(
     {id: turnId},
@@ -202,7 +203,7 @@ export default function UserWaitingRoom({route}: any) {
                 loop={true}
               />
             </HStack>
-            {data.turn.length > 0 && <Box hardShadow={'1'} p="$4" bg="$white" borderRadius="$lg">
+            {data && data.turn.length > 0 && <Box hardShadow={'1'} p="$4" bg="$white" borderRadius="$lg">
               <CustomText color="$textDark500">
                 Tienes un turno agendado para :{' '}
                 <CustomText color="$textDark900" fontWeight="bold">

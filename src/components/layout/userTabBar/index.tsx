@@ -35,9 +35,7 @@ export default function UserTabBar({
           flex={1}>
           {state.routes.map((route, index) => {
             const { options } = descriptors[route.key];
-            console.log('route options', state.routes);
             const label = options.title;
-
             const isFocused = state.index === index;
 
             const onPress = () => {

@@ -13,6 +13,7 @@ import StatsBarberSelection from '../../screens/statsBarberSelection';
 import AdminBarberStats from '../../screens/AdminBarberStats';
 import AllStatsFromDates from '../../screens/AllStatsFromDates';
 import ScheduleSettings from '../../screens/ScheduleSettings';
+import { useSocket } from '../../context/socketContext';
 
 type RootStackParamList = {
   Schedule: undefined;
@@ -28,7 +29,7 @@ const Stack = createNativeStackNavigator();
 
 function BottomTabs(): JSX.Element {
   const { user } = useAppSelector((state: RootState) => state.auth);
-  console.log('user role', user?.role);
+  useSocket()
   if (user?.role === 'barber') {
     return (
       <Tab.Navigator
