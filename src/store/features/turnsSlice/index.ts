@@ -42,6 +42,17 @@ export const turnsSlice = createSlice({
     resetUserTurn: state => {
       state.userTurn = null;
     },
+    changeTurnPhone: (state, action) => {
+      const {turnId, phone} = action.payload;
+      const turnList = [...state.turns];
+      const targetTurn = turnList.findIndex((e:Event) => e._id === turnId)
+      if(targetTurn >= 0){
+        if(turnList[targetTurn].user){
+          turnList[targetTurn].user.phone = phone
+        }
+      }
+      state.turns = turnList;
+    },
     deleteTurn: (state, action) => {
       const targetTurn = state.turns.findIndex(e => e._id === action.payload);
       state.turns[targetTurn].status = 'CANCELED';
@@ -77,6 +88,7 @@ export const {
   setUserTurn,
   resetUserTurn,
   deleteTurn,
+  changeTurnPhone
 } = turnsSlice.actions;
 
 export default turnsSlice.reducer;

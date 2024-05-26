@@ -40,15 +40,13 @@ interface Form {
 }
 export default function ProfileForm({show, onClose}: Props) {
   const dispatch = useAppDispatch();
-  const {data} = useGetActiveTurnQuery();
+  const {userTurn} = useAppSelector((state: RootState) => state.turns);
   const {user} = useAppSelector((state: RootState) => state.auth);
   const {socket} = useSocket()
   const {
     formState: {errors},
     handleSubmit,
     control,
-    watch,
-    reset,
   } = useForm<Form>({
     defaultValues: {
       name: user?.name,
@@ -65,9 +63,9 @@ export default function ProfileForm({show, onClose}: Props) {
 
   const [updateUserProfile, {isLoading, isError}] =
     useUpdateUserProfileMutation();
-  console.log('is error', isError);
+    
   const submit = async (values: Form): Promise<void> => {
-    console.log('Values', values);
+    
     const form = new FormData();
     form.append('name', values.name);
     form.append('lastname', values.lastname);
@@ -92,8 +90,8 @@ export default function ProfileForm({show, onClose}: Props) {
     try {
       const response = await updateUserProfile({data: form}).unwrap();
       console.log('response', response);
-      if (data) {
-        socket?.emit('phone-changed', {turnData: data});
+      if (userTurn && user?.phone !== values.phone) {
+        socket?.emit('phone-changed-by-user', {barber: userTurn.barber, phone: values.phone, turnId: userTurn._id});
       }
       dispatch(
         setUser({
@@ -119,6 +117,7 @@ export default function ProfileForm({show, onClose}: Props) {
   const handleClose = (): void => {
     onClose();
   };
+
   const handleGallery = async () => {
     const result = await launchImageLibrary({
       mediaType: 'photo',
@@ -130,6 +129,7 @@ export default function ProfileForm({show, onClose}: Props) {
       setImageBlob(result.assets[0]);
     }
   };
+
   useEffect(() => {
     setImage(
       user?.avatar && user?.avatarId
@@ -137,6 +137,7 @@ export default function ProfileForm({show, onClose}: Props) {
         : null,
     );
   }, [user]);
+
   return (
     <Modal isOpen={show} onClose={handleClose} bg="$primary100">
       <ModalBackdrop />

@@ -21,6 +21,7 @@ import BaseButton from '../../components/shared/baseButton';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import {
   addTurn,
+  changeTurnPhone,
   deleteTurn,
   resetAllturns,
 } from '../../store/features/turnsSlice';
@@ -40,21 +41,10 @@ import {setUser} from '../../store/features/authSlice';
 import LottieView from 'lottie-react-native';
 import CustomText from '../../components/shared/text';
 import CustomHeading from '../../components/shared/heading';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  useDerivedValue,
-  interpolate,
-  withRepeat,
-  Easing,
-  withDelay,
-} from 'react-native-reanimated';
+
 import Header from '../../components/header';
 import {
-  AgendaList,
   CalendarProvider,
-  ExpandableCalendar,
   WeekCalendar,
 } from 'react-native-calendars';
 import { useSocket } from '../../context/socketContext';
@@ -96,8 +86,6 @@ export default function Schedule() {
   const [turnList, setTurnList] = useState<TurnSelectItem[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isSunday, setIsSunday] = useState<boolean>(false);
-  const translateY = useSharedValue(-100);
-  const titleOpacity = useSharedValue(0);
 
   const handleAddTurn = async (turn: TurnSelectItem) => {
     if (selectedService && user) {
@@ -464,30 +452,7 @@ export default function Schedule() {
   }, [navigation, isUninitialized]);
 
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const unsubscribe = () => {
-        translateY.value = withTiming(0, {
-          duration: 1000,
-          easing: Easing.bounce,
-        });
-        titleOpacity.value = withDelay(
-          1000,
-          withTiming(1, {
-            duration: 1000,
-            easing: Easing.bounce,
-            // @ts-ignore
-          } as Animated.WithTimingConfig),
-        );
-      };
-      unsubscribe();
 
-      return () => {
-        translateY.value = -100;
-        titleOpacity.value = 0;
-      };
-    }, []),
-  );
 
   useEffect(() => {
     socket.on('add-turn', ({data, user}) => {
@@ -524,8 +489,9 @@ export default function Schedule() {
       });
     });
 
-    socket.on('phone-changed', ({data}) => {
-      console.log('phone notification', data);
+    socket.on('phone-changed', ({turnId, phone}) => {
+      console.log('phone notification', turnId, phone);
+      dispatch(changeTurnPhone({turnId, phone}))
       PushNotification.localNotification({
         /* Android Only Properties */
         channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
@@ -693,12 +659,12 @@ export default function Schedule() {
               turn.status !== 'CANCELED' && turn.status !== 'CANCELED-BY-USER',
           ).length === 0 && (
             <>
-              {isSunday && (
+              {moment(selectedDate).day() === 0 && (
                 <CustomText textAlign="center" mt={'$10'}>
                   Hoy es domingo y la barbería se encuentra cerrada
                 </CustomText>
               )}
-              {!isSunday && user?.isActive && !businessIsClosed && (
+              {moment(selectedDate).day() !== 0 && user?.isActive && !businessIsClosed && (
                 <>
                   <CustomText textAlign="center" mt={'$10'}>
                     Aún no has agendado ningún turno para esta fecha
@@ -715,12 +681,12 @@ export default function Schedule() {
                   </HStack>
                 </>
               )}
-              {!isSunday && !user?.isActive && (
+              {moment(selectedDate).day() !== 0 && !user?.isActive && (
                 <CustomText textAlign="center" mt={'$10'}>
                   Actualmente te encuentras deshabilitado para agendar turnos.
                 </CustomText>
               )}
-              {!isSunday &&
+              {moment(selectedDate).day() !== 0 &&
                 user?.isActive &&
                 businessIsClosed &&
                 businessHoursEnd.isSame(moment(selectedDate), 'day') && (
