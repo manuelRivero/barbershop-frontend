@@ -20,55 +20,62 @@ import {
 import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 import CustomText from '../shared/text';
 import {Alert, Linking, Platform} from 'react-native';
-import { useSocket } from '../../context/socketContext';
+import {useSocket} from '../../context/socketContext';
+import CancelTurnReasonModal from '../cancelTurnReasonModal';
 interface Props {
   event: Event;
 }
 export default function TurnCard({event}: Props) {
   const dispatch = useAppDispatch();
-  const {socket} = useSocket()
+  const {socket} = useSocket();
   const {user} = useAppSelector((state: RootState) => state.auth);
 
   const [completeTurnRequest, {isLoading}] = useCompleteTurnMutation();
   const [cancelTurnRequest, {isLoading: isLoadingCancelTurn}] =
     useCancelTurnMutation();
   const [status, setStatus] = useState<string>();
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [selectedReason, setSelectedReason] = useState<string | null>( null )
 
   const handleCancel = async () => {
-    dispatch(
-      showInfoModal({
-        title: '¿Deseas eliminar este turno agendado?',
-        type: 'info',
-        hasCancel: true,
-        cancelCb: () => {
-          dispatch(hideInfoModal());
-        },
-        cancelData: {
-          text: 'Cancelar',
-          background: '$blueGray200',
-        },
-        submitCb: async () => {
-          try {
-            await cancelTurnRequest({id: event._id}).unwrap();
-            if (event.user !== null) {
-              console.log('entro al if');
-              socket?.emit('canceled-turn', {id: event.user?._id});
-            }
-            dispatch(deleteTurn(event._id));
+    if(selectedReason){
+      console.log("selectedReason", selectedReason);
+      dispatch(
+        showInfoModal({
+          title: '¿Deseas eliminar este turno agendado?.',
+          type: 'info',
+          hasCancel: true,
+          cancelCb: () => {
             dispatch(hideInfoModal());
-          } catch (error) {
-            console.log('error al cancelar el turno', error);
-          }
-        },
-        submitData: {
-          text: 'Eliminar turno',
-          background: '$red500',
-          hasLoader: true,
-        },
-        hasSubmit: true,
-        hideOnAnimationEnd: false,
-      }),
-    );
+          },
+          cancelData: {
+            text: 'Cancelar',
+            background: '$blueGray200',
+          },
+          submitCb: async () => {
+            try {
+              await cancelTurnRequest({id: event._id, reason: selectedReason}).unwrap();
+              if (event.user !== null) {
+                console.log('entro al if');
+                socket?.emit('canceled-turn', {id: event.user?._id, reason: selectedReason, turnId:event._id});
+              }
+              dispatch(deleteTurn(event._id));
+              dispatch(hideInfoModal());
+              setShowModal(false)
+            } catch (error) {
+              console.log('error al cancelar el turno', error);
+            }
+          },
+          submitData: {
+            text: 'Eliminar turno',
+            background: '$red500',
+            hasLoader: true,
+          },
+          hasSubmit: true,
+          hideOnAnimationEnd: false,
+        }),
+      );
+    }
   };
 
   const handlePhoneRequest = async () => {
@@ -88,7 +95,9 @@ export default function TurnCard({event}: Props) {
 
   const sendWhatsApp = () => {
     let mobile =
-      Platform.OS == 'ios' ? `54${event.user?.phone}` : `+54${event.user?.phone}`;
+      Platform.OS == 'ios'
+        ? `54${event.user?.phone}`
+        : `+54${event.user?.phone}`;
     if (mobile) {
       let url = 'whatsapp://send?phone=' + mobile;
       Linking.openURL(url).then(data => {
@@ -96,7 +105,7 @@ export default function TurnCard({event}: Props) {
       });
     }
   };
-  console.log("event", moment().utc().utcOffset(3, true).isAfter(moment(event.endDate)) )
+  
   useEffect(() => {
     const interval = setInterval(() => {
       if (moment().utc().utcOffset(3, true).isAfter(moment(event.endDate))) {
@@ -132,7 +141,7 @@ export default function TurnCard({event}: Props) {
       borderRadius={'$md'}>
       {status !== 'COMPLETE' && (
         <HStack justifyContent="flex-end">
-          <Pressable onPress={handleCancel}>
+          <Pressable onPress={() => setShowModal(true)}>
             <Icon as={Trash} color="$red500" />
           </Pressable>
         </HStack>
@@ -237,6 +246,14 @@ export default function TurnCard({event}: Props) {
           </Pressable>
         </>
       )}
+      <CancelTurnReasonModal
+        show={showModal}
+        onChange={setSelectedReason}
+        onClose={() => setShowModal(false)}
+        onNext={() => handleCancel()}
+        selectedReason={setSelectedReason}
+        user="barber"
+      />
     </Box>
   );
 }

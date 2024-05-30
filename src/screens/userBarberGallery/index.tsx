@@ -113,7 +113,7 @@ export default function UserBarberGallery({route}: any) {
                           service: item.service,
                         })
                       }
-                      title="Agentar"
+                      title="Agendar"
                       hasIcon={false}
                       disabled={false}
                       isLoading={false}

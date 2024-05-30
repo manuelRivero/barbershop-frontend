@@ -25,10 +25,7 @@ import {
   deleteTurn,
   resetAllturns,
 } from '../../store/features/turnsSlice';
-import {
-  useAddTurnMutation,
-  useGetTurnsQuery,
-} from '../../api/turnsApi';
+import {useAddTurnMutation, useGetTurnsQuery} from '../../api/turnsApi';
 import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
@@ -43,15 +40,14 @@ import CustomText from '../../components/shared/text';
 import CustomHeading from '../../components/shared/heading';
 
 import Header from '../../components/header';
-import {
-  CalendarProvider,
-  WeekCalendar,
-} from 'react-native-calendars';
-import { useSocket } from '../../context/socketContext';
+import {CalendarProvider, WeekCalendar} from 'react-native-calendars';
+import {useSocket} from '../../context/socketContext';
+import CancelTurnReasonModal from '../../components/cancelTurnReasonModal';
 
 const {width} = Dimensions.get('window');
 export default function Schedule() {
-  const {socket} = useSocket()
+  const {socket} = useSocket();
+
   const [businessHoursStart, setBusinessHoursStart] = useState<moment.Moment>(
     moment().set({hour: 9, minute: 0, second: 0}).utc().utcOffset(3, true),
   );
@@ -440,7 +436,6 @@ export default function Schedule() {
     setShowServiceModal(false);
   };
 
-
   React.useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
       if (!isUninitialized) {
@@ -451,15 +446,18 @@ export default function Schedule() {
     return unsubscribe;
   }, [navigation, isUninitialized]);
 
-
-
-
   useEffect(() => {
     socket.on('add-turn', ({data, user}) => {
       console.log('notification', data);
-      
-      if(moment(data.startDate).isSame(moment(selectedDate), "day")){
-        dispatch(addTurn({...data, user:{...user}}));
+      console.log(
+        'dates',
+        moment(data.startDate).isSame(moment(selectedDate), 'day'),
+        moment(data.startDate),
+        moment(selectedDate),
+      );
+      if (moment(data.startDate).isSame(moment(selectedDate), 'day')) {
+        console.log('entró al if de agregar turno');
+        dispatch(addTurn({...data, user: {...user}}));
       }
       PushNotification.localNotification({
         /* Android Only Properties */
@@ -491,7 +489,7 @@ export default function Schedule() {
 
     socket.on('phone-changed', ({turnId, phone}) => {
       console.log('phone notification', turnId, phone);
-      dispatch(changeTurnPhone({turnId, phone}))
+      dispatch(changeTurnPhone({turnId, phone}));
       PushNotification.localNotification({
         /* Android Only Properties */
         channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
@@ -570,23 +568,24 @@ export default function Schedule() {
         title: '¡Nueva notificación!', // (optional)
         smallIcon: 'ic_notification',
         largeIcon: 'ic_launcher',
-         // @ts-ignore
-         data: {
-          path: 'Schedule',
+        // @ts-ignore
+        data: {
+          path: 'CanceledTurn',
+          params: {turnId: data.turnId, userType: 'barber'},
         },
 
         /* iOS only properties */
 
-        message: `${data.user} ha cancelado su turno para la fecha ${data.date}`, // (required)
+        message: `${data.user} ha cancelado su turno para la fecha ${data.date} por ${data.reason}`, // (required)
       });
-      dispatch(deleteTurn(data.turnId))
+      dispatch(deleteTurn(data.turnId));
+      navigation.navigate('CanceledTurn', {turnId: data.turnId, userType: 'barber'});
     });
 
     return () => {
       socket?.off('cancel-by-user');
     };
   }, []);
-
 
   return (
     <LinearGradient
@@ -634,15 +633,24 @@ export default function Schedule() {
                     : 0,
               }}
               date={selectedDate}
-              
               onDateChanged={date => setSelectedDate(date)}>
               <Box mb={'$2'}>
-                <WeekCalendar firstDay={1}  allowShadow hideDayNames={true} disableAllTouchEventsForDisabledDays={true} minDate={businessHoursEnd.toLocaleString()} />
+                <WeekCalendar
+                  firstDay={1}
+                  allowShadow
+                  hideDayNames={true}
+                  disableAllTouchEventsForDisabledDays={true}
+                  minDate={businessHoursEnd.toLocaleString()}
+                />
               </Box>
               <FlatList
-              keyExtractor={(item:any) => item._id}
+                keyExtractor={(item: any) => item._id}
                 data={[...turns]
-                  .filter(e => e.status !== 'CANCELED' && e.status !== 'CANCELED-BY-USER')
+                  .filter(
+                    e =>
+                      e.status !== 'CANCELED' &&
+                      e.status !== 'CANCELED-BY-USER',
+                  )
                   .sort(function (left, right) {
                     return moment(left.startDate).diff(moment(right.startDate));
                   })}
@@ -664,23 +672,25 @@ export default function Schedule() {
                   Hoy es domingo y la barbería se encuentra cerrada
                 </CustomText>
               )}
-              {moment(selectedDate).day() !== 0 && user?.isActive && !businessIsClosed && (
-                <>
-                  <CustomText textAlign="center" mt={'$10'}>
-                    Aún no has agendado ningún turno para esta fecha
-                  </CustomText>
-                  <HStack justifyContent="center">
-                    <Image
-                      mt={'$10'}
-                      maxWidth={'$32'}
-                      maxHeight={'$32'}
-                      resizeMode="contain"
-                      source={require('../../assets/images/schedule-placeholder.png')}
-                      alt="agenda-vacia"
-                    />
-                  </HStack>
-                </>
-              )}
+              {moment(selectedDate).day() !== 0 &&
+                user?.isActive &&
+                !businessIsClosed && (
+                  <>
+                    <CustomText textAlign="center" mt={'$10'}>
+                      Aún no has agendado ningún turno para esta fecha
+                    </CustomText>
+                    <HStack justifyContent="center">
+                      <Image
+                        mt={'$10'}
+                        maxWidth={'$32'}
+                        maxHeight={'$32'}
+                        resizeMode="contain"
+                        source={require('../../assets/images/schedule-placeholder.png')}
+                        alt="agenda-vacia"
+                      />
+                    </HStack>
+                  </>
+                )}
               {moment(selectedDate).day() !== 0 && !user?.isActive && (
                 <CustomText textAlign="center" mt={'$10'}>
                   Actualmente te encuentras deshabilitado para agendar turnos.

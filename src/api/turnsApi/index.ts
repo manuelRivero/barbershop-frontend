@@ -38,6 +38,7 @@ interface CompleteTurnResponse {
 }
 interface CancelTurnRequest {
   id: string | undefined
+  reason: string
 }
 interface CancelTurnResponse {
   ok: boolean
@@ -74,7 +75,7 @@ export const turnsApi = createApi({
         return ({
           url: '/turns/canceled',
           method: 'PUT',
-          body: { id: args.id },
+          body: { id: args.id, reason:args.reason },
         })
       },
     }),
@@ -106,13 +107,16 @@ export const turnsApi = createApi({
         return ({
           method:"DELETE",
           url: '/turns/'+ args.id,
+          body:{
+            reason: args.reason
+          }
         })
       },
     }),
     getTurnDetails: builder.query<any, GetTurnsDetailRequest>({
       providesTags:["TURNS"],
+      keepUnusedDataFor: 0,
       query: args => {
-        console.log("request")
         return ({
           url: '/turns/detail/' + args.id,
         })

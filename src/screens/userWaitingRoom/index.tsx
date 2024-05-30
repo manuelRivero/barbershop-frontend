@@ -10,7 +10,11 @@ import Loader from '../../components/shared/loader';
 import moment from 'moment';
 import LottieView from 'lottie-react-native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import {BackHandler, Dimensions} from 'react-native';
 import {RootState, useAppDispatch, useAppSelector} from '../../store';
 import LinearGradient from 'react-native-linear-gradient';
@@ -24,67 +28,106 @@ import CustomText from '../../components/shared/text';
 import LinkButton from '../../components/shared/linkButton';
 import {hideInfoModal, showInfoModal} from '../../store/features/layoutSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useSocket } from '../../context/socketContext';
+import {useSocket} from '../../context/socketContext';
+import CancelTurnReasonModal from '../../components/cancelTurnReasonModal';
 
 const {width} = Dimensions.get('window');
 
 let interval: NodeJS.Timeout;
 export default function UserWaitingRoom({route}: any) {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const dispacth = useAppDispatch();
+  const isFocused = useIsFocused();
+  const dispatch = useAppDispatch();
   const {user} = useAppSelector((state: RootState) => state.auth);
   const {userTurn} = useAppSelector((state: RootState) => state.turns);
-  const {socket} = useSocket()
+  const {socket} = useSocket();
   const turnId = route.params?.turnId || userTurn?._id;
-  console.log('turn id', userTurn)
+  console.log('socket id', socket.id);
 
   const {data, isLoading, refetch, fulfilledTimeStamp} = useGetTurnDetailsQuery(
     {id: turnId},
-    {pollingInterval:3600000}
+    {pollingInterval: 3600000},
   );
   const [cancelTurn, status] = useCencelTurnUserMutation();
-  const cancelTurnLoading = status.isLoading
+  //states
+  const [selectedReason, setSelecteReason] = useState<string | null>(null);
+  const cancelTurnLoading = status.isLoading;
   const [activeSlide, setActiveSlide] = useState<number>(0);
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   const handleCancelTurn = async () => {
-    console.log("press")
-    try {
-      await cancelTurn({id: turnId}).unwrap();
-      dispacth(
-        showInfoModal({
-          title: '¡Servicio cancelado!',
-          type: 'success',
-          hasCancel: false,
-          cancelCb: null,
-          hasSubmit: false,
-          submitCb: null,
-          hideOnAnimationEnd: true,
-        }),
-      );
-      dispacth(resetUserTurn());
-      AsyncStorage.removeItem('persist:turns');
-      navigation.navigate("BarberSelection");
-      socket.emit('cancelation', {turnId:turnId, date: moment(data.turn[0].startDate).format("DD-MM-yyyy"), id:data.turn[0].barberData[0]._id, user: `${user?.name} ${user?.lastname}`});
-    } catch (error) {
-      console.log("error", error)
-      dispacth(
-        showInfoModal({
-          title: '¡Upps, ha sucedido un error!',
-          type: 'success',
-          hasCancel: false,
-          cancelCb: null,
-          hasSubmit: true,
-          submitData: {
-            text: 'Intentar nuevamente',
-            background: '$primary500',
-          },
-          submitCb: () => {
-            dispacth(hideInfoModal());
-          },
-          hideOnAnimationEnd: false,
-        }),
-      );
-    }
+    console.log('press');
+    dispatch(
+      showInfoModal({
+        title: '¿Deseas cancelar tu turno agendado?',
+        type: 'info',
+        hasCancel: true,
+        cancelCb: () => {
+          dispatch(hideInfoModal());
+          setShowModal(false);
+        },
+        cancelData: {
+          text: 'No',
+          background: '$blueGray200',
+        },
+        submitCb: async () => {
+          try {
+            await cancelTurn({id: turnId, reason: selectedReason}).unwrap();
+            dispatch(
+              showInfoModal({
+                title: '¡Servicio cancelado!',
+                type: 'info',
+                hasCancel: false,
+                cancelCb: null,
+                hasSubmit: false,
+                submitCb: null,
+                hideOnAnimationEnd: false,
+              }),
+            );
+            setShowModal(false);
+            dispatch(resetUserTurn());
+            AsyncStorage.removeItem('persist:turns');
+            navigation.navigate('BarberSelection');
+            dispatch(hideInfoModal());
+            socket.emit('cancelation', {
+              turnId: turnId,
+              date: moment(data.turn[0].startDate).format('DD-MM-yyyy'),
+              id: data.turn[0].barberData[0]._id,
+              user: `${user?.name} ${user?.lastname}`,
+              cancelReason: selectedReason,
+            });
+          } catch (error) {
+            console.log('error', error);
+            dispatch(
+              showInfoModal({
+                title: '¡Upps, ha sucedido un error!',
+                type: 'success',
+                hasCancel: false,
+                cancelCb: null,
+                hasSubmit: true,
+                submitData: {
+                  text: 'Intentar nuevamente',
+                  background: '$primary500',
+                },
+                submitCb: () => {
+                  dispatch(hideInfoModal());
+                },
+                hideOnAnimationEnd: false,
+              }),
+            );
+          } finally {
+            setShowModal(false);
+          }
+        },
+        submitData: {
+          text: 'Sí',
+          background: '$red500',
+          hasLoader: true,
+        },
+        hasSubmit: true,
+        hideOnAnimationEnd: false,
+      }),
+    );
   };
 
   useFocusEffect(
@@ -108,27 +151,27 @@ export default function UserWaitingRoom({route}: any) {
 
   useFocusEffect(
     useCallback(() => {
-      if(data){
-        refetch()
+      if (data) {
+        refetch();
       }
-
     }, [userTurn]),
   );
 
   useEffect(() => {
-    if( data && (data.turn[0].status === "CANCELED" || data.turn[0].status === "CANCELED-BY-USER")){
-      dispacth(resetUserTurn());
+    if (
+      data &&
+      (data.turn[0].status === 'CANCELED' ||
+        data.turn[0].status === 'CANCELED-BY-USER') &&
+      isFocused
+    ) {
+      dispatch(resetUserTurn());
       AsyncStorage.removeItem('persist:turns');
-      navigation.navigate("BarberSelection");
+      navigation.navigate('CanceledTurn');
     }
-  },[
-    fulfilledTimeStamp
-  ])
+  }, [fulfilledTimeStamp]);
 
   useEffect(() => {
-    socket?.on('cancel-turn', ({data}) => {
-      console.log('canceled turn notification');
-
+    socket?.on('cancel-turn', ({id, reason}: any) => {
       PushNotification.localNotification({
         /* Android Only Properties */
         channelId: 'channel-id', // (required) channelId, if the channel doesn't exist, notification will not trigger.
@@ -143,13 +186,17 @@ export default function UserWaitingRoom({route}: any) {
         title: '¡Turno cancelado!', // (optional)
         smallIcon: 'ic_notification',
         largeIcon: 'ic_launcher',
-
+        // @ts-ignore
+        data: {
+          path: 'CanceledTurn',
+          params: {turnId:id},
+        },
         /* iOS only properties */
 
-        message: 'Tu turno ha sido cancelado por inasistencia', // (required)
+        message: `Tu turno ha sido cancelado por ${reason}`, // (required)
       });
-      dispacth(resetUserTurn());
-      navigation.navigate('CanceledTurn');
+      dispatch(resetUserTurn());
+      navigation.navigate('CanceledTurn', {turnId: id});
       clearInterval(interval);
     });
 
@@ -157,7 +204,6 @@ export default function UserWaitingRoom({route}: any) {
       socket?.off('cancel-turn');
     };
   }, []);
-
 
   if (isLoading) {
     return <Loader />;
@@ -203,44 +249,46 @@ export default function UserWaitingRoom({route}: any) {
                 loop={true}
               />
             </HStack>
-            {data && data.turn.length > 0 && <Box hardShadow={'1'} p="$4" bg="$white" borderRadius="$lg">
-              <CustomText color="$textDark500">
-                Tienes un turno agendado para :{' '}
-                <CustomText color="$textDark900" fontWeight="bold">
-                  {moment(data.turn[0].startDate)
-                    .utc()
-                    .utcOffset(3, true)
-                    .format('DD-MM')}{' '}
-                  a las{' '}
-                  {moment(data.turn[0].startDate)
-                    .utc()
-                    .utcOffset(3, true)
-                    .format('hh:mm A')}
+            {data && data.turn.length > 0 && (
+              <Box hardShadow={'1'} p="$4" bg="$white" borderRadius="$lg">
+                <CustomText color="$textDark500">
+                  Tienes un turno agendado para :{' '}
+                  <CustomText color="$textDark900" fontWeight="bold">
+                    {moment(data.turn[0].startDate)
+                      .utc()
+                      .utcOffset(3, true)
+                      .format('DD-MM')}{' '}
+                    a las{' '}
+                    {moment(data.turn[0].startDate)
+                      .utc()
+                      .utcOffset(3, true)
+                      .format('hh:mm A')}
+                  </CustomText>
                 </CustomText>
-              </CustomText>
-              <CustomText color="$textDark500">
-                Barbero:{' '}
-                <CustomText color="$textDark900" fontWeight="bold">
-                  {`${data.turn[0].barberData[0].name} ${data.turn[0].barberData[0].lastname}`}
+                <CustomText color="$textDark500">
+                  Barbero:{' '}
+                  <CustomText color="$textDark900" fontWeight="bold">
+                    {`${data.turn[0].barberData[0].name} ${data.turn[0].barberData[0].lastname}`}
+                  </CustomText>
                 </CustomText>
-              </CustomText>
-              <CustomText color="$textDark500">
-                Servicio:{' '}
-                <CustomText color="$textDark900" fontWeight="bold">
-                  {data.turn[0].name}
+                <CustomText color="$textDark500">
+                  Servicio:{' '}
+                  <CustomText color="$textDark900" fontWeight="bold">
+                    {data.turn[0].name}
+                  </CustomText>
                 </CustomText>
-              </CustomText>
-              <CustomText color="$textDark500">
-                Precio:{' '}
-                <CustomText color="$textDark900" fontWeight="bold">
-                  {data.turn[0].price}
+                <CustomText color="$textDark500">
+                  Precio:{' '}
+                  <CustomText color="$textDark900" fontWeight="bold">
+                    {data.turn[0].price}
+                  </CustomText>
                 </CustomText>
-              </CustomText>
-              <CustomText color="$textDark500">
-                Recuerda que tu asistencia debe ser 15 minutos antes de la hora
-                de tu turno
-              </CustomText>
-            </Box>}
+                <CustomText color="$textDark500">
+                  Recuerda que tu asistencia debe ser 15 minutos antes de la
+                  hora de tu turno
+                </CustomText>
+              </Box>
+            )}
 
             {data && (
               <VStack mt={'$10'}>
@@ -277,21 +325,28 @@ export default function UserWaitingRoom({route}: any) {
               </VStack>
             )}
             <CustomText>
-              ¿Surgió algún imprevisto? puedas cancelar tu turno hasta 24h antes
-              de la hora agendada
+              ¿Surgió algún imprevisto? puedas cancelar tu turno hasta 24h de
+              anticipación
             </CustomText>
             <LinkButton
               title={'Cancelar turno'}
               color="$red500"
-              onPress={() => handleCancelTurn()}
+              onPress={() => setShowModal(true)}
               isLoading={cancelTurnLoading}
               disabled={cancelTurnLoading}
               hasIcon={false}
-
             />
           </Box>
         </Center>
       </ScrollView>
+      <CancelTurnReasonModal
+        show={showModal}
+        onChange={setSelecteReason}
+        onClose={() => setShowModal(false)}
+        onNext={() => handleCancelTurn()}
+        selectedReason={selectedReason}
+        user="user"
+      />
     </LinearGradient>
   );
 }

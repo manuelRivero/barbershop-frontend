@@ -25,6 +25,7 @@ const animations = {
 export default function InfoModal() {
   const dispatch = useAppDispatch();
   const {infoModal} = useAppSelector((state: RootState) => state.layout);
+  console.log("AnimationEnd", infoModal);
   const [loadingSubmit, setLoadingSubmit] = useState<boolean>(false);
 
   const handleClose = () => {
@@ -47,6 +48,7 @@ export default function InfoModal() {
   };
   const handleAnimationEnd = () => {
     if (infoModal?.hideOnAnimationEnd) {
+      
       dispatch(hideInfoModal());
     }
   };
@@ -64,7 +66,10 @@ export default function InfoModal() {
             <LottieView
               style={{width: 150, height: 150}}
               source={animations[infoModal?.type as keyof typeof animations]}
-              onAnimationFinish={() => handleAnimationEnd()}
+              onAnimationFinish={() => {
+                console.log("AnimationEnd Function", infoModal);
+                handleAnimationEnd()
+              }}
               autoPlay
               loop={false}
             />
